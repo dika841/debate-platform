@@ -1,0 +1,22 @@
+{
+	"name": "@app/api-e2e",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc --noEmit",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@app/api-contract": "workspace:*",
+		"@app/database": "workspace:*",
+		"pg": "catalog:",
+		"drizzle-orm": "catalog:"
+	},
+	"devDependencies": {
+		"@types/pg": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}

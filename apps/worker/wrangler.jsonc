@@ -1,0 +1,18 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "debate-platform-worker",
+	"account_id": "f441166e3929e4be7fbbd3174ec4a002",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-07-27",
+	"compatibility_flags": ["nodejs_compat"],
+	"triggers": {
+		"crons": ["* * * * *"]
+	},
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"NODE_ENV": "production",
+		"CLOUDFLARE": "true"
+	}
+}

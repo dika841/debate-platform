@@ -1,0 +1,31 @@
+{
+	"name": "debate-platform",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"packageManager": "pnpm@12.17.0",
+	"engines": {
+		"node": ">=24"
+	},
+	"scripts": {
+		"dev": "moon run api:dev web:dev",
+		"build": "moon run :build",
+		"typecheck": "moon run :typecheck",
+		"test": "moon run :test",
+		"check": "moon run :check",
+		"lint": "moon run :lint",
+		"format": "moon run :format",
+		"deploy": "moon run :deploy",
+		"services": "docker compose -f docker-compose.dev.yml up -d",
+		"services:stop": "docker compose -f docker-compose.dev.yml down",
+		"services:logs": "docker compose -f docker-compose.dev.yml logs -f"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.6.5",
+		"@types/node": "^26.6.6",
+		"@vitest/coverage-v8": "^5.1.0",
+		"lefthook": "^2.2.2",
+		"typescript": "^7.0.2",
+		"vitest": "^5.1.0"
+	}
+}

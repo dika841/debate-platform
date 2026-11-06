@@ -1,0 +1,11 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "debate-platform-web",
+	"account_id": "f441166e3929e4be7fbbd3174ec4a002",
+	"compatibility_date": "2026-07-27",
+	"routes": [{ "pattern": "debate.randika.dev", "custom_domain": true }],
+	"assets": {
+		"directory": "./dist",
+		"not_found_handling": "single-page-application"
+	}
+}

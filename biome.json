@@ -1,0 +1,72 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.6.5/schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**/apps/*/src/**/*",
+			"**/apps/*/tests/**/*",
+			"**/apps/*/*.ts",
+			"**/packages/*/src/**/*",
+			"**/packages/components/src/ui/**/*",
+			"**/packages/components/src/guard/**/*",
+			"**/packages/components/src/lib/**/*",
+			"**/*.config.ts",
+			"**/scripts/**/*",
+			"!**/apps/web/src/routeTree.gen.ts",
+			"!**/apps/web/src/styles.css",
+			"!**/node_modules/**",
+			"!**/dist/**",
+			"!**/coverage/**"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 100
+	},
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "off"
+			}
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"correctness": {
+				"useExhaustiveDependencies": "off"
+			},
+			"suspicious": {
+				"noArrayIndexKey": "off"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"semicolons": "always"
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["**/packages/components/src/ui/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off"
+					},
+					"style": {
+						"noNonNullAssertion": "off"
+					}
+				}
+			}
+		}
+	]
+}

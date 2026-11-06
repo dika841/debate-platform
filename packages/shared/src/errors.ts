@@ -1,0 +1,55 @@
+export const DOMAIN_ERROR_CODE = {
+	INVALID_ROOM_STATE: "INVALID_ROOM_STATE",
+	INVALID_ROOM_CONFIGURATION: "INVALID_ROOM_CONFIGURATION",
+	ROOM_NOT_READY: "ROOM_NOT_READY",
+	INVALID_MEMBERSHIP: "INVALID_MEMBERSHIP",
+	PARTICIPANT_CAPACITY_EXCEEDED: "PARTICIPANT_CAPACITY_EXCEEDED",
+	UNBALANCED_TEAM_ASSIGNMENT: "UNBALANCED_TEAM_ASSIGNMENT",
+	ASSIGNMENT_ALREADY_FINALIZED: "ASSIGNMENT_ALREADY_FINALIZED",
+	INVALID_ROUND_STATE: "INVALID_ROUND_STATE",
+	SUBMISSION_DEADLINE_PASSED: "SUBMISSION_DEADLINE_PASSED",
+	SUBMISSION_ALREADY_EXISTS: "SUBMISSION_ALREADY_EXISTS",
+	SUBMISSION_IMMUTABLE: "SUBMISSION_IMMUTABLE",
+	INVALID_VOTE: "INVALID_VOTE",
+	VOTER_NOT_ELIGIBLE: "VOTER_NOT_ELIGIBLE",
+	DUPLICATE_VOTE: "DUPLICATE_VOTE",
+	INSUFFICIENT_VOTES: "INSUFFICIENT_VOTES",
+	RESULT_ALREADY_FINALIZED: "RESULT_ALREADY_FINALIZED"
+} as const;
+
+export type DomainErrorCode = (typeof DOMAIN_ERROR_CODE)[keyof typeof DOMAIN_ERROR_CODE];
+
+export const APPLICATION_ERROR_CODE = {
+	AUTHENTICATION_REQUIRED: "AUTHENTICATION_REQUIRED",
+	AUTHORIZATION_DENIED: "AUTHORIZATION_DENIED",
+	RESOURCE_NOT_FOUND: "RESOURCE_NOT_FOUND",
+	CONCURRENCY_CONFLICT: "CONCURRENCY_CONFLICT",
+	IDEMPOTENCY_CONFLICT: "IDEMPOTENCY_CONFLICT",
+	PERSISTENCE_FAILURE: "PERSISTENCE_FAILURE"
+} as const;
+
+export type ApplicationErrorCode = (typeof APPLICATION_ERROR_CODE)[keyof typeof APPLICATION_ERROR_CODE];
+
+export class DomainError extends Error {
+	readonly code: DomainErrorCode;
+	readonly details: Record<string, unknown> | undefined;
+
+	constructor(code: DomainErrorCode, message?: string, details?: Record<string, unknown>) {
+		super(message ?? code);
+		this.name = "DomainError";
+		this.code = code;
+		this.details = details;
+	}
+}
+
+export class ApplicationError extends Error {
+	readonly code: ApplicationErrorCode;
+	readonly details: Record<string, unknown> | undefined;
+
+	constructor(code: ApplicationErrorCode, message?: string, details?: Record<string, unknown>) {
+		super(message ?? code);
+		this.name = "ApplicationError";
+		this.code = code;
+		this.details = details;
+	}
+}

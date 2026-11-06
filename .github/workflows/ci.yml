@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Check
+        run: moon run :check
+
+      - name: Typecheck
+        run: moon run :typecheck
+
+      - name: Test
+        run: moon run :test
+
+      - name: Build
+        run: moon run :build
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build api/worker image
+        run: docker build -t debate-platform:ci .
+
+      - name: Build web image
+        run: docker build -f apps/web/Dockerfile -t debate-platform-web:ci .

@@ -1,0 +1,25 @@
+{
+	"name": "@app/api-client",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"build": "tsc --noEmit",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run --passWithNoTests"
+	},
+	"dependencies": {
+		"@app/api-contract": "workspace:*",
+		"@orpc/client": "catalog:",
+		"@orpc/contract": "catalog:",
+		"@orpc/tanstack-query": "catalog:",
+		"@tanstack/react-query": "catalog:"
+	},
+	"devDependencies": {
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	}
+}

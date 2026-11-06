@@ -1,0 +1,51 @@
+{
+	"name": "@app/api",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/bootstrap/index.ts"
+	},
+	"imports": {
+		"#/*": "./src/*"
+	},
+	"scripts": {
+		"dev": "tsx watch --env-file-if-exists=.env src/main.ts",
+		"start": "tsx --env-file-if-exists=.env src/main.ts",
+		"migrate": "tsx --env-file-if-exists=.env src/scripts/migrate.ts",
+		"db:seed": "tsx --env-file-if-exists=.env src/scripts/seed.ts",
+		"db:generate": "drizzle-kit generate",
+		"db:push": "drizzle-kit push",
+		"db:studio": "drizzle-kit studio",
+		"deploy": "wrangler deploy",
+		"deploy:dry-run": "wrangler deploy --dry-run",
+		"build": "tsc --noEmit",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@app/api-contract": "workspace:*",
+		"@app/auth": "workspace:*",
+		"@app/database": "workspace:*",
+		"@app/env": "workspace:*",
+		"@app/logger": "workspace:*",
+		"@app/permissions": "workspace:*",
+		"@app/shared": "workspace:*",
+		"@hono/node-server": "catalog:",
+		"@orpc/server": "catalog:",
+		"better-auth": "catalog:",
+		"drizzle-orm": "catalog:",
+		"hono": "catalog:",
+		"pg": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@types/pg": "catalog:",
+		"dotenv": "^17.3.1",
+		"drizzle-kit": "catalog:",
+		"tsx": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:",
+		"wrangler": "catalog:"
+	}
+}

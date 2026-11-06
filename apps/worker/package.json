@@ -1,0 +1,27 @@
+{
+	"name": "@app/worker",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "tsx watch src/run.ts",
+		"start": "tsx src/run.ts",
+		"deploy": "wrangler deploy",
+		"deploy:dry-run": "wrangler deploy --dry-run",
+		"build": "tsc --noEmit",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run --passWithNoTests"
+	},
+	"dependencies": {
+		"@app/database": "workspace:*",
+		"@app/env": "workspace:*",
+		"@app/logger": "workspace:*",
+		"drizzle-orm": "catalog:"
+	},
+	"devDependencies": {
+		"tsx": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:",
+		"wrangler": "catalog:"
+	}
+}

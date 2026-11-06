@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+dist
+**/dist
+coverage
+**/coverage
+.git
+.moon/cache
+.moon/docker
+.wrangler
+**/.wrangler
+*.log
+.env
+.env.*
+!.env.example
+!.env.docker.example
+!.env.cloudflare.example
