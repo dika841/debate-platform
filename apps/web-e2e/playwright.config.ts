@@ -8,13 +8,13 @@ export default defineConfig({
 	reporter: "list",
 	use: {
 		baseURL: process.env.E2E_BASE_URL ?? "http://localhost:5173",
-		trace: "on-first-retry"
+		trace: "on-first-retry",
 	},
 	projects: [
 		{
 			name: "chromium",
-			use: { ...devices["Desktop Chrome"] }
-		}
+			use: { ...devices["Desktop Chrome"] },
+		},
 	],
 	webServer: process.env.E2E_BASE_URL
 		? undefined
@@ -22,6 +22,6 @@ export default defineConfig({
 				command: "pnpm --filter @app/web dev",
 				url: "http://localhost:5173",
 				reuseExistingServer: true,
-				timeout: 120_000
-			}
+				timeout: 120_000,
+			},
 });

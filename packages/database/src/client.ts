@@ -11,7 +11,7 @@ const LOCAL_DATABASE_HOSTS = new Set([
 	"127.0.0.1",
 	"::1",
 	"postgres",
-	"host.docker.internal"
+	"host.docker.internal",
 ]);
 
 const isLocalDatabase = (databaseUrl: string): boolean => {
@@ -33,13 +33,13 @@ export const databaseCreate = (databaseUrl: string): DatabaseHandle => {
 	if (isLocalDatabase(databaseUrl)) {
 		const pool = new NodePool({
 			connectionString: databaseUrl,
-			connectionTimeoutMillis: DB_CONNECTION_TIMEOUT_MS
+			connectionTimeoutMillis: DB_CONNECTION_TIMEOUT_MS,
 		});
 
 		return {
 			// NodePgDatabase and NeonDatabase expose the same drizzle query API.
 			db: drizzleNode({ client: pool, schema }) as unknown as Database,
-			close: () => pool.end()
+			close: () => pool.end(),
 		};
 	}
 
@@ -49,12 +49,12 @@ export const databaseCreate = (databaseUrl: string): DatabaseHandle => {
 
 	const pool = new NeonPool({
 		connectionString: databaseUrl,
-		connectionTimeoutMillis: DB_CONNECTION_TIMEOUT_MS
+		connectionTimeoutMillis: DB_CONNECTION_TIMEOUT_MS,
 	});
 
 	return {
 		db: drizzleNeon({ client: pool, schema }),
-		close: () => pool.end()
+		close: () => pool.end(),
 	};
 };
 
@@ -62,7 +62,7 @@ export type DatabaseTransaction = Parameters<Parameters<Database["transaction"]>
 
 export const runInTransaction = async <T>(
 	db: Database,
-	work: (tx: DatabaseTransaction) => Promise<T>
+	work: (tx: DatabaseTransaction) => Promise<T>,
 ): Promise<T> => db.transaction(work);
 
 export { schema };

@@ -2,9 +2,7 @@ import type * as React from "react";
 import type { FC, ReactElement } from "react";
 import { cn } from "../lib/utils.ts";
 
-const Textarea: FC<React.ComponentProps<"textarea">> = (
-	props,
-): ReactElement => {
+const Textarea: FC<React.ComponentProps<"textarea">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (

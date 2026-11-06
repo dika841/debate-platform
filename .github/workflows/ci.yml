@@ -23,6 +23,9 @@ jobs:
       - name: Typecheck
         run: moon run :typecheck
 
+      - name: Architecture boundaries
+        run: pnpm --filter @app/api arch
+
       - name: Test
         run: moon run :test
 

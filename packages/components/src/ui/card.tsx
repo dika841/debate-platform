@@ -36,17 +36,11 @@ const CardTitle: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
-		<div
-			data-slot="card-title"
-			className={cn("leading-none font-semibold", className)}
-			{...rest}
-		/>
+		<div data-slot="card-title" className={cn("leading-none font-semibold", className)} {...rest} />
 	);
 };
 
-const CardDescription: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+const CardDescription: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -64,10 +58,7 @@ const CardAction: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	return (
 		<div
 			data-slot="card-action"
-			className={cn(
-				"col-start-2 row-span-2 row-start-1 self-start justify-self-end",
-				className,
-			)}
+			className={cn("col-start-2 row-span-2 row-start-1 self-start justify-self-end", className)}
 			{...rest}
 		/>
 	);
@@ -76,9 +67,7 @@ const CardAction: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 const CardContent: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
-	return (
-		<div data-slot="card-content" className={cn("px-6", className)} {...rest} />
-	);
+	return <div data-slot="card-content" className={cn("px-6", className)} {...rest} />;
 };
 
 const CardFooter: FC<React.ComponentProps<"div">> = (props): ReactElement => {
@@ -93,12 +82,4 @@ const CardFooter: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	);
 };
 
-export {
-	Card,
-	CardHeader,
-	CardFooter,
-	CardTitle,
-	CardAction,
-	CardDescription,
-	CardContent,
-};
+export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent };

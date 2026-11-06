@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 export type EnvSource = Record<string, string | undefined>;
 
@@ -21,7 +21,7 @@ export class EnvValidationError extends Error {
 
 export const envParse = <TSchema extends z.ZodType>(
 	schema: TSchema,
-	source: EnvSource = processSource()
+	source: EnvSource = processSource(),
 ): z.infer<TSchema> => {
 	const parsed = schema.safeParse(source);
 
@@ -38,7 +38,7 @@ export const envParse = <TSchema extends z.ZodType>(
 
 export const envSafeParse = <TSchema extends z.ZodType>(
 	schema: TSchema,
-	source: EnvSource = processSource()
+	source: EnvSource = processSource(),
 ): { success: true; data: z.infer<TSchema> } | { success: false; error: EnvValidationError } => {
 	try {
 		return { success: true, data: envParse(schema, source) };

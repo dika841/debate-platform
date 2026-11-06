@@ -19,9 +19,9 @@
 			"**/scripts/**/*",
 			"!**/apps/web/src/routeTree.gen.ts",
 			"!**/apps/web/src/styles.css",
-			"!**/node_modules/**",
-			"!**/dist/**",
-			"!**/coverage/**"
+			"!**/node_modules",
+			"!**/dist",
+			"!**/coverage"
 		]
 	},
 	"formatter": {
@@ -39,7 +39,7 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true,
+			"preset": "recommended",
 			"correctness": {
 				"useExhaustiveDependencies": "off"
 			},

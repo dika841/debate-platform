@@ -17,29 +17,31 @@ const databaseStatus = async (context: OrpcContext): Promise<"up" | "down"> => {
 	}
 };
 
-export const healthCheck = os.health.check.handler(async ({ context }): Promise<HealthCheckOutput> => {
-	const database = await databaseStatus(context);
+export const healthCheck = os.health.check.handler(
+	async ({ context }): Promise<HealthCheckOutput> => {
+		const database = await databaseStatus(context);
 
-	const output: HealthCheckOutput = {
-		status: database === "up" ? HEALTH_STATUS.OK : HEALTH_STATUS.DEGRADED,
-		service: "debate-platform-api",
-		version: APP_VERSION,
-		time: new Date().toISOString(),
-		database
-	};
+		const output: HealthCheckOutput = {
+			status: database === "up" ? HEALTH_STATUS.OK : HEALTH_STATUS.DEGRADED,
+			service: "debate-platform-api",
+			version: APP_VERSION,
+			time: new Date().toISOString(),
+			database,
+		};
 
-	return healthCheckOutputSchema.parse(output);
-});
+		return healthCheckOutputSchema.parse(output);
+	},
+);
 
 export const getSession = os.auth.getSession.handler(({ context }) => ({
-	session: context.session
+	session: context.session,
 }));
 
 export const appRouter = os.router({
 	health: {
-		check: healthCheck
+		check: healthCheck,
 	},
 	auth: {
-		getSession
-	}
+		getSession,
+	},
 });

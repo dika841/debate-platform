@@ -4,11 +4,11 @@ import { getSessionOutputSchema } from "./session.ts";
 
 export const contract = {
 	health: {
-		check: oc.output(healthCheckOutputSchema)
+		check: oc.output(healthCheckOutputSchema),
 	},
 	auth: {
-		getSession: oc.output(getSessionOutputSchema)
-	}
+		getSession: oc.output(getSessionOutputSchema),
+	},
 } as const;
 
 export * from "./health.ts";

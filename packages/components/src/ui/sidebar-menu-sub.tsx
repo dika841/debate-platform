@@ -17,9 +17,7 @@ type TSidebarMenuSubButtonProps = React.ComponentProps<"a"> & {
 	isActive?: boolean;
 };
 
-export const SidebarMenuBadge: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+export const SidebarMenuBadge: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -40,9 +38,7 @@ export const SidebarMenuBadge: FC<React.ComponentProps<"div">> = (
 	);
 };
 
-export const SidebarMenuSkeleton: FC<TSidebarMenuSkeletonProps> = (
-	props,
-): ReactElement => {
+export const SidebarMenuSkeleton: FC<TSidebarMenuSkeletonProps> = (props): ReactElement => {
 	const { className, showIcon = false, ...rest } = props;
 
 	const width = useMemo(
@@ -58,12 +54,7 @@ export const SidebarMenuSkeleton: FC<TSidebarMenuSkeletonProps> = (
 			className={cn("flex h-8 items-center gap-2 rounded-md px-2", className)}
 			{...rest}
 		>
-			{showIcon && (
-				<Skeleton
-					className="size-4 rounded-md"
-					data-sidebar="menu-skeleton-icon"
-				/>
-			)}
+			{showIcon && <Skeleton className="size-4 rounded-md" data-sidebar="menu-skeleton-icon" />}
 			<Skeleton
 				className="h-4 max-w-(--skeleton-width) flex-1"
 				data-sidebar="menu-skeleton-text"
@@ -73,9 +64,7 @@ export const SidebarMenuSkeleton: FC<TSidebarMenuSkeletonProps> = (
 	);
 };
 
-export const SidebarMenuSub: FC<React.ComponentProps<"ul">> = (
-	props,
-): ReactElement => {
+export const SidebarMenuSub: FC<React.ComponentProps<"ul">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -92,9 +81,7 @@ export const SidebarMenuSub: FC<React.ComponentProps<"ul">> = (
 	);
 };
 
-export const SidebarMenuSubItem: FC<React.ComponentProps<"li">> = (
-	props,
-): ReactElement => {
+export const SidebarMenuSubItem: FC<React.ComponentProps<"li">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -107,16 +94,8 @@ export const SidebarMenuSubItem: FC<React.ComponentProps<"li">> = (
 	);
 };
 
-export const SidebarMenuSubButton: FC<TSidebarMenuSubButtonProps> = (
-	props,
-): ReactElement => {
-	const {
-		asChild = false,
-		size = "md",
-		isActive = false,
-		className,
-		...rest
-	} = props;
+export const SidebarMenuSubButton: FC<TSidebarMenuSubButtonProps> = (props): ReactElement => {
+	const { asChild = false, size = "md", isActive = false, className, ...rest } = props;
 	const Comp = asChild ? Slot.Root : "a";
 
 	return (

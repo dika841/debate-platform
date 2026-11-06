@@ -10,8 +10,7 @@ export const SIDEBAR_STATE = {
 	EXPANDED: "expanded",
 	COLLAPSED: "collapsed",
 } as const;
-export type TSidebarOpenState =
-	(typeof SIDEBAR_STATE)[keyof typeof SIDEBAR_STATE];
+export type TSidebarOpenState = (typeof SIDEBAR_STATE)[keyof typeof SIDEBAR_STATE];
 
 export const SIDEBAR_SIDE = { LEFT: "left", RIGHT: "right" } as const;
 export type TSidebarSide = (typeof SIDEBAR_SIDE)[keyof typeof SIDEBAR_SIDE];
@@ -21,16 +20,14 @@ export const SIDEBAR_VARIANT = {
 	FLOATING: "floating",
 	INSET: "inset",
 } as const;
-export type TSidebarVariant =
-	(typeof SIDEBAR_VARIANT)[keyof typeof SIDEBAR_VARIANT];
+export type TSidebarVariant = (typeof SIDEBAR_VARIANT)[keyof typeof SIDEBAR_VARIANT];
 
 export const SIDEBAR_COLLAPSIBLE = {
 	OFFCANVAS: "offcanvas",
 	ICON: "icon",
 	NONE: "none",
 } as const;
-export type TSidebarCollapsible =
-	(typeof SIDEBAR_COLLAPSIBLE)[keyof typeof SIDEBAR_COLLAPSIBLE];
+export type TSidebarCollapsible = (typeof SIDEBAR_COLLAPSIBLE)[keyof typeof SIDEBAR_COLLAPSIBLE];
 
 export type TSidebarContextProps = {
 	state: TSidebarOpenState;

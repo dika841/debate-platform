@@ -1,6 +1,6 @@
 export const APP = {
 	name: "Debate Platform",
-	tagline: "Challenge Ideas, Not People."
+	tagline: "Challenge Ideas, Not People.",
 } as const;
 
 export const NAV = {
@@ -9,7 +9,7 @@ export const NAV = {
 	createDebate: "Create Debate",
 	notifications: "Notifications",
 	profile: "Profile",
-	admin: "Admin"
+	admin: "Admin",
 } as const;
 
 export const HEALTH = {
@@ -20,7 +20,7 @@ export const HEALTH = {
 	checkedAt: "Checked at",
 	loading: "Checking system health…",
 	error: "Unable to reach the API",
-	retry: "Retry"
+	retry: "Retry",
 } as const;
 
 export const UI_MESSAGE = {
@@ -28,7 +28,7 @@ export const UI_MESSAGE = {
 	CLOSE: "Close",
 	SIDEBAR_TOGGLE: "Toggle sidebar",
 	SIDEBAR_TITLE: "Navigation",
-	SIDEBAR_DESCRIPTION: "Primary application navigation"
+	SIDEBAR_DESCRIPTION: "Primary application navigation",
 } as const;
 
 export const AUTH = {
@@ -36,5 +36,5 @@ export const AUTH = {
 	signOut: "Sign out",
 	signUp: "Create account",
 	sessionAnonymous: "Guest",
-	sessionUnavailable: "Session unavailable"
+	sessionUnavailable: "Session unavailable",
 } as const;

@@ -1,9 +1,10 @@
 COMPOSE_DEV := docker compose -f docker-compose.dev.yml
 COMPOSE_PROD := docker compose
+DOCKER_BUILD_NETWORK ?= host
 
-.PHONY: help install services services-stop services-logs up down logs image image-run \
+.PHONY: help install services services-stop services-logs up down logs image image-web image-run \
 	dev api web worker db-migrate db-seed db-generate db-push db-studio \
-	check lint format typecheck test build ci deploy-dry-run clean
+	check lint format typecheck test build ci deploy-dry-run clean arch
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-18s %s\n", $$1, $$2}'
@@ -47,6 +48,9 @@ db-push: ## Push the schema directly (dev only)
 db-studio: ## Open Drizzle Studio
 	moon run api:db-studio
 
+arch: ## Check architecture boundaries
+	pnpm --filter @app/api arch
+
 check: ## Biome check
 	moon run :check
 
@@ -77,7 +81,10 @@ logs: ## Tail full stack logs
 	$(COMPOSE_PROD) logs -f
 
 image: ## Build the api/worker production image
-	docker build -t debate-platform:$(shell node -p "require('./package.json').version") -t debate-platform:latest .
+	docker build --network=$(DOCKER_BUILD_NETWORK) -t debate-platform:$(shell node -p "require('./package.json').version") -t debate-platform:latest .
+
+image-web: ## Build the web production image
+	docker build --network=$(DOCKER_BUILD_NETWORK) -f apps/web/Dockerfile -t debate-platform-web:$(shell node -p "require('./package.json').version") -t debate-platform-web:latest .
 
 image-run: ## Run the production image against local services
 	docker run --rm -p 3001:3001 --env-file apps/api/.env debate-platform:latest

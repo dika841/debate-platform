@@ -9,7 +9,7 @@ import { db } from "#/platform/db/index.ts";
 import {
 	sessionResolutionOf,
 	unavailableResolution,
-	type SessionResolution
+	type SessionResolution,
 } from "#/shared/session.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 
@@ -17,8 +17,8 @@ export const rpcHandler = new RPCHandler(appRouter, {
 	interceptors: [
 		onError((error) => {
 			logger.error({ err: error }, "orpc.error");
-		})
-	]
+		}),
+	],
 });
 
 const resolveSession = async (headers: Headers): Promise<SessionResolution> => {
@@ -39,7 +39,7 @@ export const buildContext = async (hono: Context): Promise<OrpcContext> => {
 		session: resolution.session,
 		sessionState: resolution.sessionState,
 		db,
-		auth
+		auth,
 	};
 };
 
@@ -51,7 +51,7 @@ export const buildContextFromHeaders = async (headers: Headers): Promise<OrpcCon
 		session: resolution.session,
 		sessionState: resolution.sessionState,
 		db,
-		auth
+		auth,
 	};
 };
 
@@ -59,7 +59,7 @@ export const rpcHandle = async (request: Request): Promise<Response | null> => {
 	const context = await buildContextFromHeaders(request.headers);
 	const { matched, response } = await rpcHandler.handle(request, {
 		prefix: "/rpc",
-		context
+		context,
 	});
 
 	if (!matched) {

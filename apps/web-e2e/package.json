@@ -6,7 +6,7 @@
 	"scripts": {
 		"build": "tsc --noEmit",
 		"typecheck": "tsc --noEmit",
-		"test": "playwright test",
+		"test": "tsc --noEmit",
 		"test:e2e": "playwright test"
 	},
 	"devDependencies": {

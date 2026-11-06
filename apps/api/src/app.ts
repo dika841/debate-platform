@@ -31,7 +31,7 @@ const healthPayload = async (): Promise<{
 		service: "debate-platform-api",
 		version: "0.1.0",
 		time: new Date().toISOString(),
-		database
+		database,
 	};
 };
 
@@ -45,8 +45,8 @@ export const createApp = (): Hono => {
 			origin: env.WEB_ORIGIN,
 			credentials: true,
 			allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
-			allowHeaders: ["Content-Type", "Authorization"]
-		})
+			allowHeaders: ["Content-Type", "Authorization"],
+		}),
 	);
 
 	app.get("/health", async (context) => context.json(await healthPayload()));
@@ -58,7 +58,7 @@ export const createApp = (): Hono => {
 		const orpcContext = await buildContext(context);
 		const { matched, response } = await rpcHandler.handle(context.req.raw, {
 			prefix: "/rpc",
-			context: orpcContext
+			context: orpcContext,
 		});
 
 		if (matched) {
@@ -69,7 +69,7 @@ export const createApp = (): Hono => {
 	});
 
 	app.notFound((context) =>
-		context.json({ error: "NOT_FOUND", message: "Resource not found" }, 404)
+		context.json({ error: "NOT_FOUND", message: "Resource not found" }, 404),
 	);
 
 	app.onError((error, context) => {
@@ -80,9 +80,9 @@ export const createApp = (): Hono => {
 			{
 				error: "INTERNAL_ERROR",
 				message: "Unexpected server error",
-				requestId: requestIdValue
+				requestId: requestIdValue,
 			},
-			500
+			500,
 		);
 	});
 

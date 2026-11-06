@@ -8,7 +8,7 @@ describe("api contract", () => {
 			service: "debate-platform-api",
 			version: "0.1.0",
 			time: new Date().toISOString(),
-			database: "up"
+			database: "up",
 		});
 
 		expect(parsed.status).toBe("ok");

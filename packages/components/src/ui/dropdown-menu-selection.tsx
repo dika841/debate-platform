@@ -32,12 +32,7 @@ export const DropdownMenuCheckboxItem: FC<
 export const DropdownMenuRadioGroup: FC<
 	React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>
 > = (props): ReactElement => {
-	return (
-		<DropdownMenuPrimitive.RadioGroup
-			data-slot="dropdown-menu-radio-group"
-			{...props}
-		/>
-	);
+	return <DropdownMenuPrimitive.RadioGroup data-slot="dropdown-menu-radio-group" {...props} />;
 };
 
 export const DropdownMenuRadioItem: FC<

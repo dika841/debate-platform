@@ -9,9 +9,7 @@ const Breadcrumb: FC<React.ComponentProps<"nav">> = (props): ReactElement => {
 	return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />;
 };
 
-const BreadcrumbList: FC<React.ComponentProps<"ol">> = (
-	props,
-): ReactElement => {
+const BreadcrumbList: FC<React.ComponentProps<"ol">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -26,9 +24,7 @@ const BreadcrumbList: FC<React.ComponentProps<"ol">> = (
 	);
 };
 
-const BreadcrumbItem: FC<React.ComponentProps<"li">> = (
-	props,
-): ReactElement => {
+const BreadcrumbItem: FC<React.ComponentProps<"li">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -57,9 +53,7 @@ const BreadcrumbLink: FC<TBreadcrumbLinkProps> = (props): ReactElement => {
 	);
 };
 
-const BreadcrumbPage: FC<React.ComponentProps<"span">> = (
-	props,
-): ReactElement => {
+const BreadcrumbPage: FC<React.ComponentProps<"span">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -72,9 +66,7 @@ const BreadcrumbPage: FC<React.ComponentProps<"span">> = (
 	);
 };
 
-const BreadcrumbSeparator: FC<React.ComponentProps<"li">> = (
-	props,
-): ReactElement => {
+const BreadcrumbSeparator: FC<React.ComponentProps<"li">> = (props): ReactElement => {
 	const { children, className, ...rest } = props;
 
 	return (
@@ -90,9 +82,7 @@ const BreadcrumbSeparator: FC<React.ComponentProps<"li">> = (
 	);
 };
 
-const BreadcrumbEllipsis: FC<React.ComponentProps<"span">> = (
-	props,
-): ReactElement => {
+const BreadcrumbEllipsis: FC<React.ComponentProps<"span">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (

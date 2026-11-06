@@ -3,34 +3,27 @@ import type { FC, ReactElement } from "react";
 import { cn } from "../lib/utils.ts";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 
-export const DropdownMenu: FC<
-	React.ComponentProps<typeof DropdownMenuPrimitive.Root>
-> = (props): ReactElement => {
+export const DropdownMenu: FC<React.ComponentProps<typeof DropdownMenuPrimitive.Root>> = (
+	props,
+): ReactElement => {
 	return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
 };
 
-export const DropdownMenuPortal: FC<
-	React.ComponentProps<typeof DropdownMenuPrimitive.Portal>
-> = (props): ReactElement => {
-	return (
-		<DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
-	);
+export const DropdownMenuPortal: FC<React.ComponentProps<typeof DropdownMenuPrimitive.Portal>> = (
+	props,
+): ReactElement => {
+	return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 };
 
-export const DropdownMenuTrigger: FC<
-	React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>
-> = (props): ReactElement => {
-	return (
-		<DropdownMenuPrimitive.Trigger
-			data-slot="dropdown-menu-trigger"
-			{...props}
-		/>
-	);
+export const DropdownMenuTrigger: FC<React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>> = (
+	props,
+): ReactElement => {
+	return <DropdownMenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />;
 };
 
-export const DropdownMenuContent: FC<
-	React.ComponentProps<typeof DropdownMenuPrimitive.Content>
-> = (props): ReactElement => {
+export const DropdownMenuContent: FC<React.ComponentProps<typeof DropdownMenuPrimitive.Content>> = (
+	props,
+): ReactElement => {
 	const { className, sideOffset = 4, ...rest } = props;
 
 	return (
@@ -48,24 +41,18 @@ export const DropdownMenuContent: FC<
 	);
 };
 
-export const DropdownMenuGroup: FC<
-	React.ComponentProps<typeof DropdownMenuPrimitive.Group>
-> = (props): ReactElement => {
-	return (
-		<DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />
-	);
+export const DropdownMenuGroup: FC<React.ComponentProps<typeof DropdownMenuPrimitive.Group>> = (
+	props,
+): ReactElement => {
+	return <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />;
 };
 
-type TDropdownMenuItemProps = React.ComponentProps<
-	typeof DropdownMenuPrimitive.Item
-> & {
+type TDropdownMenuItemProps = React.ComponentProps<typeof DropdownMenuPrimitive.Item> & {
 	inset?: boolean;
 	variant?: "default" | "destructive";
 };
 
-export const DropdownMenuItem: FC<TDropdownMenuItemProps> = (
-	props,
-): ReactElement => {
+export const DropdownMenuItem: FC<TDropdownMenuItemProps> = (props): ReactElement => {
 	const { className, inset, variant = "default", ...rest } = props;
 
 	return (
@@ -82,25 +69,18 @@ export const DropdownMenuItem: FC<TDropdownMenuItemProps> = (
 	);
 };
 
-type TDropdownMenuLabelProps = React.ComponentProps<
-	typeof DropdownMenuPrimitive.Label
-> & {
+type TDropdownMenuLabelProps = React.ComponentProps<typeof DropdownMenuPrimitive.Label> & {
 	inset?: boolean;
 };
 
-export const DropdownMenuLabel: FC<TDropdownMenuLabelProps> = (
-	props,
-): ReactElement => {
+export const DropdownMenuLabel: FC<TDropdownMenuLabelProps> = (props): ReactElement => {
 	const { className, inset, ...rest } = props;
 
 	return (
 		<DropdownMenuPrimitive.Label
 			data-slot="dropdown-menu-label"
 			data-inset={inset}
-			className={cn(
-				"px-2 py-1.5 text-sm font-medium data-[inset]:pl-8",
-				className,
-			)}
+			className={cn("px-2 py-1.5 text-sm font-medium data-[inset]:pl-8", className)}
 			{...rest}
 		/>
 	);
@@ -120,18 +100,13 @@ export const DropdownMenuSeparator: FC<
 	);
 };
 
-export const DropdownMenuShortcut: FC<React.ComponentProps<"span">> = (
-	props,
-): ReactElement => {
+export const DropdownMenuShortcut: FC<React.ComponentProps<"span">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
 		<span
 			data-slot="dropdown-menu-shortcut"
-			className={cn(
-				"ml-auto text-xs tracking-widest text-muted-foreground",
-				className,
-			)}
+			className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)}
 			{...rest}
 		/>
 	);

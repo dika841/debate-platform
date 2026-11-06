@@ -7,5 +7,5 @@ export const auth = authCreate({
 	baseURL: env.BETTER_AUTH_URL,
 	secret: env.BETTER_AUTH_SECRET,
 	trustedOrigins: [env.WEB_ORIGIN, "http://localhost:5173"],
-	production: isProduction
+	production: isProduction,
 });

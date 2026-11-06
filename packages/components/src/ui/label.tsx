@@ -3,9 +3,7 @@ import type { FC, ReactElement } from "react";
 import { cn } from "../lib/utils.ts";
 import { Label as LabelPrimitive } from "radix-ui";
 
-const Label: FC<React.ComponentProps<typeof LabelPrimitive.Root>> = (
-	props,
-): ReactElement => {
+const Label: FC<React.ComponentProps<typeof LabelPrimitive.Root>> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (

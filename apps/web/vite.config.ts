@@ -17,22 +17,22 @@ export default defineConfig(({ mode }) => {
 				autoCodeSplitting: true,
 				routesDirectory: "./src/routes",
 				generatedRouteTree: "./src/routeTree.gen.ts",
-				routeFileIgnorePattern: "^(_components|_libs|__tests__)"
+				routeFileIgnorePattern: "^(_components|_libs|__tests__)",
 			}),
-			viteReact()
+			viteReact(),
 		],
 		resolve: {
 			alias: {
-				"@": new URL("./src", import.meta.url).pathname
-			}
+				"@": new URL("./src", import.meta.url).pathname,
+			},
 		},
 		server: {
 			host: true,
 			port: 5173,
 			proxy: {
 				"/rpc": { target: apiUrl, changeOrigin: true },
-				"/api": { target: apiUrl, changeOrigin: true }
-			}
-		}
+				"/api": { target: apiUrl, changeOrigin: true },
+			},
+		},
 	};
 });

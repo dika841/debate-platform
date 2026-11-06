@@ -5,9 +5,7 @@ import { cn } from "../lib/utils.ts";
 import { XIcon } from "lucide-react";
 import { Dialog as SheetPrimitive } from "radix-ui";
 
-const Sheet: FC<React.ComponentProps<typeof SheetPrimitive.Root>> = (
-	props,
-): ReactElement => {
+const Sheet: FC<React.ComponentProps<typeof SheetPrimitive.Root>> = (props): ReactElement => {
 	return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 };
 
@@ -17,9 +15,7 @@ const SheetTrigger: FC<React.ComponentProps<typeof SheetPrimitive.Trigger>> = (
 	return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 };
 
-const SheetClose: FC<React.ComponentProps<typeof SheetPrimitive.Close>> = (
-	props,
-): ReactElement => {
+const SheetClose: FC<React.ComponentProps<typeof SheetPrimitive.Close>> = (props): ReactElement => {
 	return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 };
 
@@ -46,21 +42,13 @@ const SheetOverlay: FC<React.ComponentProps<typeof SheetPrimitive.Overlay>> = (
 	);
 };
 
-type TSheetContentProps = React.ComponentProps<
-	typeof SheetPrimitive.Content
-> & {
+type TSheetContentProps = React.ComponentProps<typeof SheetPrimitive.Content> & {
 	side?: "top" | "right" | "bottom" | "left";
 	showCloseButton?: boolean;
 };
 
 const SheetContent: FC<TSheetContentProps> = (props): ReactElement => {
-	const {
-		className,
-		children,
-		side = "right",
-		showCloseButton = true,
-		...rest
-	} = props;
+	const { className, children, side = "right", showCloseButton = true, ...rest } = props;
 
 	return (
 		<SheetPortal>
@@ -117,9 +105,7 @@ const SheetFooter: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	);
 };
 
-const SheetTitle: FC<React.ComponentProps<typeof SheetPrimitive.Title>> = (
-	props,
-): ReactElement => {
+const SheetTitle: FC<React.ComponentProps<typeof SheetPrimitive.Title>> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -131,9 +117,9 @@ const SheetTitle: FC<React.ComponentProps<typeof SheetPrimitive.Title>> = (
 	);
 };
 
-const SheetDescription: FC<
-	React.ComponentProps<typeof SheetPrimitive.Description>
-> = (props): ReactElement => {
+const SheetDescription: FC<React.ComponentProps<typeof SheetPrimitive.Description>> = (
+	props,
+): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (

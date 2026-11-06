@@ -4,31 +4,27 @@ import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
 import { cn } from "../lib/utils.ts";
 import { buttonVariants } from "./button.tsx";
 
-const AlertDialog: FC<
-	React.ComponentProps<typeof AlertDialogPrimitive.Root>
-> = (props): ReactElement => {
+const AlertDialog: FC<React.ComponentProps<typeof AlertDialogPrimitive.Root>> = (
+	props,
+): ReactElement => {
 	return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
 };
 
-const AlertDialogTrigger: FC<
-	React.ComponentProps<typeof AlertDialogPrimitive.Trigger>
-> = (props): ReactElement => {
-	return (
-		<AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
-	);
+const AlertDialogTrigger: FC<React.ComponentProps<typeof AlertDialogPrimitive.Trigger>> = (
+	props,
+): ReactElement => {
+	return <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />;
 };
 
-const AlertDialogPortal: FC<
-	React.ComponentProps<typeof AlertDialogPrimitive.Portal>
-> = (props): ReactElement => {
-	return (
-		<AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
-	);
+const AlertDialogPortal: FC<React.ComponentProps<typeof AlertDialogPrimitive.Portal>> = (
+	props,
+): ReactElement => {
+	return <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />;
 };
 
-const AlertDialogOverlay: FC<
-	React.ComponentProps<typeof AlertDialogPrimitive.Overlay>
-> = (props): ReactElement => {
+const AlertDialogOverlay: FC<React.ComponentProps<typeof AlertDialogPrimitive.Overlay>> = (
+	props,
+): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -43,9 +39,9 @@ const AlertDialogOverlay: FC<
 	);
 };
 
-const AlertDialogContent: FC<
-	React.ComponentProps<typeof AlertDialogPrimitive.Content>
-> = (props): ReactElement => {
+const AlertDialogContent: FC<React.ComponentProps<typeof AlertDialogPrimitive.Content>> = (
+	props,
+): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -63,9 +59,7 @@ const AlertDialogContent: FC<
 	);
 };
 
-const AlertDialogHeader: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+const AlertDialogHeader: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -77,26 +71,21 @@ const AlertDialogHeader: FC<React.ComponentProps<"div">> = (
 	);
 };
 
-const AlertDialogFooter: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+const AlertDialogFooter: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
 		<div
 			data-slot="alert-dialog-footer"
-			className={cn(
-				"flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-				className,
-			)}
+			className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
 			{...rest}
 		/>
 	);
 };
 
-const AlertDialogTitle: FC<
-	React.ComponentProps<typeof AlertDialogPrimitive.Title>
-> = (props): ReactElement => {
+const AlertDialogTitle: FC<React.ComponentProps<typeof AlertDialogPrimitive.Title>> = (
+	props,
+): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -108,9 +97,9 @@ const AlertDialogTitle: FC<
 	);
 };
 
-const AlertDialogDescription: FC<
-	React.ComponentProps<typeof AlertDialogPrimitive.Description>
-> = (props): ReactElement => {
+const AlertDialogDescription: FC<React.ComponentProps<typeof AlertDialogPrimitive.Description>> = (
+	props,
+): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -122,22 +111,17 @@ const AlertDialogDescription: FC<
 	);
 };
 
-const AlertDialogAction: FC<
-	React.ComponentProps<typeof AlertDialogPrimitive.Action>
-> = (props): ReactElement => {
+const AlertDialogAction: FC<React.ComponentProps<typeof AlertDialogPrimitive.Action>> = (
+	props,
+): ReactElement => {
 	const { className, ...rest } = props;
 
-	return (
-		<AlertDialogPrimitive.Action
-			className={cn(buttonVariants(), className)}
-			{...rest}
-		/>
-	);
+	return <AlertDialogPrimitive.Action className={cn(buttonVariants(), className)} {...rest} />;
 };
 
-const AlertDialogCancel: FC<
-	React.ComponentProps<typeof AlertDialogPrimitive.Cancel>
-> = (props): ReactElement => {
+const AlertDialogCancel: FC<React.ComponentProps<typeof AlertDialogPrimitive.Cancel>> = (
+	props,
+): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (

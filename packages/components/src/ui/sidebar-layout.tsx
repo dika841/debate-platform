@@ -13,9 +13,7 @@ type TSidebarGroupActionProps = React.ComponentProps<"button"> & {
 	asChild?: boolean;
 };
 
-export const SidebarInput: FC<React.ComponentProps<typeof Input>> = (
-	props,
-): ReactElement => {
+export const SidebarInput: FC<React.ComponentProps<typeof Input>> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -28,9 +26,7 @@ export const SidebarInput: FC<React.ComponentProps<typeof Input>> = (
 	);
 };
 
-export const SidebarHeader: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+export const SidebarHeader: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -43,9 +39,7 @@ export const SidebarHeader: FC<React.ComponentProps<"div">> = (
 	);
 };
 
-export const SidebarFooter: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+export const SidebarFooter: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -73,9 +67,7 @@ export const SidebarSeparator: FC<React.ComponentProps<typeof Separator>> = (
 	);
 };
 
-export const SidebarContent: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+export const SidebarContent: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -91,9 +83,7 @@ export const SidebarContent: FC<React.ComponentProps<"div">> = (
 	);
 };
 
-export const SidebarGroup: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+export const SidebarGroup: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -106,9 +96,7 @@ export const SidebarGroup: FC<React.ComponentProps<"div">> = (
 	);
 };
 
-export const SidebarGroupLabel: FC<TSidebarGroupLabelProps> = (
-	props,
-): ReactElement => {
+export const SidebarGroupLabel: FC<TSidebarGroupLabelProps> = (props): ReactElement => {
 	const { className, asChild = false, ...rest } = props;
 	const Comp = asChild ? Slot.Root : "div";
 
@@ -126,9 +114,7 @@ export const SidebarGroupLabel: FC<TSidebarGroupLabelProps> = (
 	);
 };
 
-export const SidebarGroupAction: FC<TSidebarGroupActionProps> = (
-	props,
-): ReactElement => {
+export const SidebarGroupAction: FC<TSidebarGroupActionProps> = (props): ReactElement => {
 	const { className, asChild = false, ...rest } = props;
 	const Comp = asChild ? Slot.Root : "button";
 
@@ -147,9 +133,7 @@ export const SidebarGroupAction: FC<TSidebarGroupActionProps> = (
 	);
 };
 
-export const SidebarGroupContent: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+export const SidebarGroupContent: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (

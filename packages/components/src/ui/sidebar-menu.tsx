@@ -53,9 +53,7 @@ const tooltipPropsOf = (
 		.with(P.string, (children): TTooltipContentProps => ({ children }))
 		.otherwise((found): TTooltipContentProps => found);
 
-export const SidebarMenu: FC<React.ComponentProps<"ul">> = (
-	props,
-): ReactElement => {
+export const SidebarMenu: FC<React.ComponentProps<"ul">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -68,9 +66,7 @@ export const SidebarMenu: FC<React.ComponentProps<"ul">> = (
 	);
 };
 
-export const SidebarMenuItem: FC<React.ComponentProps<"li">> = (
-	props,
-): ReactElement => {
+export const SidebarMenuItem: FC<React.ComponentProps<"li">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -83,9 +79,7 @@ export const SidebarMenuItem: FC<React.ComponentProps<"li">> = (
 	);
 };
 
-export const SidebarMenuButton: FC<TSidebarMenuButtonProps> = (
-	props,
-): ReactElement => {
+export const SidebarMenuButton: FC<TSidebarMenuButtonProps> = (props): ReactElement => {
 	const {
 		asChild = false,
 		isActive = false,
@@ -126,9 +120,7 @@ export const SidebarMenuButton: FC<TSidebarMenuButtonProps> = (
 		);
 };
 
-export const SidebarMenuAction: FC<TSidebarMenuActionProps> = (
-	props,
-): ReactElement => {
+export const SidebarMenuAction: FC<TSidebarMenuActionProps> = (props): ReactElement => {
 	const { className, asChild = false, showOnHover = false, ...rest } = props;
 	const Comp = asChild ? Slot.Root : "button";
 

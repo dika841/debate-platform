@@ -1,7 +1,8 @@
 FROM node:24.22.2-alpine AS build
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@12.17.0
+ENV COREPACK_HOME=/opt/corepack
+RUN corepack enable && corepack prepare pnpm@12.17.0 --activate
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./

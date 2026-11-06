@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const HEALTH_STATUS = {
 	OK: "ok",
-	DEGRADED: "degraded"
+	DEGRADED: "degraded",
 } as const;
 
 export const healthCheckOutputSchema = z.object({
@@ -10,7 +10,7 @@ export const healthCheckOutputSchema = z.object({
 	service: z.string(),
 	version: z.string(),
 	time: z.string().datetime(),
-	database: z.enum(["up", "down"])
+	database: z.enum(["up", "down"]),
 });
 
 export type HealthCheckOutput = z.infer<typeof healthCheckOutputSchema>;

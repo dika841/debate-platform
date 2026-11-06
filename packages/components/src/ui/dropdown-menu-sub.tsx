@@ -4,9 +4,9 @@ import { cn } from "../lib/utils.ts";
 import { ChevronRightIcon } from "lucide-react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 
-export const DropdownMenuSub: FC<
-	React.ComponentProps<typeof DropdownMenuPrimitive.Sub>
-> = (props): ReactElement => {
+export const DropdownMenuSub: FC<React.ComponentProps<typeof DropdownMenuPrimitive.Sub>> = (
+	props,
+): ReactElement => {
 	return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />;
 };
 
@@ -16,9 +16,7 @@ type TDropdownMenuSubTriggerProps = React.ComponentProps<
 	inset?: boolean;
 };
 
-export const DropdownMenuSubTrigger: FC<TDropdownMenuSubTriggerProps> = (
-	props,
-): ReactElement => {
+export const DropdownMenuSubTrigger: FC<TDropdownMenuSubTriggerProps> = (props): ReactElement => {
 	const { className, inset, children, ...rest } = props;
 
 	return (

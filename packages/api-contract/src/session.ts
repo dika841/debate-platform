@@ -7,18 +7,18 @@ export const sessionUserSchema = z.object({
 	name: z.string(),
 	email: z.string().email(),
 	image: z.string().nullable(),
-	role: z.string()
+	role: z.string(),
 });
 
 export const sessionSchema = z.object({
 	id: z.string(),
 	userId: userIdSchema,
 	expiresAt: z.coerce.date(),
-	user: sessionUserSchema
+	user: sessionUserSchema,
 });
 
 export const getSessionOutputSchema = z.object({
-	session: sessionSchema.nullable()
+	session: sessionSchema.nullable(),
 });
 
 export type SessionUser = z.infer<typeof sessionUserSchema>;

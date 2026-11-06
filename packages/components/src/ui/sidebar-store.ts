@@ -28,9 +28,7 @@ const sidebarIsMobileSet = (isMobile: boolean): void =>
 
 const watchViewport = (): void => {
 	const query = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-	query.addEventListener("change", () =>
-		sidebarIsMobileSet(isMobileViewport()),
-	);
+	query.addEventListener("change", () => sidebarIsMobileSet(isMobileViewport()));
 };
 
 typeof window !== "undefined" && watchViewport();

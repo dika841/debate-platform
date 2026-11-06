@@ -22,30 +22,30 @@ export const authCreate = (options: AuthCreateOptions) =>
 				user: users,
 				session: sessions,
 				account: accounts,
-				verification: verifications
-			}
+				verification: verifications,
+			},
 		}),
 		advanced: {
 			database: {
-				generateId: (): string => crypto.randomUUID()
+				generateId: (): string => crypto.randomUUID(),
 			},
 			defaultCookieAttributes: {
 				sameSite: options.production ? "none" : "lax",
-				secure: options.production
-			}
+				secure: options.production,
+			},
 		},
 		emailAndPassword: {
-			enabled: true
+			enabled: true,
 		},
 		user: {
 			additionalFields: {
 				role: {
 					type: "string",
 					defaultValue: "USER",
-					input: false
-				}
-			}
-		}
+					input: false,
+				},
+			},
+		},
 	});
 
 export type Auth = ReturnType<typeof authCreate>;

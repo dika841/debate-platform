@@ -4,7 +4,7 @@ import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useSession } from "@/libs/api/queries.ts";
 
 export const Route = createFileRoute("/_public")({
-	component: PublicLayout
+	component: PublicLayout,
 });
 
 function PublicLayout() {

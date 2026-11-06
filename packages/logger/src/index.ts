@@ -2,7 +2,7 @@ export const LOG_LEVEL = {
 	DEBUG: "debug",
 	INFO: "info",
 	WARN: "warn",
-	ERROR: "error"
+	ERROR: "error",
 } as const;
 
 export type LogLevel = (typeof LOG_LEVEL)[keyof typeof LOG_LEVEL];
@@ -11,7 +11,7 @@ const LEVEL_WEIGHT: Record<LogLevel, number> = {
 	[LOG_LEVEL.DEBUG]: 10,
 	[LOG_LEVEL.INFO]: 20,
 	[LOG_LEVEL.WARN]: 30,
-	[LOG_LEVEL.ERROR]: 40
+	[LOG_LEVEL.ERROR]: 40,
 };
 
 export type LogContext = Record<string, unknown>;
@@ -50,8 +50,8 @@ export const createLogger = (options: LoggerOptions = {}): Logger => {
 				time: new Date().toISOString(),
 				message,
 				...base,
-				...context
-			})
+				...context,
+			}),
 		);
 	};
 
@@ -64,7 +64,7 @@ export const createLogger = (options: LoggerOptions = {}): Logger => {
 			createLogger({
 				level,
 				base: { ...base, ...context },
-				sink
-			})
+				sink,
+			}),
 	};
 };

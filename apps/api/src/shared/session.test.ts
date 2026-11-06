@@ -5,15 +5,15 @@ const betterAuthSession = {
 	session: {
 		id: "session-1",
 		userId: "user-1",
-		expiresAt: new Date("2030-01-01T00:00:00.000Z")
+		expiresAt: new Date("2030-01-01T00:00:00.000Z"),
 	},
 	user: {
 		id: "user-1",
 		name: "Demo",
 		email: "demo@example.com",
 		image: null,
-		role: "USER"
-	}
+		role: "USER",
+	},
 };
 
 describe("session mapping", () => {

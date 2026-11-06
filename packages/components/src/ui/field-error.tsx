@@ -23,8 +23,7 @@ const resolve = (props: TFieldErrorProps): unknown =>
 		);
 
 export const hasFieldError = (errorMap: TErrorMap): boolean =>
-	firstIssue(errorMap.onBlur) !== undefined ||
-	firstIssue(errorMap.onSubmit) !== undefined;
+	firstIssue(errorMap.onBlur) !== undefined || firstIssue(errorMap.onSubmit) !== undefined;
 
 export const FieldError: FC<TFieldErrorProps> = (props): ReactElement =>
 	match(resolve(props))

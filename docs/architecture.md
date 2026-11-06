@@ -1,0 +1,121 @@
+# Architecture (M0 baseline)
+
+## Monorepo boundaries
+
+```text
+apps/web      → UI only. Consumes @app/api-client. Never imports backend packages.
+apps/api      → Hono + oRPC. Owns use cases, authorization and transactions.
+apps/worker   → Scheduled jobs. Reuses @app/database, never imports apps/api.
+packages/*    → Shared building blocks with a single direction of dependency.
+```
+
+Dependency direction:
+
+```text
+apps/web ──► api-client ──► api-contract
+    │
+    └────► components, messages, permissions
+
+apps/api ──► auth, database, env, shared, logger, permissions
+apps/worker ─► database, env, shared, logger
+```
+
+`pnpm --filter @app/api arch` enforces two rules:
+
+1. `apps/api/src/modules/**/domain/**` must not import Hono, oRPC, Drizzle, Zod or HTTP/database platform code.
+2. `apps/web` must not import `@app/database`, `@app/auth` or `@app/api`.
+
+## Backend module layout
+
+Each bounded context follows the same four layers:
+
+```text
+apps/api/src/modules/<context>/
+├── domain/           entities, value objects, policies, ports
+├── application/      use cases, DTOs, mappers
+├── infrastructure/   Drizzle repositories, adapters
+└── presentation/     oRPC procedures and transport schemas
+```
+
+Planned contexts: identity, debate-room, membership, team-assignment,
+debate-execution, voting, results, moderation, notification.
+
+M0 only implements the identity baseline (Better Auth + profiles). The remaining
+contexts are added as vertical slices in M1–M7.
+
+## Frontend architecture
+
+The frontend intentionally uses **Vite + React 19 + TanStack Router** (SPA)
+instead of the Next.js recommendation in the product architecture document. This
+matches the previous monorepo projects and keeps deployment as static Workers
+Assets.
+
+```text
+apps/web/src/
+├── routes/            file-based TanStack Router routes
+│   ├── __root.tsx
+│   └── _public/       public layout + pages
+├── libs/
+│   ├── orpc/          typed client + TanStack Query utils
+│   └── api/           query helpers
+├── styles.css         Tailwind 4 entry, imports @app/components theme
+└── main.tsx           QueryClient + RouterProvider
+```
+
+Rules:
+
+- Route files compose features; they do not contain backend logic.
+- Cross-cutting client utilities live in `src/libs/*`.
+- Shared UI primitives live only in `@app/components` (see below).
+- Feature-specific components stay next to their route until reused by another app.
+
+## shadcn/ui package
+
+`packages/components` (`@app/components`) is the single source of UI primitives:
+
+```text
+packages/components/
+├── components.json
+├── theme.css                 design tokens
+└── src/
+    ├── ui/                   button, card, input, dialog, table, ...
+    ├── hooks/                non-business hooks
+    └── lib/utils.ts          cn()
+```
+
+Consumption:
+
+```tsx
+import { Button } from "@app/components/ui/button";
+import { Card, CardContent } from "@app/components/ui/card";
+```
+
+Adding a primitive:
+
+```bash
+pnpm dlx shadcn@latest add dialog -c packages/components
+```
+
+Tailwind scans the package through `@source "../../../packages/components"` in
+`apps/web/src/styles.css`, and the design tokens are imported from
+`@app/components/theme.css`. React is a peer dependency to avoid duplicate
+instances.
+
+## API contract
+
+`packages/api-contract` is the only shared API surface:
+
+- procedure definitions (`health.check`, `auth.getSession` in M0)
+- Zod input/output schemas
+- public DTO types
+
+`packages/api-client` creates the typed client and TanStack Query utils. The API
+implements the contract with `implement(contract)` so drift becomes a type error.
+
+## Runtime and deployment
+
+- **Local:** Node (`apps/api/src/main.ts`) + Vite dev server, Postgres and Mailpit in Docker.
+- **Docker:** API/worker image + nginx web image; nginx proxies `/rpc` and `/api`.
+- **Cloudflare:** API Worker (`src/worker.ts`), static web assets, cron worker.
+- **Database:** local Postgres via `pg`; Neon via `@neondatabase/serverless`.
+  Driver selection is automatic based on the database host.

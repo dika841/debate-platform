@@ -13,7 +13,7 @@ export const users = pgTable("users", {
 	image: text("image"),
 	role: text("role").notNull().default("USER"),
 	createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-	updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+	updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const sessions = pgTable(
@@ -28,9 +28,9 @@ export const sessions = pgTable(
 		userAgent: text("user_agent"),
 		userId: text("user_id")
 			.notNull()
-			.references(() => users.id, { onDelete: "cascade" })
+			.references(() => users.id, { onDelete: "cascade" }),
 	},
-	(table) => [index("idx_sessions_user").on(table.userId)]
+	(table) => [index("idx_sessions_user").on(table.userId)],
 );
 
 export const accounts = pgTable(
@@ -50,9 +50,9 @@ export const accounts = pgTable(
 		scope: text("scope"),
 		password: text("password"),
 		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 	},
-	(table) => [index("idx_accounts_user").on(table.userId)]
+	(table) => [index("idx_accounts_user").on(table.userId)],
 );
 
 export const verifications = pgTable(
@@ -63,9 +63,9 @@ export const verifications = pgTable(
 		value: text("value").notNull(),
 		expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 	},
-	(table) => [index("idx_verifications_identifier").on(table.identifier)]
+	(table) => [index("idx_verifications_identifier").on(table.identifier)],
 );
 
 export const userProfiles = pgTable(
@@ -79,23 +79,23 @@ export const userProfiles = pgTable(
 		avatarUrl: text("avatar_url"),
 		bio: varchar("bio", { length: 500 }),
 		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 	},
-	(table) => [index("idx_user_profiles_username").on(table.username)]
+	(table) => [index("idx_user_profiles_username").on(table.username)],
 );
 
 export const usersRelations = relations(users, ({ one, many }) => ({
 	profile: one(userProfiles, {
 		fields: [users.id],
-		references: [userProfiles.userId]
+		references: [userProfiles.userId],
 	}),
 	sessions: many(sessions),
-	accounts: many(accounts)
+	accounts: many(accounts),
 }));
 
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
 	user: one(users, {
 		fields: [userProfiles.userId],
-		references: [users.id]
-	})
+		references: [users.id],
+	}),
 }));

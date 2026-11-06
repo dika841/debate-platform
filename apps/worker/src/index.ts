@@ -19,5 +19,5 @@ const execute = async (event: ScheduledEvent): Promise<void> => {
 export default {
 	scheduled(event: ScheduledEvent, _env: unknown, context: ExecutionContext): void {
 		context.waitUntil(execute(event));
-	}
+	},
 };

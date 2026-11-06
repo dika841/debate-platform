@@ -1,7 +1,7 @@
 export const ROLE = {
 	USER: "USER",
 	MODERATOR: "MODERATOR",
-	ADMIN: "ADMIN"
+	ADMIN: "ADMIN",
 } as const;
 
 export type Role = (typeof ROLE)[keyof typeof ROLE];
@@ -9,7 +9,7 @@ export type Role = (typeof ROLE)[keyof typeof ROLE];
 export const ROOM_ROLE = {
 	HOST: "HOST",
 	PARTICIPANT: "PARTICIPANT",
-	SPECTATOR: "SPECTATOR"
+	SPECTATOR: "SPECTATOR",
 } as const;
 
 export type RoomRole = (typeof ROOM_ROLE)[keyof typeof ROOM_ROLE];
@@ -30,7 +30,7 @@ export const PERMISSION = {
 	REPORT_CREATE: "report:create",
 	MODERATION_REVIEW: "moderation:review",
 	MODERATION_ACTION: "moderation:action",
-	NOTIFICATION_READ: "notification:read"
+	NOTIFICATION_READ: "notification:read",
 } as const;
 
 export type Permission = (typeof PERMISSION)[keyof typeof PERMISSION];
@@ -45,16 +45,16 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
 		PERMISSION.VOTE_CAST,
 		PERMISSION.RESULT_READ,
 		PERMISSION.REPORT_CREATE,
-		PERMISSION.NOTIFICATION_READ
+		PERMISSION.NOTIFICATION_READ,
 	],
 	[ROLE.MODERATOR]: [
 		PERMISSION.ROOM_READ,
 		PERMISSION.RESULT_READ,
 		PERMISSION.REPORT_CREATE,
 		PERMISSION.MODERATION_REVIEW,
-		PERMISSION.NOTIFICATION_READ
+		PERMISSION.NOTIFICATION_READ,
 	],
-	[ROLE.ADMIN]: Object.values(PERMISSION)
+	[ROLE.ADMIN]: Object.values(PERMISSION),
 };
 
 export const hasPermission = (role: Role, permission: Permission): boolean =>

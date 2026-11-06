@@ -1,10 +1,4 @@
-import type {
-	FC,
-	HTMLAttributes,
-	ReactElement,
-	TdHTMLAttributes,
-	ThHTMLAttributes,
-} from "react";
+import type { FC, HTMLAttributes, ReactElement, TdHTMLAttributes, ThHTMLAttributes } from "react";
 import { cn } from "../lib/utils.ts";
 
 type TTableProps = HTMLAttributes<HTMLTableElement>;
@@ -26,20 +20,13 @@ export const Table: FC<TTableProps> = (props): ReactElement => {
 export const TableHeader: FC<TTableSectionProps> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
-	return (
-		<thead
-			className={cn("border-b border-border bg-muted", className)}
-			{...rest}
-		/>
-	);
+	return <thead className={cn("border-b border-border bg-muted", className)} {...rest} />;
 };
 
 export const TableBody: FC<TTableSectionProps> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
-	return (
-		<tbody className={cn("divide-y divide-border", className)} {...rest} />
-	);
+	return <tbody className={cn("divide-y divide-border", className)} {...rest} />;
 };
 
 export const TableRow: FC<TTableRowProps> = (props): ReactElement => {
@@ -53,10 +40,7 @@ export const TableHead: FC<TTableHeadProps> = (props): ReactElement => {
 
 	return (
 		<th
-			className={cn(
-				"px-4 py-2 text-left font-medium text-muted-foreground",
-				className,
-			)}
+			className={cn("px-4 py-2 text-left font-medium text-muted-foreground", className)}
 			{...rest}
 		/>
 	);

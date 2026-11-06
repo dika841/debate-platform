@@ -17,8 +17,8 @@ export const createApiClient = (options: ApiClientOptions = {}): ApiClient => {
 		fetch: (request, init) =>
 			globalThis.fetch(request, {
 				...init,
-				credentials: "include"
-			})
+				credentials: "include",
+			}),
 	});
 
 	return createORPCClient(link);

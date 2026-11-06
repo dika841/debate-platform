@@ -3,7 +3,7 @@ import type { AppSession } from "@app/api-contract";
 export const SESSION_STATE = {
 	RESOLVED: "resolved",
 	ANONYMOUS: "anonymous",
-	UNAVAILABLE: "unavailable"
+	UNAVAILABLE: "unavailable",
 } as const;
 
 export type SessionState = (typeof SESSION_STATE)[keyof typeof SESSION_STATE];
@@ -37,8 +37,8 @@ export const sessionFromBetterAuth = (session: BetterAuthSession): AppSession =>
 		name: session.user.name,
 		email: session.user.email,
 		image: session.user.image ?? null,
-		role: session.user.role ?? "USER"
-	}
+		role: session.user.role ?? "USER",
+	},
 });
 
 export const sessionResolutionOf = (session: BetterAuthSession | null): SessionResolution => {
@@ -51,5 +51,5 @@ export const sessionResolutionOf = (session: BetterAuthSession | null): SessionR
 
 export const unavailableResolution = (): SessionResolution => ({
 	session: null,
-	sessionState: SESSION_STATE.UNAVAILABLE
+	sessionState: SESSION_STATE.UNAVAILABLE,
 });

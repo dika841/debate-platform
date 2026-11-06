@@ -6,9 +6,7 @@ import { cn } from "../lib/utils.ts";
 import { Button } from "./button";
 import { useSidebar } from "./sidebar-context.ts";
 
-export const SidebarTrigger: FC<React.ComponentProps<typeof Button>> = (
-	props,
-): ReactElement => {
+export const SidebarTrigger: FC<React.ComponentProps<typeof Button>> = (props): ReactElement => {
 	const { className, onClick, ...rest } = props;
 	const { toggleSidebar } = useSidebar();
 
@@ -31,9 +29,7 @@ export const SidebarTrigger: FC<React.ComponentProps<typeof Button>> = (
 	);
 };
 
-export const SidebarRail: FC<React.ComponentProps<"button">> = (
-	props,
-): ReactElement => {
+export const SidebarRail: FC<React.ComponentProps<"button">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 	const { toggleSidebar } = useSidebar();
 
@@ -59,9 +55,7 @@ export const SidebarRail: FC<React.ComponentProps<"button">> = (
 	);
 };
 
-export const SidebarInset: FC<React.ComponentProps<"main">> = (
-	props,
-): ReactElement => {
+export const SidebarInset: FC<React.ComponentProps<"main">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (

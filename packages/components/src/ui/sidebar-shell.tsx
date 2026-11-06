@@ -3,13 +3,7 @@ import type { FC, ReactElement } from "react";
 import { UI_MESSAGE } from "@app/messages";
 import { match } from "ts-pattern";
 import { cn } from "../lib/utils.ts";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from "./sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "./sheet";
 import {
 	SIDEBAR_COLLAPSIBLE,
 	SIDEBAR_SIDE,
@@ -46,9 +40,7 @@ const isFramed = (variant: TSidebarVariant): boolean =>
 		.with(SIDEBAR_VARIANT.INSET, (): boolean => true)
 		.otherwise((): boolean => false);
 
-const SidebarStatic: FC<React.ComponentProps<"div">> = (
-	props,
-): ReactElement => {
+const SidebarStatic: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
@@ -73,9 +65,7 @@ const SidebarMobile: FC<TSidebarMobileProps> = (props): ReactElement => {
 				data-slot="sidebar"
 				data-mobile="true"
 				className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-				style={
-					{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as React.CSSProperties
-				}
+				style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as React.CSSProperties}
 				side={side}
 			>
 				<SheetHeader className="sr-only">
@@ -89,8 +79,7 @@ const SidebarMobile: FC<TSidebarMobileProps> = (props): ReactElement => {
 };
 
 const SidebarDesktop: FC<TSidebarDesktopProps> = (props): ReactElement => {
-	const { side, variant, collapsible, state, className, children, ...rest } =
-		props;
+	const { side, variant, collapsible, state, className, children, ...rest } = props;
 	const framed = isFramed(variant);
 
 	return (
@@ -156,12 +145,7 @@ export const Sidebar: FC<TSidebarProps> = (props): ReactElement => {
 		.with(
 			{ isMobile: true },
 			(): ReactElement => (
-				<SidebarMobile
-					side={side}
-					open={openMobile}
-					onOpenChange={setOpenMobile}
-					{...rest}
-				/>
+				<SidebarMobile side={side} open={openMobile} onOpenChange={setOpenMobile} {...rest} />
 			),
 		)
 		.otherwise(

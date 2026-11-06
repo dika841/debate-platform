@@ -1,11 +1,5 @@
 import type * as React from "react";
-import {
-	type FC,
-	type ReactElement,
-	useCallback,
-	useEffect,
-	useMemo,
-} from "react";
+import { type FC, type ReactElement, useCallback, useEffect, useMemo } from "react";
 import { useStore } from "@tanstack/react-store";
 import { match, P } from "ts-pattern";
 import { useIsMobile } from "../hooks/use-mobile";
@@ -18,11 +12,7 @@ import {
 	SidebarContext,
 	type TSidebarContextProps,
 } from "./sidebar-context.ts";
-import {
-	sidebarOpenMobileSet,
-	sidebarOpenSet,
-	sidebarStore,
-} from "./sidebar-store.ts";
+import { sidebarOpenMobileSet, sidebarOpenSet, sidebarStore } from "./sidebar-store.ts";
 import { TooltipProvider } from "./tooltip";
 
 type TOpenUpdate = boolean | ((value: boolean) => boolean);
@@ -39,9 +29,7 @@ const resolveOpen = (update: TOpenUpdate, previous: boolean): boolean =>
 const isToggleShortcut = (event: KeyboardEvent): boolean =>
 	event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey);
 
-export const SidebarProvider: FC<TSidebarProviderProps> = (
-	props,
-): ReactElement => {
+export const SidebarProvider: FC<TSidebarProviderProps> = (props): ReactElement => {
 	const {
 		defaultOpen = true,
 		open: openProp,
@@ -70,8 +58,7 @@ export const SidebarProvider: FC<TSidebarProviderProps> = (
 	);
 
 	const setOpenMobile = useCallback(
-		(update: TOpenUpdate): void =>
-			sidebarOpenMobileSet(resolveOpen(update, openMobile)),
+		(update: TOpenUpdate): void => sidebarOpenMobileSet(resolveOpen(update, openMobile)),
 		[openMobile],
 	);
 

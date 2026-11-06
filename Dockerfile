@@ -1,7 +1,11 @@
 FROM node:24.22.2-alpine AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@12.17.0
+ENV COREPACK_HOME=/opt/corepack
+RUN corepack enable && corepack prepare pnpm@12.17.0 --activate && chown -R node:node /opt/corepack
+USER node
+RUN pnpm --version
+USER root
 WORKDIR /app
 
 FROM base AS deps

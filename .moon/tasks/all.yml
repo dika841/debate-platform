@@ -34,7 +34,7 @@ tasks:
       runInCI: false
 
   typecheck:
-    command: "tsc --noEmit"
+    command: "pnpm run typecheck"
     inputs:
       - "@group(sources)"
       - "@group(configs)"
@@ -42,7 +42,7 @@ tasks:
       runInCI: true
 
   test:
-    command: "vitest run --passWithNoTests"
+    command: "pnpm run test"
     inputs:
       - "@group(sources)"
       - "@group(configs)"
@@ -50,7 +50,7 @@ tasks:
       runInCI: true
 
   build:
-    command: "tsc --noEmit"
+    command: "pnpm run build"
     inputs:
       - "@group(sources)"
       - "@group(configs)"

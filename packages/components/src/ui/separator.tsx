@@ -6,12 +6,7 @@ import { Separator as SeparatorPrimitive } from "radix-ui";
 const Separator: FC<React.ComponentProps<typeof SeparatorPrimitive.Root>> = (
 	props,
 ): ReactElement => {
-	const {
-		className,
-		orientation = "horizontal",
-		decorative = true,
-		...rest
-	} = props;
+	const { className, orientation = "horizontal", decorative = true, ...rest } = props;
 
 	return (
 		<SeparatorPrimitive.Root

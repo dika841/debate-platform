@@ -3,9 +3,7 @@ import type { FC, ReactElement } from "react";
 import { Switch as SwitchPrimitive } from "radix-ui";
 import { cn } from "../lib/utils.ts";
 
-const Switch: FC<React.ComponentProps<typeof SwitchPrimitive.Root>> = (
-	props,
-): ReactElement => {
+const Switch: FC<React.ComponentProps<typeof SwitchPrimitive.Root>> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (

@@ -63,6 +63,7 @@ Open `http://localhost:5173` — the landing page shows the live API/database he
 | `make db-migrate` | Apply Drizzle migrations |
 | `make db-seed` | Create a demo user |
 | `make check` | Biome check |
+| `make arch` | Architecture boundary checks |
 | `make typecheck` | TypeScript across all projects |
 | `make test` | Unit/integration tests |
 | `make build` | Typecheck/build all projects |
@@ -109,7 +110,10 @@ docker compose up -d --build   # postgres, migrate, api, worker, web (nginx)
 
 - API: `http://localhost:3001`
 - Web: `http://localhost:8080`
-- Mailpit: `http://localhost:8025`
+- Mailpit: `http://localhost:8026`
+
+Local development ports: Postgres `5434`, Mailpit `1026`/`8026`, Redis `6381`
+(optional `cache` profile), API `3001`, web `5173`.
 
 The web container proxies `/rpc` and `/api` to the API, so browser auth cookies
 stay same-origin.
@@ -142,3 +146,13 @@ Live deploy requires `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, a Neon
 
 Domain modules (rooms, membership, assignment, execution, voting, results,
 moderation) follow in M1–M7 as vertical slices.
+
+## End-to-end tests
+
+```bash
+pnpm --filter @app/web-e2e exec playwright install chromium
+pnpm --filter @app/web-e2e test:e2e
+```
+
+The smoke test expects the web app on `http://localhost:5173` (or set
+`E2E_BASE_URL`).

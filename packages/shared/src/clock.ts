@@ -3,7 +3,7 @@ export interface Clock {
 }
 
 export const systemClock: Clock = {
-	now: () => new Date()
+	now: () => new Date(),
 };
 
 export const fixedClock = (iso: string): Clock => {

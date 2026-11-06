@@ -3,9 +3,9 @@ import type { FC, ReactElement } from "react";
 import { cn } from "../lib/utils.ts";
 import { Tooltip as TooltipPrimitive } from "radix-ui";
 
-const TooltipProvider: FC<
-	React.ComponentProps<typeof TooltipPrimitive.Provider>
-> = (props): ReactElement => {
+const TooltipProvider: FC<React.ComponentProps<typeof TooltipPrimitive.Provider>> = (
+	props,
+): ReactElement => {
 	const { delayDuration = 0, ...rest } = props;
 
 	return (
@@ -17,21 +17,19 @@ const TooltipProvider: FC<
 	);
 };
 
-const Tooltip: FC<React.ComponentProps<typeof TooltipPrimitive.Root>> = (
-	props,
-): ReactElement => {
+const Tooltip: FC<React.ComponentProps<typeof TooltipPrimitive.Root>> = (props): ReactElement => {
 	return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
 };
 
-const TooltipTrigger: FC<
-	React.ComponentProps<typeof TooltipPrimitive.Trigger>
-> = (props): ReactElement => {
+const TooltipTrigger: FC<React.ComponentProps<typeof TooltipPrimitive.Trigger>> = (
+	props,
+): ReactElement => {
 	return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
 };
 
-const TooltipContent: FC<
-	React.ComponentProps<typeof TooltipPrimitive.Content>
-> = (props): ReactElement => {
+const TooltipContent: FC<React.ComponentProps<typeof TooltipPrimitive.Content>> = (
+	props,
+): ReactElement => {
 	const { className, sideOffset = 0, children, ...rest } = props;
 
 	return (
