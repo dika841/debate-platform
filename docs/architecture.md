@@ -40,8 +40,24 @@ apps/api/src/modules/<context>/
 Planned contexts: identity, debate-room, membership, team-assignment,
 debate-execution, voting, results, moderation, notification.
 
-M0 only implements the identity baseline (Better Auth + profiles). The remaining
-contexts are added as vertical slices in M1–M7.
+M0 implemented the identity baseline (Better Auth + profiles). M1 adds the
+identity module:
+
+```text
+apps/api/src/modules/identity/
+├── domain/profile.ts                 username/display name/bio validation
+├── application/
+│   ├── ports/profile-repository.ts
+│   ├── use-cases/get-profile.ts
+│   ├── use-cases/update-profile.ts
+│   └── mappers/user-profile-mapper.ts
+├── infrastructure/persistence/drizzle-profile-repository.ts
+└── presentation/users-router.ts      oRPC procedures
+```
+
+Profiles are created lazily on first read, so pre-existing Better Auth users do
+not need a backfill migration. Updating `displayName` also updates the Better
+Auth user name to keep the session header consistent.
 
 ## Frontend architecture
 

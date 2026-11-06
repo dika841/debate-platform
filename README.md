@@ -144,8 +144,17 @@ Live deploy requires `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, a Neon
 - Worker scheduler skeleton
 - Docker dev/full stack and Cloudflare Workers configuration
 
+## M1 scope (identity)
+
+- Sign-up, sign-in and sign-out pages
+- Session-aware header with protected `/profile` route
+- `users.getProfile` / `users.updateProfile` with lazy profile creation
+- Profile fields: display name, username, bio, avatar URL
+- Display name kept in sync with the Better Auth user record
+- Playwright coverage for registration, profile update, sign-out and invalid credentials
+
 Domain modules (rooms, membership, assignment, execution, voting, results,
-moderation) follow in M1–M7 as vertical slices.
+moderation) follow in M2–M7 as vertical slices.
 
 ## End-to-end tests
 

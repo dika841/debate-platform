@@ -1,0 +1,193 @@
+import { AUTH } from "@app/messages";
+import { Badge } from "@app/components/ui/badge";
+import { Button } from "@app/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
+import { Input } from "@app/components/ui/input";
+import { Label } from "@app/components/ui/label";
+import { Textarea } from "@app/components/ui/textarea";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState, type FormEvent } from "react";
+import { useProfile, useUpdateProfile } from "@/libs/api/queries.ts";
+
+export const Route = createFileRoute("/_authenticated/profile")({
+	component: ProfilePage,
+});
+
+type ProfileForm = {
+	displayName: string;
+	username: string;
+	bio: string;
+	avatarUrl: string;
+};
+
+const EMPTY_FORM: ProfileForm = {
+	displayName: "",
+	username: "",
+	bio: "",
+	avatarUrl: "",
+};
+
+function ProfilePage() {
+	const profile = useProfile();
+	const update = useUpdateProfile();
+	const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
+	const [feedback, setFeedback] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!profile.data) {
+			return;
+		}
+
+		setForm({
+			displayName: profile.data.profile.displayName,
+			username: profile.data.profile.username ?? "",
+			bio: profile.data.profile.bio ?? "",
+			avatarUrl: profile.data.profile.avatarUrl ?? "",
+		});
+	}, [profile.data]);
+
+	const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+		event.preventDefault();
+		setFeedback(null);
+
+		try {
+			await update.mutateAsync({
+				displayName: form.displayName.trim(),
+				username: form.username.trim() ? form.username.trim().toLowerCase() : undefined,
+				bio: form.bio.trim() ? form.bio.trim() : null,
+				avatarUrl: form.avatarUrl.trim() ? form.avatarUrl.trim() : null,
+			});
+			setFeedback("Profile updated");
+		} catch (error) {
+			setFeedback(error instanceof Error ? error.message : "Unable to update profile");
+		}
+	};
+
+	if (profile.isPending) {
+		return <p className="text-sm text-muted-foreground">Loading profile…</p>;
+	}
+
+	if (profile.isError) {
+		return (
+			<Card className="max-w-2xl">
+				<CardHeader>
+					<CardTitle>Profile unavailable</CardTitle>
+					<CardDescription>{profile.error.message}</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<Button variant="outline" onClick={() => void profile.refetch()}>
+						Try again
+					</Button>
+				</CardContent>
+			</Card>
+		);
+	}
+
+	return (
+		<div className="grid max-w-4xl gap-6 md:grid-cols-[1.2fr_0.8fr]">
+			<Card>
+				<CardHeader>
+					<CardTitle>Profile</CardTitle>
+					<CardDescription>How other people see you across debate rooms.</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<form className="space-y-4" onSubmit={(event) => void handleSubmit(event)}>
+						<div className="space-y-2">
+							<Label htmlFor="displayName">Display name</Label>
+							<Input
+								id="displayName"
+								value={form.displayName}
+								onChange={(event) =>
+									setForm((current) => ({ ...current, displayName: event.target.value }))
+								}
+								required
+								maxLength={80}
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="username">Username</Label>
+							<Input
+								id="username"
+								value={form.username}
+								onChange={(event) =>
+									setForm((current) => ({ ...current, username: event.target.value }))
+								}
+								placeholder="lowercase_username"
+								minLength={3}
+								maxLength={30}
+								pattern="[a-z0-9_]{3,30}"
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="bio">Bio</Label>
+							<Textarea
+								id="bio"
+								value={form.bio}
+								onChange={(event) =>
+									setForm((current) => ({ ...current, bio: event.target.value }))
+								}
+								rows={4}
+								maxLength={500}
+								placeholder="Short description of your debate interests"
+							/>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="avatarUrl">Avatar URL</Label>
+							<Input
+								id="avatarUrl"
+								type="url"
+								value={form.avatarUrl}
+								onChange={(event) =>
+									setForm((current) => ({ ...current, avatarUrl: event.target.value }))
+								}
+								placeholder="https://example.com/avatar.png"
+							/>
+						</div>
+
+						{feedback ? (
+							<p
+								className={
+									update.isError ? "text-sm text-destructive" : "text-sm text-muted-foreground"
+								}
+							>
+								{feedback}
+							</p>
+						) : null}
+
+						<Button type="submit" disabled={update.isPending}>
+							{update.isPending ? "Saving…" : "Save profile"}
+						</Button>
+					</form>
+				</CardContent>
+			</Card>
+
+			<Card className="h-fit">
+				<CardHeader>
+					<CardTitle>Account</CardTitle>
+					<CardDescription>Identity managed by Better Auth.</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4 text-sm">
+					<div className="flex items-center justify-between gap-3">
+						<span className="text-muted-foreground">Name</span>
+						<span>{profile.data.name}</span>
+					</div>
+					<div className="flex items-center justify-between gap-3">
+						<span className="text-muted-foreground">Email</span>
+						<span className="truncate">{profile.data.email}</span>
+					</div>
+					<div className="flex items-center justify-between gap-3">
+						<span className="text-muted-foreground">Role</span>
+						<Badge variant="secondary">{profile.data.role}</Badge>
+					</div>
+					<div className="flex items-center justify-between gap-3">
+						<span className="text-muted-foreground">{AUTH.sessionAnonymous}</span>
+						<span>{profile.data.profile.username ?? "—"}</span>
+					</div>
+				</CardContent>
+			</Card>
+		</div>
+	);
+}

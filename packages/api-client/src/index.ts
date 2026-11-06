@@ -7,13 +7,13 @@ import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 export type ApiClient = ContractRouterClient<typeof contract>;
 
 export type ApiClientOptions = {
-	/** Full RPC endpoint URL. Defaults to `/rpc` (same origin). */
-	url?: string;
+	/** Absolute RPC endpoint URL, e.g. `https://api.example.com/rpc`. */
+	url: string;
 };
 
-export const createApiClient = (options: ApiClientOptions = {}): ApiClient => {
+export const createApiClient = (options: ApiClientOptions): ApiClient => {
 	const link = new RPCLink({
-		url: options.url ?? "/rpc",
+		url: options.url,
 		fetch: (request, init) =>
 			globalThis.fetch(request, {
 				...init,

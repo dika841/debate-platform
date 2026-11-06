@@ -1,9 +1,9 @@
-import { APP, HEALTH, NAV } from "@app/messages";
+import { APP, HEALTH } from "@app/messages";
 import { Badge } from "@app/components/ui/badge";
 import { Button } from "@app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useHealth } from "@/libs/api/queries.ts";
+import { useHealth, useSession } from "@/libs/api/queries.ts";
 
 export const Route = createFileRoute("/_public/")({
 	component: HomePage,
@@ -11,6 +11,8 @@ export const Route = createFileRoute("/_public/")({
 
 function HomePage() {
 	const health = useHealth();
+	const session = useSession();
+	const authenticated = Boolean(session.data?.session);
 
 	return (
 		<div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
@@ -25,10 +27,14 @@ function HomePage() {
 
 				<div className="flex flex-wrap gap-3">
 					<Button asChild>
-						<Link to="/health">{NAV.explore}</Link>
+						<Link to={authenticated ? "/profile" : "/register"}>
+							{authenticated ? "View profile" : "Create account"}
+						</Link>
 					</Button>
 					<Button variant="outline" asChild>
-						<Link to="/health">Check system health</Link>
+						<Link to={authenticated ? "/health" : "/login"}>
+							{authenticated ? "Check system health" : "Sign in"}
+						</Link>
 					</Button>
 				</div>
 			</section>

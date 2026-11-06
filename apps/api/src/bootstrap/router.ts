@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { implement } from "@orpc/server";
 import { healthCheckOutputSchema, HEALTH_STATUS } from "@app/api-contract";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
+import { usersRouter } from "#/modules/identity/index.ts";
 
 const APP_VERSION = "0.1.0";
 
@@ -44,4 +45,5 @@ export const appRouter = os.router({
 	auth: {
 		getSession,
 	},
+	users: usersRouter,
 });
