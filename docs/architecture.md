@@ -170,6 +170,39 @@ are rejected. `(round_id, voter_id)` is unique, so the database enforces one
 vote per round. Totals stay hidden for non-hosts until the round is CLOSED,
 while each voter can still see their own choice.
 
+M7 adds the results and moderation contexts:
+
+```text
+apps/api/src/modules/results/
+├── domain/result.ts                  round/room outcome rules
+├── application/
+│   ├── ports/result-repository.ts
+│   ├── use-cases/{finalize-round,finalize-room,get-room-results}.ts
+│   └── mappers/result-mapper.ts
+├── infrastructure/persistence/drizzle-result-repository.ts
+└── presentation/results-router.ts
+
+apps/api/src/modules/moderation/
+├── domain/{report,permissions}.ts
+├── application/
+│   ├── ports/report-repository.ts
+│   ├── use-cases/{create,list,resolve}-report.ts
+│   └── mappers/report-mapper.ts
+├── infrastructure/persistence/drizzle-report-repository.ts
+└── presentation/reports-router.ts
+```
+
+Round finalization is host-only and requires a closed round with at least one
+vote; the outcome is `PRO`, `CONTRA` or `DRAW`. Room finalization requires every
+round to be closed and finalized, aggregates round wins, writes the overall
+result and moves the room to `COMPLETED`.
+
+Reports can target a room or one of its submissions. The moderation queue is
+readable with `MODERATION_REVIEW` and resolvable with `MODERATION_ACTION`; the
+roles package keeps those capabilities separate, and a resolved report cannot
+be resolved again. Room pages expose the results panel and report form, while
+`/moderation` is the protected queue.
+
 ## Frontend architecture
 
 The frontend intentionally uses **Vite + React 19 + TanStack Router** (SPA)

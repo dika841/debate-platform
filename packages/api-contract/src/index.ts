@@ -35,6 +35,21 @@ import {
 import { getSessionOutputSchema } from "./session.ts";
 import { updateProfileInputSchema, userProfileSchema } from "./users.ts";
 import { castVoteInputSchema, voteSummaryInputSchema, voteSummarySchema } from "./voting.ts";
+import {
+	finalizeRoomInputSchema,
+	finalizeRoundInputSchema,
+	getRoomResultsInputSchema,
+	getRoomResultsOutputSchema,
+	roundResultSchema,
+	roomResultSchema,
+} from "./results.ts";
+import {
+	createReportInputSchema,
+	listReportsInputSchema,
+	listReportsOutputSchema,
+	reportSchema,
+	resolveReportInputSchema,
+} from "./reports.ts";
 
 export const contract = {
 	health: {
@@ -78,12 +93,24 @@ export const contract = {
 		cast: oc.input(castVoteInputSchema).output(voteSummarySchema),
 		summary: oc.input(voteSummaryInputSchema).output(voteSummarySchema),
 	},
+	results: {
+		getRoom: oc.input(getRoomResultsInputSchema).output(getRoomResultsOutputSchema),
+		finalizeRound: oc.input(finalizeRoundInputSchema).output(roundResultSchema),
+		finalizeRoom: oc.input(finalizeRoomInputSchema).output(roomResultSchema),
+	},
+	reports: {
+		create: oc.input(createReportInputSchema).output(reportSchema),
+		list: oc.input(listReportsInputSchema).output(listReportsOutputSchema),
+		resolve: oc.input(resolveReportInputSchema).output(reportSchema),
+	},
 } as const;
 
 export * from "./assignments.ts";
 export * from "./execution.ts";
 export * from "./health.ts";
 export * from "./memberships.ts";
+export * from "./reports.ts";
+export * from "./results.ts";
 export * from "./rooms.ts";
 export * from "./session.ts";
 export * from "./users.ts";

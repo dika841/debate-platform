@@ -277,6 +277,125 @@ export const roundVotesRelations = relations(roundVotes, ({ one }) => ({
 	}),
 }));
 
+export const roundResults = pgTable(
+	"round_results",
+	{
+		id: text("id").primaryKey(),
+		roundId: text("round_id")
+			.notNull()
+			.references(() => debateRounds.id, { onDelete: "cascade" }),
+		roomId: text("room_id")
+			.notNull()
+			.references(() => debateRooms.id, { onDelete: "cascade" }),
+		outcome: text("outcome").notNull(),
+		proCount: integer("pro_count").notNull(),
+		contraCount: integer("contra_count").notNull(),
+		totalVotes: integer("total_votes").notNull(),
+		finalizedById: text("finalized_by_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		finalizedAt: timestamp("finalized_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("uq_round_results_round").on(table.roundId),
+		index("idx_round_results_room").on(table.roomId),
+	],
+);
+
+export const roomResults = pgTable(
+	"room_results",
+	{
+		id: text("id").primaryKey(),
+		roomId: text("room_id")
+			.notNull()
+			.references(() => debateRooms.id, { onDelete: "cascade" }),
+		outcome: text("outcome").notNull(),
+		proWins: integer("pro_wins").notNull(),
+		contraWins: integer("contra_wins").notNull(),
+		draws: integer("draws").notNull(),
+		finalizedById: text("finalized_by_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		finalizedAt: timestamp("finalized_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [uniqueIndex("uq_room_results_room").on(table.roomId)],
+);
+
+export const contentReports = pgTable(
+	"content_reports",
+	{
+		id: text("id").primaryKey(),
+		roomId: text("room_id")
+			.notNull()
+			.references(() => debateRooms.id, { onDelete: "cascade" }),
+		submissionId: text("submission_id").references(() => roundSubmissions.id, {
+			onDelete: "set null",
+		}),
+		reporterId: text("reporter_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		category: text("category").notNull(),
+		details: varchar("details", { length: 2000 }).notNull(),
+		status: text("status").notNull().default("PENDING"),
+		resolutionNote: varchar("resolution_note", { length: 1000 }),
+		resolvedById: text("resolved_by_id").references(() => users.id, {
+			onDelete: "set null",
+		}),
+		resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		index("idx_content_reports_status_created").on(table.status, table.createdAt),
+		index("idx_content_reports_room").on(table.roomId),
+	],
+);
+
+export const roundResultsRelations = relations(roundResults, ({ one }) => ({
+	round: one(debateRounds, {
+		fields: [roundResults.roundId],
+		references: [debateRounds.id],
+	}),
+	room: one(debateRooms, {
+		fields: [roundResults.roomId],
+		references: [debateRooms.id],
+	}),
+	finalizedBy: one(users, {
+		fields: [roundResults.finalizedById],
+		references: [users.id],
+	}),
+}));
+
+export const roomResultsRelations = relations(roomResults, ({ one }) => ({
+	room: one(debateRooms, {
+		fields: [roomResults.roomId],
+		references: [debateRooms.id],
+	}),
+	finalizedBy: one(users, {
+		fields: [roomResults.finalizedById],
+		references: [users.id],
+	}),
+}));
+
+export const contentReportsRelations = relations(contentReports, ({ one }) => ({
+	room: one(debateRooms, {
+		fields: [contentReports.roomId],
+		references: [debateRooms.id],
+	}),
+	submission: one(roundSubmissions, {
+		fields: [contentReports.submissionId],
+		references: [roundSubmissions.id],
+	}),
+	reporter: one(users, {
+		fields: [contentReports.reporterId],
+		references: [users.id],
+	}),
+	resolvedBy: one(users, {
+		fields: [contentReports.resolvedById],
+		references: [users.id],
+	}),
+}));
+
 export const roomMembershipsRelations = relations(roomMemberships, ({ one }) => ({
 	room: one(debateRooms, {
 		fields: [roomMemberships.roomId],

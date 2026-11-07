@@ -45,6 +45,19 @@ export const useVoteSummary = (roundId: string) =>
 		enabled: roundId.length > 0,
 	});
 
+export const useRoomResults = (roomId: string) =>
+	useQuery({
+		...orpc.results.getRoom.queryOptions({ input: { roomId } }),
+		enabled: roomId.length > 0,
+	});
+
+export const useReports = (status?: "PENDING" | "ACTIONED" | "DISMISSED") =>
+	useQuery(
+		orpc.reports.list.queryOptions({
+			input: status ? { status } : {},
+		}),
+	);
+
 const useInvalidateRooms = () => {
 	const queryClient = useQueryClient();
 
@@ -170,6 +183,7 @@ const useInvalidateExecution = () => {
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: orpc.rounds.key() }),
 			queryClient.invalidateQueries({ queryKey: orpc.submissions.key() }),
+			queryClient.invalidateQueries({ queryKey: orpc.results.key() }),
 			queryClient.invalidateQueries({ queryKey: orpc.rooms.key() }),
 		]);
 	};
@@ -218,6 +232,62 @@ export const useCastVote = () => {
 		...orpc.votes.cast.mutationOptions(),
 		onSuccess: async () => {
 			await queryClient.invalidateQueries({ queryKey: orpc.votes.key() });
+		},
+	});
+};
+
+const useInvalidateResults = () => {
+	const queryClient = useQueryClient();
+
+	return async (): Promise<void> => {
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: orpc.results.key() }),
+			queryClient.invalidateQueries({ queryKey: orpc.rounds.key() }),
+			queryClient.invalidateQueries({ queryKey: orpc.rooms.key() }),
+		]);
+	};
+};
+
+export const useFinalizeRound = () => {
+	const invalidateResults = useInvalidateResults();
+
+	return useMutation({
+		...orpc.results.finalizeRound.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateResults();
+		},
+	});
+};
+
+export const useFinalizeRoom = () => {
+	const invalidateResults = useInvalidateResults();
+
+	return useMutation({
+		...orpc.results.finalizeRoom.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateResults();
+		},
+	});
+};
+
+export const useCreateReport = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		...orpc.reports.create.mutationOptions(),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: orpc.reports.key() });
+		},
+	});
+};
+
+export const useResolveReport = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		...orpc.reports.resolve.mutationOptions(),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: orpc.reports.key() });
 		},
 	});
 };

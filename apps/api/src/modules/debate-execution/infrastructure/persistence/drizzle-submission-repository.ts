@@ -85,6 +85,8 @@ export const createDrizzleSubmissionRepository = (db: Database): SubmissionRepos
 			return created;
 		},
 
+		findById,
+
 		async findByRoundAndAuthor(roundId, authorId) {
 			const [row] = await db
 				.select(submissionSelection)

@@ -9,6 +9,7 @@ export const NAV = {
 	createDebate: "Create Debate",
 	notifications: "Notifications",
 	profile: "Profile",
+	moderation: "Moderation",
 	admin: "Admin",
 } as const;
 
@@ -190,4 +191,61 @@ export const VOTE = {
 	tie: "The round is tied",
 	noVotes: "No votes were cast.",
 	notEligible: "Only spectators and the host can vote.",
+} as const;
+
+export const RESULTS = {
+	title: "Results",
+	description: "Round winners and the overall debate outcome.",
+	finalizeRound: "Finalize round",
+	finalizingRound: "Finalizing…",
+	awaitingFinalization: "Awaiting finalization",
+	pending: "Round still in progress",
+	final: "Final",
+	roundLine: (pro: number, contra: number, total: number) =>
+		`PRO ${pro} · CONTRA ${contra} · ${total} votes`,
+	winner: (team: string) => `Winner: ${team}`,
+	draw: "Draw",
+	finalizeRoom: "Finalize debate",
+	finalizingRoom: "Finalizing…",
+	roomLine: (pro: number, contra: number, draws: number) =>
+		`PRO ${pro} wins · CONTRA ${contra} wins · ${draws} draws`,
+	completeHint: "Finalize every round result to complete the debate.",
+	awaitingHost: "Waiting for the host to finalize results.",
+} as const;
+
+export const REPORT = {
+	title: "Report this debate",
+	description: "Flag arguments that break the community guidelines.",
+	category: "Category",
+	details: "Details",
+	detailsPlaceholder: "What happened? Include enough context for moderators.",
+	submit: "Submit report",
+	submitting: "Submitting…",
+	submitted: "Report submitted. Moderators will review it.",
+	categories: {
+		HARASSMENT: "Harassment",
+		HATE_SPEECH: "Hate speech",
+		SPAM: "Spam",
+		OFF_TOPIC: "Off topic",
+		OTHER: "Other",
+	},
+} as const;
+
+export const MODERATION = {
+	title: "Moderation queue",
+	description: "Review reports submitted by the community.",
+	accessDenied: "Moderator access is required to view this page.",
+	filter: {
+		PENDING: "Pending",
+		ACTIONED: "Actioned",
+		DISMISSED: "Dismissed",
+	},
+	action: "Mark actioned",
+	dismiss: "Dismiss",
+	resolving: "Resolving…",
+	empty: "No reports in this queue.",
+	reporter: "Reporter",
+	resolved: "Resolved",
+	note: "Resolution note",
+	openRoom: "Open debate",
 } as const;

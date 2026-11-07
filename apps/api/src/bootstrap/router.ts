@@ -8,6 +8,8 @@ import { membershipsRouter } from "#/modules/membership/index.ts";
 import { assignmentsRouter } from "#/modules/team-assignment/index.ts";
 import { roundsRouter, submissionsRouter } from "#/modules/debate-execution/index.ts";
 import { votesRouter } from "#/modules/voting/index.ts";
+import { resultsRouter } from "#/modules/results/index.ts";
+import { reportsRouter } from "#/modules/moderation/index.ts";
 import { roomsRouter } from "#/modules/debate-room/index.ts";
 
 const APP_VERSION = "0.1.0";
@@ -57,4 +59,6 @@ export const appRouter = os.router({
 	rounds: roundsRouter,
 	submissions: submissionsRouter,
 	votes: votesRouter,
+	results: resultsRouter,
+	reports: reportsRouter,
 });

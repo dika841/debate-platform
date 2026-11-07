@@ -37,6 +37,11 @@ export const AppHeader = () => {
 							<Link to="/rooms/new" className="hover:text-foreground">
 								{NAV.createDebate}
 							</Link>
+							{user.role === "MODERATOR" || user.role === "ADMIN" ? (
+								<Link to="/moderation" className="hover:text-foreground">
+									{NAV.moderation}
+								</Link>
+							) : null}
 						</>
 					) : null}
 					<Link to="/health" className="hover:text-foreground">

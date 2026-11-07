@@ -79,7 +79,7 @@ test("runs submissions, spectator voting and round advancement", async ({ browse
 	await expect(hostPage.getByText(/Teams finalized/).first()).toBeVisible();
 
 	await hostPage.getByRole("button", { name: "Start debate" }).click();
-	await expect(hostPage.getByText("Round 1", { exact: true })).toBeVisible();
+	await expect(hostPage.getByText("Round 1", { exact: true }).first()).toBeVisible();
 	await expect(hostPage.getByText("Submissions open", { exact: true })).toBeVisible();
 	await expect(hostPage.getByRole("button", { name: "Start voting" })).toBeDisabled();
 
@@ -102,7 +102,7 @@ test("runs submissions, spectator voting and round advancement", async ({ browse
 	await expect(hostPage.getByTestId("vote-total")).toHaveText("1");
 
 	await hostPage.getByRole("button", { name: "Close voting" }).click();
-	await expect(hostPage.getByText("Round 2", { exact: true })).toBeVisible();
+	await expect(hostPage.getByText("Round 2", { exact: true }).first()).toBeVisible();
 	await expect(hostPage.getByText("Closed", { exact: true })).toBeVisible();
 	await expect(hostPage.getByText("Submissions open", { exact: true })).toBeVisible();
 

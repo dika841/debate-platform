@@ -17,6 +17,8 @@ import {
 } from "@/libs/api/queries.ts";
 import { RoomStatusBadge } from "@/routes/_components/room-status-badge.tsx";
 import { DebateRounds } from "@/routes/_components/debate-rounds.tsx";
+import { DebateResults } from "@/routes/_components/debate-results.tsx";
+import { ReportForm } from "@/routes/_components/report-form.tsx";
 
 export const Route = createFileRoute("/_public/rooms/$roomId")({
 	component: RoomDetailPage,
@@ -284,6 +286,8 @@ function RoomDetailPage() {
 
 					<DebateRounds room={current} viewerTeam={viewerMembership?.team ?? null} />
 
+					<DebateResults room={current} />
+
 					<Card>
 						<CardHeader>
 							<CardTitle>{MEMBERSHIP.roster}</CardTitle>{" "}
@@ -385,6 +389,10 @@ function RoomDetailPage() {
 							) : null}
 						</CardContent>
 					</Card>
+
+					{authenticated && current.viewerRole !== "HOST" ? (
+						<ReportForm roomId={current.id} />
+					) : null}
 				</div>
 
 				<Card className="h-fit">

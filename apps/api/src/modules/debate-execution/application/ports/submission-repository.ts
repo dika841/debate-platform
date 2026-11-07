@@ -33,6 +33,7 @@ export type NewSubmission = {
 
 export interface SubmissionRepository {
 	create(input: NewSubmission): Promise<SubmissionWithAuthor>;
+	findById(id: string): Promise<SubmissionWithAuthor | null>;
 	findByRoundAndAuthor(roundId: string, authorId: string): Promise<SubmissionWithAuthor | null>;
 	listByRound(roundId: string, authorId?: string | null): Promise<readonly SubmissionWithAuthor[]>;
 	countByRound(roundId: string): Promise<number>;

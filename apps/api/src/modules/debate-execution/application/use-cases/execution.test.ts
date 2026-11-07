@@ -211,6 +211,7 @@ const createHarness = (
 			submissions.push(created);
 			return created;
 		},
+		findById: async (id) => submissions.find((entry) => entry.submission.id === id) ?? null,
 		findByRoundAndAuthor: async (roundId, authorId) =>
 			submissions.find(
 				(entry) => entry.submission.roundId === roundId && entry.submission.authorId === authorId,

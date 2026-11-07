@@ -227,6 +227,23 @@ follow in M3–M7 as vertical slices.
 - Unit, contract and Playwright coverage for spectator voting, hidden results
   and closing the voting phase
 
+## M7 scope (results & moderation)
+
+- `round_results` and `room_results` with `PRO`/`CONTRA`/`DRAW` outcomes
+- `results.getRoom`, `results.finalizeRound`, `results.finalizeRoom`
+- Round results require a closed round with at least one vote; the room result
+  requires every round to be closed and finalized, then marks the room
+  `COMPLETED`
+- `content_reports` with categories, statuses and moderator resolution notes
+- `reports.create`, `reports.list`, `reports.resolve`
+- Reports are visible to `MODERATOR` roles and resolvable by roles with
+  `MODERATION_ACTION` (admins); resolution happens once
+- Room UI gains a results panel and a report form; protected moderation queue at
+  `/moderation`
+- Unit, contract and Playwright coverage for finalization and report submission
+
+All planned domain slices (M2–M7) are now implemented.
+
 ## End-to-end tests
 
 ```bash
