@@ -17,6 +17,7 @@ const rowToRound = (row: typeof debateRounds.$inferSelect): RoundRecord => ({
 	status: row.status as RoundStatus,
 	opensAt: row.opensAt,
 	submissionDeadline: row.submissionDeadline,
+	votingDeadline: row.votingDeadline,
 	createdAt: row.createdAt,
 	updatedAt: row.updatedAt,
 });
@@ -77,6 +78,7 @@ export const createDrizzleRoundRepository = (db: Database): RoundRepository => {
 					status: round.status,
 					opensAt: round.opensAt,
 					submissionDeadline: round.submissionDeadline,
+					votingDeadline: round.votingDeadline,
 					createdAt: round.createdAt,
 					updatedAt: round.createdAt,
 				})),

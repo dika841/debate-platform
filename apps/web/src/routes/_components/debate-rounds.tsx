@@ -3,15 +3,17 @@ import { Badge } from "@app/components/ui/badge";
 import { Button } from "@app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
 import { Textarea } from "@app/components/ui/textarea";
-import { EXECUTION } from "@app/messages";
+import { EXECUTION, VOTE } from "@app/messages";
 import { useState } from "react";
 import {
 	useAdvanceRound,
+	useCastVote,
 	useCreateSubmission,
 	useRounds,
 	useSession,
 	useStartDebate,
 	useSubmissions,
+	useVoteSummary,
 } from "@/libs/api/queries.ts";
 
 const SUBMISSION_MIN = 50;
@@ -19,11 +21,11 @@ const SUBMISSION_MAX = 5000;
 
 const formatDate = (value: string): string => new Date(value).toLocaleString();
 
-const statusVariant = (status: "PENDING" | "OPEN" | "CLOSED") => {
+const statusVariant = (status: "PENDING" | "OPEN" | "VOTING" | "CLOSED") => {
 	if (status === "OPEN") {
 		return "default" as const;
 	}
-	if (status === "CLOSED") {
+	if (status === "VOTING" || status === "CLOSED") {
 		return "secondary" as const;
 	}
 	return "outline" as const;
@@ -39,13 +41,16 @@ export const DebateRounds = ({ room, viewerTeam }: DebateRoundsProps) => {
 	const roundsQuery = useRounds(room.id);
 	const rounds = roundsQuery.data?.items ?? [];
 	const currentRound =
-		[...rounds].reverse().find((round) => round.status === "OPEN") ??
-		[...rounds].reverse().find((round) => round.status === "CLOSED") ??
+		rounds.find((round) => round.status === "OPEN") ??
+		rounds.find((round) => round.status === "VOTING") ??
+		rounds.find((round) => round.status === "PENDING") ??
 		rounds.at(-1);
 	const submissionsQuery = useSubmissions(currentRound?.id ?? "");
+	const votesQuery = useVoteSummary(currentRound?.id ?? "");
 	const start = useStartDebate();
 	const advance = useAdvanceRound();
 	const submit = useCreateSubmission();
+	const castVote = useCastVote();
 	const [content, setContent] = useState("");
 	const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -59,9 +64,10 @@ export const DebateRounds = ({ room, viewerTeam }: DebateRoundsProps) => {
 		: false;
 	const allClosed = rounds.length > 0 && rounds.every((round) => round.status === "CLOSED");
 	const canAdvance = currentRound
-		? currentRound.status === "CLOSED" ||
-			deadlinePassed ||
-			currentRound.submissionCount >= room.participantCount
+		? currentRound.status === "VOTING" ||
+			currentRound.status === "PENDING" ||
+			(currentRound.status === "OPEN" &&
+				(deadlinePassed || currentRound.submissionCount >= room.participantCount))
 		: false;
 	const canSubmit =
 		authenticated &&
@@ -70,6 +76,24 @@ export const DebateRounds = ({ room, viewerTeam }: DebateRoundsProps) => {
 		currentRound?.status === "OPEN" &&
 		!deadlinePassed &&
 		ownSubmission === null;
+	const canVote =
+		authenticated &&
+		currentRound?.status === "VOTING" &&
+		(room.viewerRole === "HOST" ||
+			(room.viewerRole === "SPECTATOR" && room.spectatorVotingEnabled)) &&
+		!votesQuery.data?.viewerVote;
+	const advanceLabel =
+		currentRound?.status === "OPEN"
+			? EXECUTION.startVoting
+			: currentRound?.status === "VOTING"
+				? EXECUTION.closeVoting
+				: EXECUTION.advance;
+	const advancePendingLabel =
+		currentRound?.status === "OPEN"
+			? EXECUTION.startingVoting
+			: currentRound?.status === "VOTING"
+				? EXECUTION.closingVoting
+				: EXECUTION.advancing;
 
 	const startable =
 		room.viewerRole === "HOST" &&
@@ -160,7 +184,8 @@ export const DebateRounds = ({ room, viewerTeam }: DebateRoundsProps) => {
 		return null;
 	}
 
-	const actionError = advance.error?.message ?? submit.error?.message ?? feedback ?? null;
+	const actionError =
+		advance.error?.message ?? submit.error?.message ?? castVote.error?.message ?? feedback ?? null;
 
 	return (
 		<Card>
@@ -178,7 +203,7 @@ export const DebateRounds = ({ room, viewerTeam }: DebateRoundsProps) => {
 							title={canAdvance ? undefined : EXECUTION.waitingForRound}
 							onClick={() => void advance.mutate({ roomId: room.id })}
 						>
-							{advance.isPending ? EXECUTION.advancing : EXECUTION.advance}
+							{advance.isPending ? advancePendingLabel : advanceLabel}
 						</Button>
 					) : null}
 				</div>
@@ -206,6 +231,11 @@ export const DebateRounds = ({ room, viewerTeam }: DebateRoundsProps) => {
 									{EXECUTION.deadline}:{" "}
 									{round.submissionDeadline ? formatDate(round.submissionDeadline) : "—"}
 								</span>
+								{round.votingDeadline ? (
+									<span>
+										{EXECUTION.votingDeadline}: {formatDate(round.votingDeadline)}
+									</span>
+								) : null}
 							</div>
 						</div>
 					))}
@@ -287,6 +317,111 @@ export const DebateRounds = ({ room, viewerTeam }: DebateRoundsProps) => {
 						) : (
 							<p className="text-sm text-muted-foreground">{EXECUTION.noSubmissions}</p>
 						)}
+
+						{currentRound.status === "VOTING" || currentRound.status === "CLOSED" ? (
+							<div className="space-y-3 border-t border-border/60 pt-4">
+								<div className="flex flex-wrap items-center justify-between gap-2">
+									<h3 className="text-sm font-semibold">{VOTE.title}</h3>
+									<span className="text-xs text-muted-foreground">
+										{currentRound.status === "CLOSED" ? VOTE.closed : VOTE.description}
+									</span>
+								</div>
+
+								{votesQuery.data ? (
+									<>
+										{votesQuery.data.viewerVote ? (
+											<Badge
+												variant={votesQuery.data.viewerVote === "PRO" ? "default" : "secondary"}
+											>
+												{VOTE.yourVote}: {votesQuery.data.viewerVote}
+											</Badge>
+										) : null}
+
+										{votesQuery.data.revealed ? (
+											<>
+												<div className="grid grid-cols-3 gap-2 text-sm">
+													<div className="rounded-md border border-border/70 p-2">
+														<p className="text-muted-foreground">PRO</p>
+														<p className="text-lg font-semibold" data-testid="vote-pro">
+															{votesQuery.data.proCount}
+														</p>
+													</div>
+													<div className="rounded-md border border-border/70 p-2">
+														<p className="text-muted-foreground">CONTRA</p>
+														<p className="text-lg font-semibold" data-testid="vote-contra">
+															{votesQuery.data.contraCount}
+														</p>
+													</div>
+													<div className="rounded-md border border-border/70 p-2">
+														<p className="text-muted-foreground">Total</p>
+														<p className="text-lg font-semibold" data-testid="vote-total">
+															{votesQuery.data.totalCount}
+														</p>
+													</div>
+												</div>
+
+												{currentRound.status === "CLOSED" ? (
+													<p className="text-sm text-muted-foreground">
+														{votesQuery.data.totalCount === 0
+															? VOTE.noVotes
+															: votesQuery.data.proCount === votesQuery.data.contraCount
+																? VOTE.tie
+																: VOTE.win(
+																		votesQuery.data.proCount > votesQuery.data.contraCount
+																			? "PRO"
+																			: "CONTRA",
+																	)}
+													</p>
+												) : null}
+											</>
+										) : (
+											<p className="text-sm text-muted-foreground">{VOTE.hidden}</p>
+										)}
+
+										{canVote ? (
+											<div className="flex flex-wrap gap-2">
+												<Button
+													size="sm"
+													disabled={castVote.isPending}
+													onClick={() =>
+														void castVote.mutate({
+															roundId: currentRound.id,
+															team: "PRO",
+														})
+													}
+												>
+													{castVote.isPending ? VOTE.voting : VOTE.votePro}
+												</Button>
+												<Button
+													size="sm"
+													variant="outline"
+													disabled={castVote.isPending}
+													onClick={() =>
+														void castVote.mutate({
+															roundId: currentRound.id,
+															team: "CONTRA",
+														})
+													}
+												>
+													{castVote.isPending ? VOTE.voting : VOTE.voteContra}
+												</Button>
+											</div>
+										) : null}
+
+										{currentRound.status === "VOTING" &&
+										!canVote &&
+										!votesQuery.data.viewerVote &&
+										room.viewerRole === "PARTICIPANT" ? (
+											<p className="text-sm text-muted-foreground">{VOTE.notEligible}</p>
+										) : null}
+									</>
+								) : null}
+							</div>
+						) : currentRound.status === "OPEN" ? (
+							<p className="border-t border-border/60 pt-4 text-sm text-muted-foreground">
+								{VOTE.opensAfterSubmissions}
+							</p>
+						) : null}
 					</div>
 				) : null}
 			</CardContent>

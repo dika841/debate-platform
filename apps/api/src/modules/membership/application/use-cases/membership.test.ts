@@ -75,6 +75,7 @@ const membershipRepository = (
 	leave: async () => true,
 	list: async () => ({ items: [membership], nextCursor: null }),
 	findById: async () => membership,
+	findByRoomAndUser: async () => membership,
 	listParticipants: async () => [membership],
 	updateTeam: async (_id, team) => ({
 		...membership,

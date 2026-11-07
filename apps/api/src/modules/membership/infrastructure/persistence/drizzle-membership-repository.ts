@@ -219,6 +219,18 @@ export const createDrizzleMembershipRepository = (db: Database): MembershipRepos
 
 		findById,
 
+		async findByRoomAndUser(roomId: string, userId: string) {
+			const [row] = await db
+				.select(membershipSelection)
+				.from(roomMemberships)
+				.innerJoin(users, eq(roomMemberships.userId, users.id))
+				.leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+				.where(and(eq(roomMemberships.roomId, roomId), eq(roomMemberships.userId, userId)))
+				.limit(1);
+
+			return row ? rowToMembership(row) : null;
+		},
+
 		async listParticipants(roomId: string) {
 			const rows = await db
 				.select(membershipSelection)

@@ -39,6 +39,12 @@ export const useSubmissions = (roundId: string) =>
 		enabled: roundId.length > 0,
 	});
 
+export const useVoteSummary = (roundId: string) =>
+	useQuery({
+		...orpc.votes.summary.queryOptions({ input: { roundId } }),
+		enabled: roundId.length > 0,
+	});
+
 const useInvalidateRooms = () => {
 	const queryClient = useQueryClient();
 
@@ -201,6 +207,17 @@ export const useCreateSubmission = () => {
 				queryClient.invalidateQueries({ queryKey: orpc.submissions.key() }),
 				queryClient.invalidateQueries({ queryKey: orpc.rounds.key() }),
 			]);
+		},
+	});
+};
+
+export const useCastVote = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		...orpc.votes.cast.mutationOptions(),
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({ queryKey: orpc.votes.key() });
 		},
 	});
 };

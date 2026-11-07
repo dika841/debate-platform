@@ -64,6 +64,7 @@ const roundRecord = (
 	status: (typeof ROUND_STATUS)[keyof typeof ROUND_STATUS],
 	submissionDeadline: Date | null,
 	submissionCount = 0,
+	votingDeadline: Date | null = null,
 ): RoundSummaryRecord => ({
 	round: {
 		id: `round-${roundNumber}`,
@@ -72,6 +73,7 @@ const roundRecord = (
 		status,
 		opensAt: status === ROUND_STATUS.PENDING ? null : new Date("2026-04-01T09:00:00.000Z"),
 		submissionDeadline,
+		votingDeadline,
 		createdAt: new Date("2026-04-01T09:00:00.000Z"),
 		updatedAt: new Date("2026-04-01T09:00:00.000Z"),
 	},
@@ -153,6 +155,10 @@ const createHarness = (
 		leave: async () => true,
 		list: async () => ({ items: participants, nextCursor: null }),
 		findById: async (id) => participants.find((entry) => entry.membership.id === id) ?? null,
+		findByRoomAndUser: async (roomId, userId) =>
+			participants.find(
+				(entry) => entry.membership.roomId === roomId && entry.membership.userId === userId,
+			) ?? null,
 		listParticipants: async () => participants,
 		updateTeam: async () => {
 			throw new Error("not used");
@@ -279,7 +285,7 @@ describe("debate execution use cases", () => {
 		});
 	});
 
-	it("advances to the next round when everyone submitted", async () => {
+	it("advances submissions to voting and then to the next round", async () => {
 		const harness = createHarness({
 			room: roomWith({ status: ROOM_STATUS.IN_PROGRESS }),
 			rounds: [
@@ -288,11 +294,14 @@ describe("debate execution use cases", () => {
 			],
 		});
 
-		const result = await advanceRound(harness.deps, HOST_ID, "room-1");
+		const voting = await advanceRound(harness.deps, HOST_ID, "room-1");
+		expect(voting.items[0]?.status).toBe(ROUND_STATUS.VOTING);
+		expect(voting.items[1]?.status).toBe(ROUND_STATUS.PENDING);
 
-		expect(result.items[0]?.status).toBe(ROUND_STATUS.CLOSED);
-		expect(result.items[1]?.status).toBe(ROUND_STATUS.OPEN);
-		expect(result.items[1]?.submissionDeadline).toBe("2026-04-01T10:30:00.000Z");
+		const nextRound = await advanceRound(harness.deps, HOST_ID, "room-1");
+		expect(nextRound.items[0]?.status).toBe(ROUND_STATUS.CLOSED);
+		expect(nextRound.items[1]?.status).toBe(ROUND_STATUS.OPEN);
+		expect(nextRound.items[1]?.submissionDeadline).toBe("2026-04-01T10:30:00.000Z");
 	});
 
 	it("refuses to advance while submissions are missing", async () => {
@@ -399,7 +408,15 @@ describe("debate execution use cases", () => {
 	it("reveals submissions once the round is closed", async () => {
 		const harness = createHarness({
 			room: roomWith({ status: ROOM_STATUS.IN_PROGRESS }),
-			rounds: [roundRecord(1, ROUND_STATUS.OPEN, new Date("2026-04-01T10:30:00.000Z"), 2)],
+			rounds: [
+				roundRecord(
+					1,
+					ROUND_STATUS.OPEN,
+					new Date("2026-04-01T10:30:00.000Z"),
+					2,
+					new Date("2026-04-01T10:30:00.000Z"),
+				),
+			],
 			submissions: [
 				submissionFor("submission-1", "user-1", TEAM_SIDE.PRO),
 				submissionFor("submission-2", "user-2", TEAM_SIDE.CONTRA),
@@ -411,12 +428,31 @@ describe("debate execution use cases", () => {
 		expect(result.items).toHaveLength(2);
 	});
 
-	it("lists rounds with an effective closed status after the deadline", async () => {
+	it("lists rounds with an effective status after the submission deadline", async () => {
 		const harness = createHarness({
 			room: roomWith({ status: ROOM_STATUS.IN_PROGRESS }),
 			rounds: [roundRecord(1, ROUND_STATUS.OPEN, new Date("2026-04-01T10:30:00.000Z"))],
 		});
 		harness.setNow("2026-04-01T10:31:00.000Z");
+
+		const result = await listRounds(harness.deps, null, "room-1");
+		expect(result.items[0]?.status).toBe(ROUND_STATUS.VOTING);
+	});
+
+	it("closes a round once the voting deadline passes", async () => {
+		const harness = createHarness({
+			room: roomWith({ status: ROOM_STATUS.IN_PROGRESS }),
+			rounds: [
+				roundRecord(
+					1,
+					ROUND_STATUS.OPEN,
+					new Date("2026-04-01T10:30:00.000Z"),
+					0,
+					new Date("2026-04-01T11:00:00.000Z"),
+				),
+			],
+		});
+		harness.setNow("2026-04-01T11:01:00.000Z");
 
 		const result = await listRounds(harness.deps, null, "room-1");
 		expect(result.items[0]?.status).toBe(ROUND_STATUS.CLOSED);

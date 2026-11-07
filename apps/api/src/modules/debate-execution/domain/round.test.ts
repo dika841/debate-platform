@@ -16,12 +16,14 @@ const OPEN_ROUND = {
 	status: ROUND_STATUS.OPEN,
 	opensAt: new Date("2026-04-01T09:00:00.000Z"),
 	submissionDeadline: new Date("2026-04-01T11:00:00.000Z"),
+	votingDeadline: new Date("2026-04-01T11:30:00.000Z"),
 };
 
 const STARTABLE_ROOM = {
 	status: ROOM_STATUS.PUBLISHED,
 	assignmentFinalizedAt: new Date("2026-04-01T09:00:00.000Z"),
 	submissionDurationMinutes: 30,
+	votingDurationMinutes: 30,
 	roundCount: 3,
 };
 
@@ -30,8 +32,11 @@ describe("round domain", () => {
 		expect(submissionDeadlineFor(NOW, 30).toISOString()).toBe("2026-04-01T10:30:00.000Z");
 	});
 
-	it("treats an open round past its deadline as closed", () => {
+	it("treats an open round past its deadline as voting or closed", () => {
 		expect(effectiveRoundStatus(OPEN_ROUND, NOW)).toBe(ROUND_STATUS.OPEN);
+		expect(effectiveRoundStatus(OPEN_ROUND, new Date("2026-04-01T11:15:00.000Z"))).toBe(
+			ROUND_STATUS.VOTING,
+		);
 		expect(effectiveRoundStatus(OPEN_ROUND, new Date("2026-04-01T12:00:00.000Z"))).toBe(
 			ROUND_STATUS.CLOSED,
 		);

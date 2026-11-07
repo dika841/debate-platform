@@ -7,6 +7,7 @@ export type RoundRecord = {
 	readonly status: RoundStatus;
 	readonly opensAt: Date | null;
 	readonly submissionDeadline: Date | null;
+	readonly votingDeadline: Date | null;
 	readonly createdAt: Date;
 	readonly updatedAt: Date;
 };
@@ -23,6 +24,7 @@ export type NewRoundRecord = {
 	readonly status: RoundStatus;
 	readonly opensAt: Date | null;
 	readonly submissionDeadline: Date | null;
+	readonly votingDeadline: Date | null;
 	readonly createdAt: Date;
 };
 
@@ -30,6 +32,7 @@ export type RoundPatch = {
 	readonly status?: RoundStatus;
 	readonly opensAt?: Date | null;
 	readonly submissionDeadline?: Date | null;
+	readonly votingDeadline?: Date | null;
 	readonly updatedAt: Date;
 };
 

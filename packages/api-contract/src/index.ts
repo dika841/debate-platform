@@ -34,6 +34,7 @@ import {
 } from "./rooms.ts";
 import { getSessionOutputSchema } from "./session.ts";
 import { updateProfileInputSchema, userProfileSchema } from "./users.ts";
+import { castVoteInputSchema, voteSummaryInputSchema, voteSummarySchema } from "./voting.ts";
 
 export const contract = {
 	health: {
@@ -73,6 +74,10 @@ export const contract = {
 		create: oc.input(createSubmissionInputSchema).output(submissionSchema),
 		list: oc.input(listSubmissionsInputSchema).output(listSubmissionsOutputSchema),
 	},
+	votes: {
+		cast: oc.input(castVoteInputSchema).output(voteSummarySchema),
+		summary: oc.input(voteSummaryInputSchema).output(voteSummarySchema),
+	},
 } as const;
 
 export * from "./assignments.ts";
@@ -82,3 +87,4 @@ export * from "./memberships.ts";
 export * from "./rooms.ts";
 export * from "./session.ts";
 export * from "./users.ts";
+export * from "./voting.ts";

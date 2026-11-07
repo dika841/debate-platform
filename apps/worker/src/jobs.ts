@@ -26,17 +26,22 @@ export const logger = createLogger({
 	base: { service: "worker" },
 });
 
-const closeExpiredRounds = async (databaseUrl: string, now: Date): Promise<number> => {
+const closeExpiredRounds = async (
+	databaseUrl: string,
+	now: Date,
+): Promise<{ closed: number; voting: number }> => {
 	const handle = databaseCreate(databaseUrl);
 
 	try {
 		return await handle.db.transaction(async (tx) => {
-			const expired = await tx
+			const expiredSubmissions = await tx
 				.select({
 					id: debateRounds.id,
 					roomId: debateRounds.roomId,
 					roundNumber: debateRounds.roundNumber,
-					submissionDurationMinutes: debateRooms.submissionDurationMinutes,
+					submissionDeadline: debateRounds.submissionDeadline,
+					votingDeadline: debateRounds.votingDeadline,
+					votingDurationMinutes: debateRooms.votingDurationMinutes,
 				})
 				.from(debateRounds)
 				.innerJoin(debateRooms, eq(debateRounds.roomId, debateRooms.id))
@@ -48,13 +53,56 @@ const closeExpiredRounds = async (databaseUrl: string, now: Date): Promise<numbe
 					),
 				);
 
+			let voting = 0;
+
+			for (const round of expiredSubmissions) {
+				const votingDeadline =
+					round.votingDeadline ??
+					new Date(
+						(round.submissionDeadline?.getTime() ?? now.getTime()) +
+							round.votingDurationMinutes * 60_000,
+					);
+
+				const updated = await tx
+					.update(debateRounds)
+					.set({
+						status: ROUND_STATUS.VOTING,
+						votingDeadline,
+						updatedAt: now,
+					})
+					.where(and(eq(debateRounds.id, round.id), eq(debateRounds.status, ROUND_STATUS.OPEN)))
+					.returning({ id: debateRounds.id });
+
+				if (updated.length > 0) {
+					voting += 1;
+				}
+			}
+
+			const expiredVoting = await tx
+				.select({
+					id: debateRounds.id,
+					roomId: debateRounds.roomId,
+					roundNumber: debateRounds.roundNumber,
+					submissionDurationMinutes: debateRooms.submissionDurationMinutes,
+					votingDurationMinutes: debateRooms.votingDurationMinutes,
+				})
+				.from(debateRounds)
+				.innerJoin(debateRooms, eq(debateRounds.roomId, debateRooms.id))
+				.where(
+					and(
+						eq(debateRounds.status, ROUND_STATUS.VOTING),
+						eq(debateRooms.status, ROOM_STATUS.IN_PROGRESS),
+						lte(debateRounds.votingDeadline, now),
+					),
+				);
+
 			let closed = 0;
 
-			for (const round of expired) {
+			for (const round of expiredVoting) {
 				const updated = await tx
 					.update(debateRounds)
 					.set({ status: ROUND_STATUS.CLOSED, updatedAt: now })
-					.where(and(eq(debateRounds.id, round.id), eq(debateRounds.status, ROUND_STATUS.OPEN)))
+					.where(and(eq(debateRounds.id, round.id), eq(debateRounds.status, ROUND_STATUS.VOTING)))
 					.returning({ id: debateRounds.id });
 
 				if (updated.length === 0) {
@@ -63,14 +111,20 @@ const closeExpiredRounds = async (databaseUrl: string, now: Date): Promise<numbe
 
 				closed += 1;
 
-				const nextDeadline = new Date(now.getTime() + round.submissionDurationMinutes * 60_000);
+				const nextSubmissionDeadline = new Date(
+					now.getTime() + round.submissionDurationMinutes * 60_000,
+				);
+				const nextVotingDeadline = new Date(
+					nextSubmissionDeadline.getTime() + round.votingDurationMinutes * 60_000,
+				);
 
 				await tx
 					.update(debateRounds)
 					.set({
 						status: ROUND_STATUS.OPEN,
 						opensAt: now,
-						submissionDeadline: nextDeadline,
+						submissionDeadline: nextSubmissionDeadline,
+						votingDeadline: nextVotingDeadline,
 						updatedAt: now,
 					})
 					.where(
@@ -82,7 +136,7 @@ const closeExpiredRounds = async (databaseUrl: string, now: Date): Promise<numbe
 					);
 			}
 
-			return closed;
+			return { closed, voting };
 		});
 	} finally {
 		await handle.close();
@@ -103,14 +157,14 @@ export const runScheduledJobs = async (
 		});
 	} else {
 		try {
-			const closed = await closeExpiredRounds(env.DATABASE_URL, now);
+			const outcome = await closeExpiredRounds(env.DATABASE_URL, now);
 
 			results.push({
 				name: JOBS.ROUND_DEADLINE,
-				executed: closed > 0,
+				executed: outcome.closed > 0 || outcome.voting > 0,
 				reason:
-					closed > 0
-						? `closed ${closed} expired round(s) and opened the next round`
+					outcome.closed > 0 || outcome.voting > 0
+						? `${outcome.voting} round(s) entered voting, ${outcome.closed} round(s) closed`
 						: "no expired rounds",
 			});
 		} catch (error) {

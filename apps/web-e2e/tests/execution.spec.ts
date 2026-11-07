@@ -41,6 +41,13 @@ const joinAsParticipant = async (
 	await expect(page.getByRole("button", { name: "Leave debate" })).toBeVisible();
 };
 
+const joinAsSpectator = async (page: Page, roomUrl: string, displayName: string): Promise<void> => {
+	await register(page, displayName);
+	await page.goto(roomUrl);
+	await page.getByRole("button", { name: "Join as spectator" }).click();
+	await expect(page.getByRole("button", { name: "Leave debate" })).toBeVisible();
+};
+
 const submitArgument = async (page: Page, roomUrl: string, content: string): Promise<void> => {
 	await page.goto(roomUrl);
 	await page.getByLabel("Your argument").fill(content);
@@ -48,7 +55,7 @@ const submitArgument = async (page: Page, roomUrl: string, content: string): Pro
 	await expect(page.getByText("Your argument", { exact: true }).first()).toBeVisible();
 };
 
-test("starts a debate, accepts submissions and advances the round", async ({ browser }) => {
+test("runs submissions, spectator voting and round advancement", async ({ browser }) => {
 	const hostContext = await browser.newContext();
 	const hostPage = await hostContext.newPage();
 	await register(hostPage, "Execution Host");
@@ -62,6 +69,10 @@ test("starts a debate, accepts submissions and advances the round", async ({ bro
 	const memberTwoPage = await memberTwoContext.newPage();
 	await joinAsParticipant(memberTwoPage, roomUrl, "Exec Member Two");
 
+	const spectatorContext = await browser.newContext();
+	const spectatorPage = await spectatorContext.newPage();
+	await joinAsSpectator(spectatorPage, roomUrl, "Exec Spectator");
+
 	await hostPage.reload();
 	await hostPage.getByRole("button", { name: "Auto-assign teams" }).click();
 	await hostPage.getByRole("button", { name: "Finalize teams" }).click();
@@ -70,16 +81,27 @@ test("starts a debate, accepts submissions and advances the round", async ({ bro
 	await hostPage.getByRole("button", { name: "Start debate" }).click();
 	await expect(hostPage.getByText("Round 1", { exact: true })).toBeVisible();
 	await expect(hostPage.getByText("Submissions open", { exact: true })).toBeVisible();
-	await expect(hostPage.getByRole("button", { name: "Advance round" })).toBeDisabled();
+	await expect(hostPage.getByRole("button", { name: "Start voting" })).toBeDisabled();
 
 	await submitArgument(memberOnePage, roomUrl, ARGUMENT);
 	await submitArgument(memberTwoPage, roomUrl, ARGUMENT);
 
 	await hostPage.reload();
-	const advanceButton = hostPage.getByRole("button", { name: "Advance round" });
-	await expect(advanceButton).toBeEnabled();
-	await advanceButton.click();
+	const startVotingButton = hostPage.getByRole("button", { name: "Start voting" });
+	await expect(startVotingButton).toBeEnabled();
+	await startVotingButton.click();
+	await expect(hostPage.getByText("Voting open", { exact: true })).toBeVisible();
 
+	await spectatorPage.reload();
+	await spectatorPage.getByRole("button", { name: "Vote PRO" }).click();
+	await expect(spectatorPage.getByText("Your vote: PRO")).toBeVisible();
+	await expect(spectatorPage.getByRole("button", { name: "Vote PRO" })).toHaveCount(0);
+
+	await hostPage.reload();
+	await expect(hostPage.getByTestId("vote-pro")).toHaveText("1");
+	await expect(hostPage.getByTestId("vote-total")).toHaveText("1");
+
+	await hostPage.getByRole("button", { name: "Close voting" }).click();
 	await expect(hostPage.getByText("Round 2", { exact: true })).toBeVisible();
 	await expect(hostPage.getByText("Closed", { exact: true })).toBeVisible();
 	await expect(hostPage.getByText("Submissions open", { exact: true })).toBeVisible();
@@ -90,4 +112,5 @@ test("starts a debate, accepts submissions and advances the round", async ({ bro
 	await hostContext.close();
 	await memberOneContext.close();
 	await memberTwoContext.close();
+	await spectatorContext.close();
 });

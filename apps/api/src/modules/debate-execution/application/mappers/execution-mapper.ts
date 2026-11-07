@@ -10,6 +10,7 @@ export const toRoundDto = (summary: RoundSummaryRecord, now: Date): Round => ({
 	status: effectiveRoundStatus(summary.round, now),
 	opensAt: summary.round.opensAt?.toISOString() ?? null,
 	submissionDeadline: summary.round.submissionDeadline?.toISOString() ?? null,
+	votingDeadline: summary.round.votingDeadline?.toISOString() ?? null,
 	submissionCount: summary.submissionCount,
 });
 

@@ -21,6 +21,8 @@ const CONFLICT_DOMAIN_CODES: ReadonlySet<string> = new Set([
 	DOMAIN_ERROR_CODE.RESULT_ALREADY_FINALIZED,
 ]);
 
+const FORBIDDEN_DOMAIN_CODES: ReadonlySet<string> = new Set([DOMAIN_ERROR_CODE.VOTER_NOT_ELIGIBLE]);
+
 export const requireUserId = (context: OrpcContext): string => {
 	if (!context.session) {
 		throw new ORPCError("UNAUTHORIZED", { message: "Authentication required" });
@@ -33,6 +35,10 @@ export const toOrpcError = (error: unknown): never => {
 	if (error instanceof DomainError) {
 		if (CONFLICT_DOMAIN_CODES.has(error.code)) {
 			throw new ORPCError("CONFLICT", { message: error.message, cause: error });
+		}
+
+		if (FORBIDDEN_DOMAIN_CODES.has(error.code)) {
+			throw new ORPCError("FORBIDDEN", { message: error.message, cause: error });
 		}
 
 		throw new ORPCError("BAD_REQUEST", { message: error.message, cause: error });

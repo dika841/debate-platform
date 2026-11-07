@@ -58,6 +58,7 @@ export interface MembershipRepository {
 	leave(roomId: string, userId: string): Promise<boolean>;
 	list(filter: MembershipListFilter): Promise<MembershipPage>;
 	findById(id: string): Promise<MembershipWithUser | null>;
+	findByRoomAndUser(roomId: string, userId: string): Promise<MembershipWithUser | null>;
 	listParticipants(roomId: string): Promise<readonly MembershipWithUser[]>;
 	updateTeam(id: string, team: TeamSide | null): Promise<MembershipWithUser>;
 	assignTeams(assignments: readonly TeamAssignment[]): Promise<void>;

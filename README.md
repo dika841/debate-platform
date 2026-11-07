@@ -213,6 +213,20 @@ follow in M3–M7 as vertical slices.
 - Unit, contract and Playwright coverage for start, submit, visibility and
   round advancement
 
+## M6 scope (voting)
+
+- `round_votes` table and a per-round `voting_deadline`/`VOTING` phase
+- `votes.cast` and `votes.summary`
+- Eligibility: the host always votes; spectators vote when
+  `spectatorVotingEnabled` is on; participants are rejected
+- One vote per voter per round (`DUPLICATE_VOTE`), with hidden totals until the
+  round closes (hosts see live totals)
+- Worker transitions `OPEN → VOTING` at the submission deadline and
+  `VOTING → CLOSED` at the voting deadline, then opens the next round
+- Room UI shows the voting panel, eligibility, own vote and revealed tallies
+- Unit, contract and Playwright coverage for spectator voting, hidden results
+  and closing the voting phase
+
 ## End-to-end tests
 
 ```bash

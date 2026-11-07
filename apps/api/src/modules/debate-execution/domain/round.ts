@@ -17,12 +17,14 @@ export type RoundState = {
 	readonly status: RoundStatus;
 	readonly opensAt: Date | null;
 	readonly submissionDeadline: Date | null;
+	readonly votingDeadline: Date | null;
 };
 
 export type RoomExecutionState = {
 	readonly status: RoomStatus;
 	readonly assignmentFinalizedAt: Date | null;
 	readonly submissionDurationMinutes: number;
+	readonly votingDurationMinutes: number;
 	readonly roundCount: number;
 };
 
@@ -32,6 +34,16 @@ export const effectiveRoundStatus = (round: RoundState, now: Date): RoundStatus 
 		round.submissionDeadline !== null &&
 		round.submissionDeadline.getTime() <= now.getTime()
 	) {
+		return round.votingDeadline !== null && round.votingDeadline.getTime() <= now.getTime()
+			? ROUND_STATUS.CLOSED
+			: ROUND_STATUS.VOTING;
+	}
+
+	if (
+		round.status === ROUND_STATUS.VOTING &&
+		round.votingDeadline !== null &&
+		round.votingDeadline.getTime() <= now.getTime()
+	) {
 		return ROUND_STATUS.CLOSED;
 	}
 
@@ -40,6 +52,9 @@ export const effectiveRoundStatus = (round: RoundState, now: Date): RoundStatus 
 
 export const submissionDeadlineFor = (now: Date, durationMinutes: number): Date =>
 	new Date(now.getTime() + durationMinutes * 60_000);
+
+export const votingDeadlineFor = (submissionDeadline: Date, durationMinutes: number): Date =>
+	new Date(submissionDeadline.getTime() + durationMinutes * 60_000);
 
 export const assertDebateStartable = (room: RoomExecutionState, existingRounds: number): void => {
 	if (room.status !== ROOM_STATUS.PUBLISHED) {
@@ -104,9 +119,7 @@ export const assertRoundAdvanceable = (
 	submissionCount: number,
 	participantCount: number,
 ): void => {
-	const status = effectiveRoundStatus(round, now);
-
-	if (status === ROUND_STATUS.CLOSED || status === ROUND_STATUS.PENDING) {
+	if (effectiveRoundStatus(round, now) !== ROUND_STATUS.OPEN) {
 		return;
 	}
 

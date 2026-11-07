@@ -27,6 +27,7 @@ describe("execution contract", () => {
 			status: "OPEN",
 			opensAt: "2026-04-01T10:00:00.000Z",
 			submissionDeadline: "2026-04-01T10:30:00.000Z",
+			votingDeadline: "2026-04-01T11:00:00.000Z",
 			submissionCount: 2,
 		});
 
@@ -66,6 +67,7 @@ describe("execution contract", () => {
 				status: "PAUSED",
 				opensAt: null,
 				submissionDeadline: null,
+				votingDeadline: null,
 				submissionCount: 0,
 			}),
 		).toThrow();

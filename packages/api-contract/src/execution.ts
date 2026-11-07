@@ -8,6 +8,7 @@ export const SUBMISSION_CONTENT_MAX = 5000;
 export const roundStatusSchema = z.enum([
 	ROUND_STATUS.PENDING,
 	ROUND_STATUS.OPEN,
+	ROUND_STATUS.VOTING,
 	ROUND_STATUS.CLOSED,
 ]);
 
@@ -18,6 +19,7 @@ export const roundSchema = z.object({
 	status: roundStatusSchema,
 	opensAt: z.string().nullable(),
 	submissionDeadline: z.string().nullable(),
+	votingDeadline: z.string().nullable(),
 	submissionCount: z.number().int().nonnegative(),
 });
 

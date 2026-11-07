@@ -149,6 +149,27 @@ public. Hosts can advance early when every participant has submitted, and the
 worker `round.deadline` job closes expired rounds and opens the next PENDING one
 on the Cloudflare cron / local loop.
 
+M6 adds the voting context:
+
+```text
+apps/api/src/modules/voting/
+├── domain/vote.ts                    window, eligibility, reveal rules
+├── application/
+│   ├── ports/vote-repository.ts
+│   ├── use-cases/{cast,get-summary}-vote.ts
+│   └── mappers/vote-mapper.ts
+├── infrastructure/persistence/drizzle-vote-repository.ts
+└── presentation/votes-router.ts
+```
+
+Rounds now move `OPEN → VOTING → CLOSED`. The worker opens voting at the
+submission deadline and closes it at `votingDeadline`, opening the next PENDING
+round in the same tick. The host can drive the same transitions early. The host
+always votes; spectators vote when `spectator_voting_enabled` is on; participants
+are rejected. `(round_id, voter_id)` is unique, so the database enforces one
+vote per round. Totals stay hidden for non-hosts until the round is CLOSED,
+while each voter can still see their own choice.
+
 ## Frontend architecture
 
 The frontend intentionally uses **Vite + React 19 + TanStack Router** (SPA)

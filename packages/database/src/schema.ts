@@ -152,6 +152,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 	hostedRooms: many(debateRooms),
 	memberships: many(roomMemberships),
 	submissions: many(roundSubmissions),
+	votes: many(roundVotes),
 }));
 
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
@@ -172,6 +173,7 @@ export const debateRounds = pgTable(
 		status: text("status").notNull().default("PENDING"),
 		opensAt: timestamp("opens_at", { withTimezone: true }),
 		submissionDeadline: timestamp("submission_deadline", { withTimezone: true }),
+		votingDeadline: timestamp("voting_deadline", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 	},
@@ -220,6 +222,7 @@ export const debateRoundsRelations = relations(debateRounds, ({ one, many }) => 
 		references: [debateRooms.id],
 	}),
 	submissions: many(roundSubmissions),
+	votes: many(roundVotes),
 }));
 
 export const roundSubmissionsRelations = relations(roundSubmissions, ({ one }) => ({
@@ -233,6 +236,43 @@ export const roundSubmissionsRelations = relations(roundSubmissions, ({ one }) =
 	}),
 	author: one(users, {
 		fields: [roundSubmissions.authorId],
+		references: [users.id],
+	}),
+}));
+
+export const roundVotes = pgTable(
+	"round_votes",
+	{
+		id: text("id").primaryKey(),
+		roundId: text("round_id")
+			.notNull()
+			.references(() => debateRounds.id, { onDelete: "cascade" }),
+		roomId: text("room_id")
+			.notNull()
+			.references(() => debateRooms.id, { onDelete: "cascade" }),
+		voterId: text("voter_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		team: text("team").notNull(),
+		castAt: timestamp("cast_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("uq_round_votes_round_voter").on(table.roundId, table.voterId),
+		index("idx_round_votes_round_team").on(table.roundId, table.team),
+	],
+);
+
+export const roundVotesRelations = relations(roundVotes, ({ one }) => ({
+	round: one(debateRounds, {
+		fields: [roundVotes.roundId],
+		references: [debateRounds.id],
+	}),
+	room: one(debateRooms, {
+		fields: [roundVotes.roomId],
+		references: [debateRooms.id],
+	}),
+	voter: one(users, {
+		fields: [roundVotes.voterId],
 		references: [users.id],
 	}),
 }));

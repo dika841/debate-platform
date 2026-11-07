@@ -2,7 +2,11 @@ import type { ListRoundsResult } from "@app/api-contract";
 import { type Clock, ROOM_STATUS, ROUND_STATUS, systemClock } from "@app/shared";
 import type { RoomRepository } from "#/modules/debate-room/application/ports/room-repository.ts";
 import { assertRoomHost, loadRoom } from "#/modules/debate-room/application/room-access.ts";
-import { assertDebateStartable, submissionDeadlineFor } from "../../domain/round.ts";
+import {
+	assertDebateStartable,
+	submissionDeadlineFor,
+	votingDeadlineFor,
+} from "../../domain/round.ts";
 import { toRoundDto } from "../mappers/execution-mapper.ts";
 import type { NewRoundRecord, RoundRepository } from "../ports/round-repository.ts";
 
@@ -28,6 +32,7 @@ export const startDebate = async (
 	const generateId = deps.generateId ?? (() => crypto.randomUUID());
 	const now = clock.now();
 	const deadline = submissionDeadlineFor(now, found.room.submissionDurationMinutes);
+	const votingDeadline = votingDeadlineFor(deadline, found.room.votingDurationMinutes);
 
 	const rounds: NewRoundRecord[] = Array.from({ length: found.room.roundCount }, (_, index) => ({
 		id: generateId(),
@@ -36,6 +41,7 @@ export const startDebate = async (
 		status: index === 0 ? ROUND_STATUS.OPEN : ROUND_STATUS.PENDING,
 		opensAt: index === 0 ? now : null,
 		submissionDeadline: index === 0 ? deadline : null,
+		votingDeadline: index === 0 ? votingDeadline : null,
 		createdAt: now,
 	}));
 
