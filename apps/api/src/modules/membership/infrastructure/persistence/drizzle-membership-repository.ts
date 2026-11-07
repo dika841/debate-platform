@@ -1,6 +1,6 @@
 import type { Database } from "@app/database";
 import { debateRooms, roomMemberships, userProfiles, users } from "@app/database/schema";
-import { MEMBERSHIP_ROLE, type MembershipRole, type TeamSide } from "@app/shared";
+import { MEMBERSHIP_ROLE, TEAM_SIDE, type MembershipRole, type TeamSide } from "@app/shared";
 import { and, asc, eq, gt, or, sql, type SQL } from "drizzle-orm";
 import { decodeCursor, encodeCursor } from "#/platform/persistence/cursor.ts";
 import type {
@@ -10,6 +10,7 @@ import type {
 	MembershipPage,
 	MembershipRepository,
 	MembershipWithUser,
+	TeamAssignment,
 } from "../../application/ports/membership-repository.ts";
 
 type MembershipRow = {
@@ -215,6 +216,60 @@ export const createDrizzleMembershipRepository = (db: Database): MembershipRepos
 						: null,
 			};
 		},
+
+		findById,
+
+		async listParticipants(roomId: string) {
+			const rows = await db
+				.select(membershipSelection)
+				.from(roomMemberships)
+				.innerJoin(users, eq(roomMemberships.userId, users.id))
+				.leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+				.where(
+					and(
+						eq(roomMemberships.roomId, roomId),
+						eq(roomMemberships.role, MEMBERSHIP_ROLE.PARTICIPANT),
+					),
+				)
+				.orderBy(asc(roomMemberships.joinedAt), asc(roomMemberships.id));
+
+			return rows.map(rowToMembership);
+		},
+
+		async updateTeam(id: string, team: TeamSide | null) {
+			const [updated] = await db
+				.update(roomMemberships)
+				.set({ team })
+				.where(eq(roomMemberships.id, id))
+				.returning({ id: roomMemberships.id });
+
+			if (!updated) {
+				throw new Error("Membership not found");
+			}
+
+			const membership = await findById(id);
+
+			if (!membership) {
+				throw new Error("Membership not found after update");
+			}
+
+			return membership;
+		},
+
+		async assignTeams(assignments: readonly TeamAssignment[]) {
+			if (assignments.length === 0) {
+				return;
+			}
+
+			await db.transaction(async (tx) => {
+				for (const assignment of assignments) {
+					await tx
+						.update(roomMemberships)
+						.set({ team: assignment.team })
+						.where(eq(roomMemberships.id, assignment.membershipId));
+				}
+			});
+		},
 	};
 };
 
@@ -223,11 +278,12 @@ export const createDrizzleRoomParticipationReader = (db: Database) => ({
 		const counts = await db
 			.select({
 				role: roomMemberships.role,
+				team: roomMemberships.team,
 				value: sql<number>`count(*)::int`,
 			})
 			.from(roomMemberships)
 			.where(eq(roomMemberships.roomId, roomId))
-			.groupBy(roomMemberships.role);
+			.groupBy(roomMemberships.role, roomMemberships.team);
 
 		const viewer = userId
 			? await db
@@ -237,13 +293,17 @@ export const createDrizzleRoomParticipationReader = (db: Database) => ({
 					.limit(1)
 			: [];
 
-		const countFor = (role: MembershipRole): number =>
-			Number(counts.find((count) => count.role === role)?.value ?? 0);
+		const countFor = (role: MembershipRole, team?: TeamSide): number =>
+			counts
+				.filter((count) => count.role === role && (team === undefined || count.team === team))
+				.reduce((total, count) => total + Number(count.value), 0);
 
 		return {
 			participantCount: countFor(MEMBERSHIP_ROLE.PARTICIPANT),
 			spectatorCount: countFor(MEMBERSHIP_ROLE.SPECTATOR),
 			viewerRole: (viewer[0]?.role as MembershipRole | undefined) ?? null,
+			proCount: countFor(MEMBERSHIP_ROLE.PARTICIPANT, TEAM_SIDE.PRO),
+			contraCount: countFor(MEMBERSHIP_ROLE.PARTICIPANT, TEAM_SIDE.CONTRA),
 		};
 	},
 });

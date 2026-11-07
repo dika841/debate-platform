@@ -1,16 +1,19 @@
 import { Badge } from "@app/components/ui/badge";
 import { Button } from "@app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
-import { MEMBERSHIP, ROOM } from "@app/messages";
+import { MEMBERSHIP, ROOM, TEAM } from "@app/messages";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+	useAutoAssignTeams,
 	useCancelRoom,
+	useFinalizeAssignments,
 	useJoinRoom,
 	useLeaveRoom,
 	useMembers,
 	usePublishRoom,
 	useRoom,
 	useSession,
+	useSetTeam,
 } from "@/libs/api/queries.ts";
 import { RoomStatusBadge } from "@/routes/_components/room-status-badge.tsx";
 
@@ -29,6 +32,9 @@ function RoomDetailPage() {
 	const cancel = useCancelRoom();
 	const join = useJoinRoom();
 	const leave = useLeaveRoom();
+	const autoAssign = useAutoAssignTeams();
+	const setTeam = useSetTeam();
+	const finalize = useFinalizeAssignments();
 
 	if (room.isPending) {
 		return <p className="text-sm text-muted-foreground">Loading debate…</p>;
@@ -54,15 +60,33 @@ function RoomDetailPage() {
 
 	const current = room.data;
 	const authenticated = Boolean(session.data?.session);
+	const sessionUserId = session.data?.session?.userId ?? null;
+	const isHost = current.viewerRole === "HOST";
 	const isOpen = current.status === "PUBLISHED" || current.status === "IN_PROGRESS";
+	const assignmentOpen = current.status === "PUBLISHED" && current.assignmentFinalizedAt === null;
+	const joinsAllowed = isOpen && assignmentOpen;
 	const participantCapacity = current.teamSize * 2;
 	const participantSlotsFull = current.participantCount >= participantCapacity;
-	const actionPending = publish.isPending || cancel.isPending || join.isPending || leave.isPending;
+	const teamsReady =
+		current.teamCounts.pro === current.teamSize && current.teamCounts.contra === current.teamSize;
+	const viewerMembership =
+		members.data?.items.find((member) => member.userId === sessionUserId) ?? null;
+	const actionPending =
+		publish.isPending ||
+		cancel.isPending ||
+		join.isPending ||
+		leave.isPending ||
+		autoAssign.isPending ||
+		setTeam.isPending ||
+		finalize.isPending;
 	const actionError =
 		publish.error?.message ??
 		cancel.error?.message ??
 		join.error?.message ??
 		leave.error?.message ??
+		autoAssign.error?.message ??
+		setTeam.error?.message ??
+		finalize.error?.message ??
 		null;
 
 	return (
@@ -75,6 +99,11 @@ function RoomDetailPage() {
 							{ROOM.host}: {current.host.displayName}
 							{current.host.username ? ` (@${current.host.username})` : ""}
 						</span>
+						{viewerMembership?.team ? (
+							<Badge variant={viewerMembership.team === "PRO" ? "default" : "secondary"}>
+								{TEAM.yourTeam}: {viewerMembership.team}
+							</Badge>
+						) : null}
 					</div>
 					<h1 className="max-w-3xl text-3xl font-semibold tracking-tight">{current.title}</h1>
 					<p className="max-w-3xl text-lg text-muted-foreground">{current.motion}</p>
@@ -85,7 +114,7 @@ function RoomDetailPage() {
 						<Link to="/">{ROOM.backToExplore}</Link>
 					</Button>
 
-					{current.viewerRole === "HOST" && current.status === "DRAFT" ? (
+					{isHost && current.status === "DRAFT" ? (
 						<Button variant="outline" asChild>
 							<Link to="/rooms/$roomId/edit" params={{ roomId: current.id }}>
 								{ROOM.edit}
@@ -93,7 +122,7 @@ function RoomDetailPage() {
 						</Button>
 					) : null}
 
-					{current.viewerRole === "HOST" && current.status === "DRAFT" ? (
+					{isHost && current.status === "DRAFT" ? (
 						<Button
 							disabled={actionPending}
 							onClick={() => void publish.mutate({ id: current.id })}
@@ -102,8 +131,7 @@ function RoomDetailPage() {
 						</Button>
 					) : null}
 
-					{current.viewerRole === "HOST" &&
-					(current.status === "DRAFT" || current.status === "PUBLISHED") ? (
+					{isHost && (current.status === "DRAFT" || current.status === "PUBLISHED") ? (
 						<Button
 							variant="destructive"
 							disabled={actionPending}
@@ -113,7 +141,7 @@ function RoomDetailPage() {
 						</Button>
 					) : null}
 
-					{current.viewerRole === null && isOpen && authenticated ? (
+					{current.viewerRole === null && joinsAllowed && authenticated ? (
 						<>
 							<Button
 								disabled={actionPending || participantSlotsFull}
@@ -144,7 +172,8 @@ function RoomDetailPage() {
 						</Button>
 					) : null}
 
-					{current.viewerRole === "PARTICIPANT" || current.viewerRole === "SPECTATOR" ? (
+					{(current.viewerRole === "PARTICIPANT" || current.viewerRole === "SPECTATOR") &&
+					assignmentOpen ? (
 						<Button
 							variant="outline"
 							disabled={actionPending}
@@ -198,6 +227,62 @@ function RoomDetailPage() {
 
 					<Card>
 						<CardHeader>
+							<CardTitle>{TEAM.title}</CardTitle>
+							<CardDescription>
+								{current.assignmentFinalizedAt
+									? `${TEAM.finalized} · ${formatDate(current.assignmentFinalizedAt)}`
+									: TEAM.description}
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="space-y-4 text-sm">
+							<div className="grid gap-3 sm:grid-cols-2">
+								<div className="rounded-md border border-border/70 p-3">
+									<p className="text-muted-foreground">{TEAM.pro}</p>
+									<p className="text-lg font-semibold">
+										{MEMBERSHIP.capacity(current.teamCounts.pro, current.teamSize)}
+									</p>
+								</div>
+								<div className="rounded-md border border-border/70 p-3">
+									<p className="text-muted-foreground">{TEAM.contra}</p>
+									<p className="text-lg font-semibold">
+										{MEMBERSHIP.capacity(current.teamCounts.contra, current.teamSize)}
+									</p>
+								</div>
+							</div>
+
+							{isHost && assignmentOpen ? (
+								<div className="flex flex-wrap items-center gap-2">
+									<Button
+										size="sm"
+										variant="outline"
+										disabled={actionPending}
+										onClick={() => void autoAssign.mutate({ roomId: current.id })}
+									>
+										{autoAssign.isPending ? TEAM.autoAssigning : TEAM.autoAssign}
+									</Button>
+									<Button
+										size="sm"
+										disabled={actionPending || !teamsReady}
+										title={teamsReady ? undefined : "Both teams must be full before finalizing"}
+										onClick={() => void finalize.mutate({ roomId: current.id })}
+									>
+										{finalize.isPending ? TEAM.finalizing : TEAM.finalize}
+									</Button>
+								</div>
+							) : null}
+
+							{!isHost && assignmentOpen ? (
+								<p className="text-muted-foreground">The host is still preparing the teams.</p>
+							) : null}
+
+							{current.assignmentFinalizedAt ? (
+								<p className="text-muted-foreground">{TEAM.finalizedNotice}</p>
+							) : null}
+						</CardContent>
+					</Card>
+
+					<Card>
+						<CardHeader>
 							<CardTitle>{MEMBERSHIP.roster}</CardTitle>
 							<CardDescription>
 								{MEMBERSHIP.participants}:{" "}
@@ -220,7 +305,7 @@ function RoomDetailPage() {
 								{members.data?.items.map((member) => (
 									<li
 										key={member.id}
-										className="flex items-center justify-between gap-3 border-t border-border/60 pt-2"
+										className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-2"
 									>
 										<span>
 											{member.user.displayName}
@@ -228,7 +313,66 @@ function RoomDetailPage() {
 												<span className="text-muted-foreground"> @{member.user.username}</span>
 											) : null}
 										</span>
-										<Badge variant="secondary">{MEMBERSHIP.role[member.role]}</Badge>
+
+										{isHost && assignmentOpen && member.role === "PARTICIPANT" ? (
+											<div className="flex items-center gap-1">
+												<Button
+													size="sm"
+													variant={member.team === "PRO" ? "default" : "outline"}
+													disabled={setTeam.isPending}
+													onClick={() =>
+														void setTeam.mutate({
+															roomId: current.id,
+															membershipId: member.id,
+															team: "PRO",
+														})
+													}
+												>
+													{TEAM.pro}
+												</Button>
+												<Button
+													size="sm"
+													variant={member.team === "CONTRA" ? "default" : "outline"}
+													disabled={setTeam.isPending}
+													onClick={() =>
+														void setTeam.mutate({
+															roomId: current.id,
+															membershipId: member.id,
+															team: "CONTRA",
+														})
+													}
+												>
+													{TEAM.contra}
+												</Button>
+												{member.team ? (
+													<Button
+														size="sm"
+														variant="ghost"
+														disabled={setTeam.isPending}
+														onClick={() =>
+															void setTeam.mutate({
+																roomId: current.id,
+																membershipId: member.id,
+																team: null,
+															})
+														}
+													>
+														{TEAM.clear}
+													</Button>
+												) : null}
+											</div>
+										) : (
+											<div className="flex items-center gap-2">
+												{member.team ? (
+													<Badge variant={member.team === "PRO" ? "default" : "secondary"}>
+														{member.team}
+													</Badge>
+												) : member.role === "PARTICIPANT" ? (
+													<span className="text-muted-foreground">{TEAM.unassigned}</span>
+												) : null}
+												<Badge variant="secondary">{MEMBERSHIP.role[member.role]}</Badge>
+											</div>
+										)}
 									</li>
 								))}
 							</ul>

@@ -112,6 +112,39 @@ export const useLeaveRoom = () => {
 	});
 };
 
+export const useAutoAssignTeams = () => {
+	const invalidateMemberships = useInvalidateMemberships();
+
+	return useMutation({
+		...orpc.assignments.autoAssign.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateMemberships();
+		},
+	});
+};
+
+export const useSetTeam = () => {
+	const invalidateMemberships = useInvalidateMemberships();
+
+	return useMutation({
+		...orpc.assignments.setTeam.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateMemberships();
+		},
+	});
+};
+
+export const useFinalizeAssignments = () => {
+	const invalidateMemberships = useInvalidateMemberships();
+
+	return useMutation({
+		...orpc.assignments.finalize.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateMemberships();
+		},
+	});
+};
+
 export const useInvalidateAccount = () => {
 	const queryClient = useQueryClient();
 

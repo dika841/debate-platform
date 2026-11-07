@@ -62,9 +62,12 @@ describe("membership contract", () => {
 			participantCount: 2,
 			spectatorCount: 4,
 			viewerRole: "SPECTATOR",
+			assignmentFinalizedAt: null,
+			teamCounts: { pro: 1, contra: 1 },
 		});
 
 		expect(detail.participantCount).toBe(2);
+		expect(detail.teamCounts.pro).toBe(1);
 		expect(roomSchema.safeParse(room).success).toBe(true);
 	});
 });

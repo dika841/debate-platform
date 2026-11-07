@@ -33,6 +33,7 @@ const hostedRoom = (
 		spectatorVotingEnabled: true,
 		publishedAt: null,
 		cancelledAt: null,
+		assignmentFinalizedAt: null,
 		createdAt: new Date("2026-01-01T00:00:00.000Z"),
 		updatedAt: new Date("2026-01-01T00:00:00.000Z"),
 	},
@@ -73,6 +74,13 @@ const membershipRepository = (
 	join: async () => ({ kind: "joined", membership }),
 	leave: async () => true,
 	list: async () => ({ items: [membership], nextCursor: null }),
+	findById: async () => membership,
+	listParticipants: async () => [membership],
+	updateTeam: async (_id, team) => ({
+		...membership,
+		membership: { ...membership.membership, team },
+	}),
+	assignTeams: async () => {},
 	...overrides,
 });
 
@@ -81,6 +89,8 @@ const participation = {
 		participantCount: 0,
 		spectatorCount: 0,
 		viewerRole: null,
+		proCount: 0,
+		contraCount: 0,
 	}),
 };
 
@@ -89,6 +99,8 @@ const participantParticipation = {
 		participantCount: 1,
 		spectatorCount: 0,
 		viewerRole: "PARTICIPANT" as const,
+		proCount: 1,
+		contraCount: 0,
 	}),
 };
 

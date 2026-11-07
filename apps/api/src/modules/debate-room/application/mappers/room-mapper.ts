@@ -34,4 +34,9 @@ export const toRoomDetailDto = (
 	participantCount: participation.participantCount,
 	spectatorCount: participation.spectatorCount,
 	viewerRole: actorId !== null && found.room.hostId === actorId ? "HOST" : participation.viewerRole,
+	assignmentFinalizedAt: found.room.assignmentFinalizedAt?.toISOString() ?? null,
+	teamCounts: {
+		pro: participation.proCount,
+		contra: participation.contraCount,
+	},
 });

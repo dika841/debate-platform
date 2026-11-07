@@ -41,6 +41,15 @@ export const assertHostCannotLeave = (isHost: boolean): void => {
 	}
 };
 
+export const assertMembershipOpen = (assignmentFinalizedAt: Date | null): void => {
+	if (assignmentFinalizedAt !== null) {
+		throw new DomainError(
+			DOMAIN_ERROR_CODE.INVALID_MEMBERSHIP,
+			"Team assignment is already finalized",
+		);
+	}
+};
+
 export const assertParticipantCapacity = (current: number, teamSize: number): void => {
 	if (current >= participantCapacity(teamSize)) {
 		throw new DomainError(

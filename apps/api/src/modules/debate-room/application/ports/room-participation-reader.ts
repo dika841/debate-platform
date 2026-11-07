@@ -4,6 +4,8 @@ export type RoomParticipationSnapshot = {
 	readonly participantCount: number;
 	readonly spectatorCount: number;
 	readonly viewerRole: MembershipRole | null;
+	readonly proCount: number;
+	readonly contraCount: number;
 };
 
 export interface RoomParticipationReader {

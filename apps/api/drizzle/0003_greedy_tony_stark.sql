@@ -1,0 +1,1 @@
+ALTER TABLE "debate_rooms" ADD COLUMN "assignment_finalized_at" timestamp with time zone;

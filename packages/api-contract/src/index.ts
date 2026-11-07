@@ -1,4 +1,9 @@
 import { oc } from "@orpc/contract";
+import {
+	assignRoomInputSchema,
+	assignmentSummarySchema,
+	setTeamInputSchema,
+} from "./assignments.ts";
 import { healthCheckOutputSchema } from "./health.ts";
 import {
 	joinMembershipInputSchema,
@@ -44,8 +49,14 @@ export const contract = {
 		leave: oc.input(leaveMembershipInputSchema).output(leaveMembershipOutputSchema),
 		list: oc.input(listMembersInputSchema).output(listMembersOutputSchema),
 	},
+	assignments: {
+		autoAssign: oc.input(assignRoomInputSchema).output(assignmentSummarySchema),
+		setTeam: oc.input(setTeamInputSchema).output(membershipSchema),
+		finalize: oc.input(assignRoomInputSchema).output(assignmentSummarySchema),
+	},
 } as const;
 
+export * from "./assignments.ts";
 export * from "./health.ts";
 export * from "./memberships.ts";
 export * from "./rooms.ts";

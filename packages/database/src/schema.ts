@@ -111,6 +111,7 @@ export const debateRooms = pgTable(
 		spectatorVotingEnabled: boolean("spectator_voting_enabled").notNull().default(true),
 		publishedAt: timestamp("published_at", { withTimezone: true }),
 		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+		assignmentFinalizedAt: timestamp("assignment_finalized_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 	},

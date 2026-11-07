@@ -28,6 +28,8 @@ const participation = {
 		participantCount: 0,
 		spectatorCount: 0,
 		viewerRole: null,
+		proCount: 0,
+		contraCount: 0,
 	}),
 };
 
@@ -50,6 +52,7 @@ const roomWith = (
 		spectatorVotingEnabled: true,
 		publishedAt: status === ROOM_STATUS.DRAFT ? null : new Date("2025-12-31T00:00:00.000Z"),
 		cancelledAt: null,
+		assignmentFinalizedAt: null,
 		createdAt: new Date("2025-12-01T00:00:00.000Z"),
 		updatedAt: new Date("2025-12-01T00:00:00.000Z"),
 	},
@@ -80,6 +83,7 @@ const createRepository = (seed: readonly RoomWithHost[] = []): RoomRepository =>
 					status: input.status,
 					publishedAt: null,
 					cancelledAt: null,
+					assignmentFinalizedAt: null,
 					createdAt: input.createdAt,
 					updatedAt: input.createdAt,
 				},
@@ -220,6 +224,8 @@ describe("debate room use cases", () => {
 						participantCount: 2,
 						spectatorCount: 1,
 						viewerRole: "PARTICIPANT" as const,
+						proCount: 1,
+						contraCount: 1,
 					}),
 				},
 			},
@@ -230,6 +236,7 @@ describe("debate room use cases", () => {
 		expect(detail.participantCount).toBe(2);
 		expect(detail.spectatorCount).toBe(1);
 		expect(detail.viewerRole).toBe("PARTICIPANT");
+		expect(detail.teamCounts).toEqual({ pro: 1, contra: 1 });
 	});
 
 	it("requires authentication to list owned rooms", async () => {

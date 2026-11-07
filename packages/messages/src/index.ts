@@ -120,3 +120,21 @@ export const MEMBERSHIP = {
 		SPECTATOR: "Spectator",
 	},
 } as const;
+
+export const TEAM = {
+	title: "Team assignment",
+	description: "Balance participants across PRO and CONTRA before finalizing.",
+	autoAssign: "Auto-assign teams",
+	autoAssigning: "Assigning…",
+	finalize: "Finalize teams",
+	finalizing: "Finalizing…",
+	finalized: "Teams finalized",
+	finalizedNotice: "Team assignments are locked. Joining and leaving are disabled.",
+	unassigned: "Unassigned",
+	pro: "PRO",
+	contra: "CONTRA",
+	clear: "Clear",
+	yourTeam: "Your team",
+	proSlots: (current: number, max: number) => `PRO ${current}/${max}`,
+	contraSlots: (current: number, max: number) => `CONTRA ${current}/${max}`,
+} as const;

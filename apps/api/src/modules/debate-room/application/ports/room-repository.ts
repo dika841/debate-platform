@@ -13,6 +13,7 @@ export type RoomRecord = RoomConfiguration & {
 	readonly status: RoomStatus;
 	readonly publishedAt: Date | null;
 	readonly cancelledAt: Date | null;
+	readonly assignmentFinalizedAt: Date | null;
 	readonly createdAt: Date;
 	readonly updatedAt: Date;
 };
@@ -34,6 +35,7 @@ export type RoomPatch = Partial<RoomConfiguration> & {
 	readonly status?: RoomStatus;
 	readonly publishedAt?: Date | null;
 	readonly cancelledAt?: Date | null;
+	readonly assignmentFinalizedAt?: Date | null;
 	readonly updatedAt: Date;
 };
 

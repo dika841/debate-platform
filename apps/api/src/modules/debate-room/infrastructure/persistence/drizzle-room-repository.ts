@@ -24,6 +24,7 @@ type RoomRow = {
 	spectatorVotingEnabled: boolean;
 	publishedAt: Date | null;
 	cancelledAt: Date | null;
+	assignmentFinalizedAt: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
 	hostUserId: string;
@@ -46,6 +47,7 @@ const roomSelection = {
 	spectatorVotingEnabled: debateRooms.spectatorVotingEnabled,
 	publishedAt: debateRooms.publishedAt,
 	cancelledAt: debateRooms.cancelledAt,
+	assignmentFinalizedAt: debateRooms.assignmentFinalizedAt,
 	createdAt: debateRooms.createdAt,
 	updatedAt: debateRooms.updatedAt,
 	hostUserId: users.id,
@@ -69,6 +71,7 @@ const rowToRoom = (row: RoomRow): RoomWithHost => ({
 		spectatorVotingEnabled: row.spectatorVotingEnabled,
 		publishedAt: row.publishedAt,
 		cancelledAt: row.cancelledAt,
+		assignmentFinalizedAt: row.assignmentFinalizedAt,
 		createdAt: row.createdAt,
 		updatedAt: row.updatedAt,
 	},

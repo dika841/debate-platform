@@ -11,7 +11,11 @@ import {
 } from "@app/shared";
 import { loadRoom } from "#/modules/debate-room/application/room-access.ts";
 import type { RoomRepository } from "#/modules/debate-room/application/ports/room-repository.ts";
-import { assertNotRoomHost, assertRoomJoinable } from "../../domain/membership.ts";
+import {
+	assertMembershipOpen,
+	assertNotRoomHost,
+	assertRoomJoinable,
+} from "../../domain/membership.ts";
 import { toMembershipDto } from "../mappers/membership-mapper.ts";
 import type { MembershipRepository } from "../ports/membership-repository.ts";
 
@@ -36,6 +40,7 @@ export const joinRoom = async (
 
 	const found = await loadRoom(deps.rooms, input.roomId);
 	assertRoomJoinable(found.room.status);
+	assertMembershipOpen(found.room.assignmentFinalizedAt);
 	assertNotRoomHost(found.room.hostId === userId);
 
 	const clock = deps.clock ?? systemClock;

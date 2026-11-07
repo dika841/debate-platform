@@ -49,6 +49,11 @@ export const roomDetailSchema = roomSchema.extend({
 	participantCount: z.number().int().nonnegative(),
 	spectatorCount: z.number().int().nonnegative(),
 	viewerRole: viewerRoleSchema.nullable(),
+	assignmentFinalizedAt: z.string().nullable(),
+	teamCounts: z.object({
+		pro: z.number().int().nonnegative(),
+		contra: z.number().int().nonnegative(),
+	}),
 });
 
 export const roomIdInputSchema = z.object({

@@ -182,6 +182,20 @@ follow in M3–M7 as vertical slices.
 - Unit and Playwright coverage for join, leave, counts, capacity guards and
   anonymous roster visibility
 
+## M4 scope (team assignment)
+
+- `debate_rooms.assignment_finalized_at` and team counts on the room detail
+- `assignments.autoAssign`, `assignments.setTeam`, `assignments.finalize`
+- Balanced auto-assignment that fills the team with fewer members first and
+  respects `teamSize` per side
+- Host-only manual PRO/CONTRA overrides and clearing a team
+- Finalization requires both teams to be full and balanced, then locks joining,
+  leaving and further team changes
+- Room page shows PRO/CONTRA slots, assignment controls for the host and the
+  viewer's own team after finalization
+- Unit, contract and Playwright coverage for auto-assign, finalization and the
+  post-finalization lock
+
 ## End-to-end tests
 
 ```bash

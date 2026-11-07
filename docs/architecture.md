@@ -106,6 +106,26 @@ left nullable until team assignment lands in M4.
 `RoomParticipationReader` port, which supplies counts and the viewer role
 without coupling the room domain to membership persistence.
 
+M4 adds the team-assignment context:
+
+```text
+apps/api/src/modules/team-assignment/
+├── domain/assignment.ts              editable states, team caps, balancing
+├── application/
+│   ├── use-cases/auto-assign-teams.ts
+│   ├── use-cases/set-team.ts
+│   ├── use-cases/finalize-assignments.ts
+│   └── mappers/assignment-mapper.ts
+└── presentation/assignments-router.ts
+```
+
+Auto-assignment greedily fills the team with fewer members first, so six
+participants in a 3v3 room become 3 PRO / 3 CONTRA. Manual host overrides are
+capped per team. Finalization requires both teams to be full and balanced, then
+writes `assignment_finalized_at`; after that, membership joins/leaves and team
+changes are rejected. The room detail exposes `teamCounts` and the viewer's own
+team through the roster.
+
 ## Frontend architecture
 
 The frontend intentionally uses **Vite + React 19 + TanStack Router** (SPA)
