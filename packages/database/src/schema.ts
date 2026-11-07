@@ -151,6 +151,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 	accounts: many(accounts),
 	hostedRooms: many(debateRooms),
 	memberships: many(roomMemberships),
+	submissions: many(roundSubmissions),
 }));
 
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
@@ -160,12 +161,80 @@ export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
 	}),
 }));
 
+export const debateRounds = pgTable(
+	"debate_rounds",
+	{
+		id: text("id").primaryKey(),
+		roomId: text("room_id")
+			.notNull()
+			.references(() => debateRooms.id, { onDelete: "cascade" }),
+		roundNumber: integer("round_number").notNull(),
+		status: text("status").notNull().default("PENDING"),
+		opensAt: timestamp("opens_at", { withTimezone: true }),
+		submissionDeadline: timestamp("submission_deadline", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("uq_debate_rounds_room_number").on(table.roomId, table.roundNumber),
+		index("idx_debate_rounds_room_status").on(table.roomId, table.status),
+	],
+);
+
+export const roundSubmissions = pgTable(
+	"round_submissions",
+	{
+		id: text("id").primaryKey(),
+		roundId: text("round_id")
+			.notNull()
+			.references(() => debateRounds.id, { onDelete: "cascade" }),
+		roomId: text("room_id")
+			.notNull()
+			.references(() => debateRooms.id, { onDelete: "cascade" }),
+		authorId: text("author_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		team: text("team").notNull(),
+		content: text("content").notNull(),
+		submittedAt: timestamp("submitted_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("uq_round_submissions_round_author").on(table.roundId, table.authorId),
+		index("idx_round_submissions_round").on(table.roundId),
+		index("idx_round_submissions_room").on(table.roomId),
+	],
+);
+
 export const debateRoomsRelations = relations(debateRooms, ({ one, many }) => ({
 	host: one(users, {
 		fields: [debateRooms.hostId],
 		references: [users.id],
 	}),
 	memberships: many(roomMemberships),
+	rounds: many(debateRounds),
+}));
+
+export const debateRoundsRelations = relations(debateRounds, ({ one, many }) => ({
+	room: one(debateRooms, {
+		fields: [debateRounds.roomId],
+		references: [debateRooms.id],
+	}),
+	submissions: many(roundSubmissions),
+}));
+
+export const roundSubmissionsRelations = relations(roundSubmissions, ({ one }) => ({
+	round: one(debateRounds, {
+		fields: [roundSubmissions.roundId],
+		references: [debateRounds.id],
+	}),
+	room: one(debateRooms, {
+		fields: [roundSubmissions.roomId],
+		references: [debateRooms.id],
+	}),
+	author: one(users, {
+		fields: [roundSubmissions.authorId],
+		references: [users.id],
+	}),
 }));
 
 export const roomMembershipsRelations = relations(roomMemberships, ({ one }) => ({

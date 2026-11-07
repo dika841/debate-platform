@@ -126,6 +126,29 @@ writes `assignment_finalized_at`; after that, membership joins/leaves and team
 changes are rejected. The room detail exposes `teamCounts` and the viewer's own
 team through the roster.
 
+M5 adds the debate-execution context:
+
+```text
+apps/api/src/modules/debate-execution/
+├── domain/round.ts                   deadlines, round state, submission rules
+├── application/
+│   ├── ports/{round,submission}-repository.ts
+│   ├── use-cases/{start-debate,advance-round,list-rounds}.ts
+│   ├── use-cases/{create-submission,list-submissions}.ts
+│   └── mappers/execution-mapper.ts
+├── infrastructure/persistence/drizzle-{round,submission}-repository.ts
+└── presentation/rounds-router.ts
+```
+
+Starting a debate creates all configured rounds and opens the first one with a
+submission deadline derived from `submissionDurationMinutes`. A participant may
+submit exactly one argument per round while it is open; the unique
+`(round_id, author_id)` constraint backs the domain rule. Before a round closes,
+only the author and host can read its submissions; afterwards they become
+public. Hosts can advance early when every participant has submitted, and the
+worker `round.deadline` job closes expired rounds and opens the next PENDING one
+on the Cloudflare cron / local loop.
+
 ## Frontend architecture
 
 The frontend intentionally uses **Vite + React 19 + TanStack Router** (SPA)

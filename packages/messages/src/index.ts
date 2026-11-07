@@ -138,3 +138,33 @@ export const TEAM = {
 	proSlots: (current: number, max: number) => `PRO ${current}/${max}`,
 	contraSlots: (current: number, max: number) => `CONTRA ${current}/${max}`,
 } as const;
+
+export const EXECUTION = {
+	title: "Rounds",
+	description: "Async rounds with one argument per participant and round.",
+	start: "Start debate",
+	starting: "Starting…",
+	advance: "Advance round",
+	advancing: "Advancing…",
+	round: (roundNumber: number) => `Round ${roundNumber}`,
+	deadline: "Deadline",
+	submissionCount: (count: number) => `${count} ${count === 1 ? "submission" : "submissions"}`,
+	noRounds: "The host has not started this debate yet.",
+	waitingForHost: "Waiting for the host to start the debate.",
+	waitingForRound: "Waiting for submissions or the deadline before advancing.",
+	allRoundsClosed: "All rounds are closed.",
+	yourArgument: "Your argument",
+	argumentPlaceholder: "Write your argument for this round…",
+	argumentHint: (current: number, min: number) => `${current}/${min} characters minimum`,
+	submit: "Submit argument",
+	submitting: "Submitting…",
+	submitted: "Your argument",
+	submissions: "Submissions",
+	noSubmissions: "No submissions yet.",
+	hiddenUntilClosed: "Submissions from other participants become public after the round closes.",
+	status: {
+		PENDING: "Upcoming",
+		OPEN: "Submissions open",
+		CLOSED: "Closed",
+	},
+} as const;

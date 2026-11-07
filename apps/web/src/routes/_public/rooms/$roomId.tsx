@@ -16,6 +16,7 @@ import {
 	useSetTeam,
 } from "@/libs/api/queries.ts";
 import { RoomStatusBadge } from "@/routes/_components/room-status-badge.tsx";
+import { DebateRounds } from "@/routes/_components/debate-rounds.tsx";
 
 export const Route = createFileRoute("/_public/rooms/$roomId")({
 	component: RoomDetailPage,
@@ -281,9 +282,11 @@ function RoomDetailPage() {
 						</CardContent>
 					</Card>
 
+					<DebateRounds room={current} viewerTeam={viewerMembership?.team ?? null} />
+
 					<Card>
 						<CardHeader>
-							<CardTitle>{MEMBERSHIP.roster}</CardTitle>
+							<CardTitle>{MEMBERSHIP.roster}</CardTitle>{" "}
 							<CardDescription>
 								{MEMBERSHIP.participants}:{" "}
 								{MEMBERSHIP.capacity(current.participantCount, participantCapacity)} ·{" "}

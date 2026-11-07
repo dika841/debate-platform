@@ -6,6 +6,7 @@ import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { usersRouter } from "#/modules/identity/index.ts";
 import { membershipsRouter } from "#/modules/membership/index.ts";
 import { assignmentsRouter } from "#/modules/team-assignment/index.ts";
+import { roundsRouter, submissionsRouter } from "#/modules/debate-execution/index.ts";
 import { roomsRouter } from "#/modules/debate-room/index.ts";
 
 const APP_VERSION = "0.1.0";
@@ -52,4 +53,6 @@ export const appRouter = os.router({
 	rooms: roomsRouter,
 	memberships: membershipsRouter,
 	assignments: assignmentsRouter,
+	rounds: roundsRouter,
+	submissions: submissionsRouter,
 });

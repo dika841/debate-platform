@@ -3,7 +3,9 @@ import { logger, runScheduledJobs } from "./jobs.ts";
 const INTERVAL_MS = 60_000;
 
 const tick = async (): Promise<void> => {
-	const results = await runScheduledJobs(new Date());
+	const results = await runScheduledJobs(new Date(), {
+		DATABASE_URL: process.env.DATABASE_URL,
+	});
 	logger.debug({ results }, "worker.local.tick");
 };
 

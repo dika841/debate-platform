@@ -27,6 +27,18 @@ export const useRoom = (id: string) =>
 		enabled: id.length > 0,
 	});
 
+export const useRounds = (roomId: string) =>
+	useQuery({
+		...orpc.rounds.list.queryOptions({ input: { roomId } }),
+		enabled: roomId.length > 0,
+	});
+
+export const useSubmissions = (roundId: string) =>
+	useQuery({
+		...orpc.submissions.list.queryOptions({ input: { roundId } }),
+		enabled: roundId.length > 0,
+	});
+
 const useInvalidateRooms = () => {
 	const queryClient = useQueryClient();
 
@@ -141,6 +153,54 @@ export const useFinalizeAssignments = () => {
 		...orpc.assignments.finalize.mutationOptions(),
 		onSuccess: async () => {
 			await invalidateMemberships();
+		},
+	});
+};
+
+const useInvalidateExecution = () => {
+	const queryClient = useQueryClient();
+
+	return async (): Promise<void> => {
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: orpc.rounds.key() }),
+			queryClient.invalidateQueries({ queryKey: orpc.submissions.key() }),
+			queryClient.invalidateQueries({ queryKey: orpc.rooms.key() }),
+		]);
+	};
+};
+
+export const useStartDebate = () => {
+	const invalidateExecution = useInvalidateExecution();
+
+	return useMutation({
+		...orpc.rounds.start.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateExecution();
+		},
+	});
+};
+
+export const useAdvanceRound = () => {
+	const invalidateExecution = useInvalidateExecution();
+
+	return useMutation({
+		...orpc.rounds.advance.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateExecution();
+		},
+	});
+};
+
+export const useCreateSubmission = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		...orpc.submissions.create.mutationOptions(),
+		onSuccess: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: orpc.submissions.key() }),
+				queryClient.invalidateQueries({ queryKey: orpc.rounds.key() }),
+			]);
 		},
 	});
 };

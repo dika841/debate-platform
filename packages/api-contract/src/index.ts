@@ -6,6 +6,16 @@ import {
 } from "./assignments.ts";
 import { healthCheckOutputSchema } from "./health.ts";
 import {
+	advanceRoundInputSchema,
+	createSubmissionInputSchema,
+	listRoundsInputSchema,
+	listRoundsOutputSchema,
+	listSubmissionsInputSchema,
+	listSubmissionsOutputSchema,
+	startDebateInputSchema,
+	submissionSchema,
+} from "./execution.ts";
+import {
 	joinMembershipInputSchema,
 	leaveMembershipInputSchema,
 	leaveMembershipOutputSchema,
@@ -54,9 +64,19 @@ export const contract = {
 		setTeam: oc.input(setTeamInputSchema).output(membershipSchema),
 		finalize: oc.input(assignRoomInputSchema).output(assignmentSummarySchema),
 	},
+	rounds: {
+		list: oc.input(listRoundsInputSchema).output(listRoundsOutputSchema),
+		start: oc.input(startDebateInputSchema).output(listRoundsOutputSchema),
+		advance: oc.input(advanceRoundInputSchema).output(listRoundsOutputSchema),
+	},
+	submissions: {
+		create: oc.input(createSubmissionInputSchema).output(submissionSchema),
+		list: oc.input(listSubmissionsInputSchema).output(listSubmissionsOutputSchema),
+	},
 } as const;
 
 export * from "./assignments.ts";
+export * from "./execution.ts";
 export * from "./health.ts";
 export * from "./memberships.ts";
 export * from "./rooms.ts";

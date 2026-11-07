@@ -4,8 +4,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "tsx watch src/run.ts",
-		"start": "tsx src/run.ts",
+		"dev": "tsx watch --env-file-if-exists=.env src/run.ts",
+		"start": "tsx --env-file-if-exists=.env src/run.ts",
 		"deploy": "wrangler deploy",
 		"deploy:dry-run": "wrangler deploy --dry-run",
 		"build": "tsc --noEmit",
@@ -16,6 +16,7 @@
 		"@app/database": "workspace:*",
 		"@app/env": "workspace:*",
 		"@app/logger": "workspace:*",
+		"@app/shared": "workspace:*",
 		"drizzle-orm": "catalog:"
 	},
 	"devDependencies": {

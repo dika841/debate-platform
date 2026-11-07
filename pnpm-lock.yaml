@@ -538,6 +538,9 @@ importers:
       '@app/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@app/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@neondatabase/serverless@1.2.0)(@types/pg@8.23.1)(kysely@0.29.8)(pg@8.23.1)

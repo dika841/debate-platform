@@ -5,3 +5,4 @@ export * from "./membership.ts";
 export * from "./pagination.ts";
 export * from "./result.ts";
 export * from "./room.ts";
+export * from "./round.ts";

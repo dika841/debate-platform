@@ -196,6 +196,23 @@ follow in M3–M7 as vertical slices.
 - Unit, contract and Playwright coverage for auto-assign, finalization and the
   post-finalization lock
 
+## M5 scope (debate execution)
+
+- `debate_rounds` and `round_submissions` tables
+- `rounds.list`, `rounds.start`, `rounds.advance`,
+  `submissions.create`, `submissions.list`
+- Starting requires finalized teams; the first round opens with a submission
+  deadline
+- One immutable argument per participant per round, enforced inside the
+  submission window
+- Hosts can advance once everyone submitted or the deadline passed; the worker
+  cron closes expired rounds and opens the next one
+- Submissions are visible to the host/author until the round closes, then to
+  everyone
+- Room page shows the round timeline, deadlines, submission form and arguments
+- Unit, contract and Playwright coverage for start, submit, visibility and
+  round advancement
+
 ## End-to-end tests
 
 ```bash
