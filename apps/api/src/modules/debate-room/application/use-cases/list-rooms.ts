@@ -19,7 +19,7 @@ export const listRooms = async (
 ): Promise<ListRoomsResult> => {
 	const scope = input.scope ?? "public";
 
-	if (scope === "mine" && !actorId) {
+	if (scope !== "public" && !actorId) {
 		throw new ApplicationError(
 			APPLICATION_ERROR_CODE.AUTHENTICATION_REQUIRED,
 			"Authentication required",
@@ -30,6 +30,7 @@ export const listRooms = async (
 
 	const result = await deps.repository.list({
 		hostId: scope === "mine" ? (actorId ?? undefined) : undefined,
+		memberId: scope === "joined" ? (actorId ?? undefined) : undefined,
 		status: input.status,
 		statuses: scope === "public" && !input.status ? PUBLIC_ROOM_STATUSES : undefined,
 		cursor: page.cursor,

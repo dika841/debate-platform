@@ -15,6 +15,13 @@
       "when": 1794048368082,
       "tag": "0001_misty_hammerhead",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794059570937,
+      "tag": "0002_gray_felicia_hardy",
+      "breakpoints": true
     }
   ]
 }

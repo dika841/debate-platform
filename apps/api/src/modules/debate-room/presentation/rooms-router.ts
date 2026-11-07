@@ -9,6 +9,7 @@ import { listRooms } from "../application/use-cases/list-rooms.ts";
 import { publishRoom } from "../application/use-cases/publish-room.ts";
 import { updateRoom } from "../application/use-cases/update-room.ts";
 import { createDrizzleRoomRepository } from "../infrastructure/persistence/drizzle-room-repository.ts";
+import { createDrizzleRoomParticipationReader } from "#/modules/membership/infrastructure/persistence/drizzle-membership-repository.ts";
 
 const os = implement(contract).$context<OrpcContext>();
 
@@ -28,7 +29,10 @@ export const roomsRouter = {
 	get: os.rooms.get.handler(async ({ context, input }) => {
 		try {
 			return await getRoom(
-				{ repository: repositoryFrom(context) },
+				{
+					repository: repositoryFrom(context),
+					participation: createDrizzleRoomParticipationReader(context.db),
+				},
 				input.id,
 				context.session?.userId ?? null,
 			);

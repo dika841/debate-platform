@@ -13,6 +13,14 @@ export const useRooms = (input: ListRoomsInput = { scope: "public" }) =>
 
 export const useMyRooms = () => useRooms({ scope: "mine" });
 
+export const useJoinedRooms = () => useRooms({ scope: "joined" });
+
+export const useMembers = (roomId: string) =>
+	useQuery({
+		...orpc.memberships.list.queryOptions({ input: { roomId } }),
+		enabled: roomId.length > 0,
+	});
+
 export const useRoom = (id: string) =>
 	useQuery({
 		...orpc.rooms.get.queryOptions({ input: { id } }),
@@ -67,6 +75,39 @@ export const useCancelRoom = () => {
 		...orpc.rooms.cancel.mutationOptions(),
 		onSuccess: async () => {
 			await invalidateRooms();
+		},
+	});
+};
+
+const useInvalidateMemberships = () => {
+	const queryClient = useQueryClient();
+
+	return async (): Promise<void> => {
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: orpc.memberships.key() }),
+			queryClient.invalidateQueries({ queryKey: orpc.rooms.key() }),
+		]);
+	};
+};
+
+export const useJoinRoom = () => {
+	const invalidateMemberships = useInvalidateMemberships();
+
+	return useMutation({
+		...orpc.memberships.join.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateMemberships();
+		},
+	});
+};
+
+export const useLeaveRoom = () => {
+	const invalidateMemberships = useInvalidateMemberships();
+
+	return useMutation({
+		...orpc.memberships.leave.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateMemberships();
 		},
 	});
 };

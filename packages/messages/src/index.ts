@@ -44,6 +44,9 @@ export const ROOM = {
 	exploreDescription: "Published rooms looking for participants and spectators.",
 	myDebatesTitle: "My debates",
 	myDebatesDescription: "Rooms you host, from drafts to completed debates.",
+	joinedTitle: "Joined debates",
+	joinedDescription: "Rooms where you participate or spectate.",
+	emptyJoined: "You have not joined any debates yet.",
 	createTitle: "Create debate",
 	createDescription: "Configure a room, then publish it when you are ready.",
 	editTitle: "Edit debate",
@@ -95,5 +98,25 @@ export const ROOM = {
 		creating: "Creating…",
 		save: "Save changes",
 		saving: "Saving…",
+	},
+} as const;
+
+export const MEMBERSHIP = {
+	roster: "Participants & spectators",
+	emptyRoster: "No one has joined yet.",
+	participants: "Participants",
+	spectators: "Spectators",
+	capacity: (current: number, max: number) => `${current}/${max}`,
+	joinAsParticipant: "Join as participant",
+	joinAsSpectator: "Join as spectator",
+	joining: "Joining…",
+	leave: "Leave debate",
+	leaving: "Leaving…",
+	signInToJoin: "Sign in to join",
+	full: "Participant slots are full",
+	role: {
+		HOST: "Host",
+		PARTICIPANT: "Participant",
+		SPECTATOR: "Spectator",
 	},
 } as const;

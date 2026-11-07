@@ -1,7 +1,8 @@
 import type { Database } from "@app/database";
-import { debateRooms, userProfiles, users } from "@app/database/schema";
+import { debateRooms, roomMemberships, userProfiles, users } from "@app/database/schema";
 import type { RoomStatus } from "@app/shared";
 import { and, desc, eq, inArray, lt, or, type SQL } from "drizzle-orm";
+import { decodeCursor, encodeCursor } from "#/platform/persistence/cursor.ts";
 import type {
 	RoomListFilter,
 	RoomPage,
@@ -78,39 +79,6 @@ const rowToRoom = (row: RoomRow): RoomWithHost => ({
 	},
 });
 
-const CURSOR_SEPARATOR = "|";
-
-const encodeCursor = (room: RoomWithHost["room"]): string =>
-	btoa(`${room.createdAt.toISOString()}${CURSOR_SEPARATOR}${room.id}`);
-
-const decodeCursor = (
-	cursor: string | null | undefined,
-): { createdAt: Date; id: string } | null => {
-	if (!cursor) {
-		return null;
-	}
-
-	try {
-		const raw = atob(cursor);
-		const separatorIndex = raw.indexOf(CURSOR_SEPARATOR);
-
-		if (separatorIndex === -1) {
-			return null;
-		}
-
-		const createdAt = new Date(raw.slice(0, separatorIndex));
-		const id = raw.slice(separatorIndex + 1);
-
-		if (Number.isNaN(createdAt.getTime()) || id.length === 0) {
-			return null;
-		}
-
-		return { createdAt, id };
-	} catch {
-		return null;
-	}
-};
-
 export const createDrizzleRoomRepository = (db: Database): RoomRepository => {
 	const findById = async (id: string): Promise<RoomWithHost | null> => {
 		const [row] = await db
@@ -153,6 +121,15 @@ export const createDrizzleRoomRepository = (db: Database): RoomRepository => {
 				conditions.push(eq(debateRooms.hostId, filter.hostId));
 			}
 
+			if (filter.memberId) {
+				const memberRooms = db
+					.select({ roomId: roomMemberships.roomId })
+					.from(roomMemberships)
+					.where(eq(roomMemberships.userId, filter.memberId));
+
+				conditions.push(inArray(debateRooms.id, memberRooms));
+			}
+
 			if (filter.status) {
 				conditions.push(eq(debateRooms.status, filter.status));
 			} else if (filter.statuses && filter.statuses.length > 0) {
@@ -162,8 +139,8 @@ export const createDrizzleRoomRepository = (db: Database): RoomRepository => {
 			const cursor = decodeCursor(filter.cursor);
 			if (cursor) {
 				const cursorCondition = or(
-					lt(debateRooms.createdAt, cursor.createdAt),
-					and(eq(debateRooms.createdAt, cursor.createdAt), lt(debateRooms.id, cursor.id)),
+					lt(debateRooms.createdAt, cursor.timestamp),
+					and(eq(debateRooms.createdAt, cursor.timestamp), lt(debateRooms.id, cursor.id)),
 				);
 
 				if (cursorCondition) {
@@ -187,7 +164,10 @@ export const createDrizzleRoomRepository = (db: Database): RoomRepository => {
 
 			return {
 				items,
-				nextCursor: hasMore && lastItem ? encodeCursor(lastItem.room) : null,
+				nextCursor:
+					hasMore && lastItem
+						? encodeCursor({ timestamp: lastItem.room.createdAt, id: lastItem.room.id })
+						: null,
 			};
 		},
 

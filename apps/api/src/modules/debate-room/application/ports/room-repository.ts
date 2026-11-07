@@ -39,6 +39,7 @@ export type RoomPatch = Partial<RoomConfiguration> & {
 
 export type RoomListFilter = {
 	readonly hostId?: string;
+	readonly memberId?: string;
 	readonly statuses?: readonly RoomStatus[];
 	readonly status?: RoomStatus;
 	readonly cursor?: string | null;

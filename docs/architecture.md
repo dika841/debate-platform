@@ -81,6 +81,31 @@ completing debates arrive with execution and results.
 Transport errors are mapped once in `platform/orpc/errors.ts`, so future
 contexts share the same domain/application → HTTP status translation.
 
+M3 adds the membership context:
+
+```text
+apps/api/src/modules/membership/
+├── domain/membership.ts              joinable states, host rules, capacity
+├── application/
+│   ├── ports/membership-repository.ts
+│   ├── use-cases/{join,leave}-room.ts
+│   ├── use-cases/list-members.ts
+│   └── mappers/membership-mapper.ts
+├── infrastructure/persistence/drizzle-membership-repository.ts
+│                                     repository + room participation reader
+└── presentation/memberships-router.ts
+```
+
+Participants are capped at `teamSize × 2` (both sides) and spectators are
+unlimited. The join transaction locks the room row before counting, so two
+concurrent joins cannot exceed capacity. Joining is idempotent for the same
+role; switching roles requires leaving first. The `team` column is intentionally
+left nullable until team assignment lands in M4.
+
+`rooms.get` composes the debate-room and membership contexts through the
+`RoomParticipationReader` port, which supplies counts and the viewer role
+without coupling the room domain to membership persistence.
+
 ## Frontend architecture
 
 The frontend intentionally uses **Vite + React 19 + TanStack Router** (SPA)

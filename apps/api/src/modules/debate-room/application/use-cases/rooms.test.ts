@@ -23,6 +23,14 @@ import { updateRoom } from "./update-room.ts";
 
 const CLOCK = fixedClock("2026-01-01T10:00:00.000Z");
 
+const participation = {
+	snapshot: async () => ({
+		participantCount: 0,
+		spectatorCount: 0,
+		viewerRole: null,
+	}),
+};
+
 const roomWith = (
 	id: string,
 	hostId: string,
@@ -193,12 +201,35 @@ describe("debate room use cases", () => {
 	it("hides drafts from other users", async () => {
 		const repository = createRepository([roomWith("room-1", "host-1")]);
 
-		await expect(getRoom({ repository }, "room-1", "other")).rejects.toBeInstanceOf(
+		await expect(getRoom({ repository, participation }, "room-1", "other")).rejects.toBeInstanceOf(
 			ApplicationError,
 		);
 
-		const own = await getRoom({ repository }, "room-1", "host-1");
+		const own = await getRoom({ repository, participation }, "room-1", "host-1");
 		expect(own.isHost).toBe(true);
+	});
+
+	it("includes participation counts and the viewer role", async () => {
+		const repository = createRepository([roomWith("room-1", "host-1", ROOM_STATUS.PUBLISHED)]);
+
+		const detail = await getRoom(
+			{
+				repository,
+				participation: {
+					snapshot: async () => ({
+						participantCount: 2,
+						spectatorCount: 1,
+						viewerRole: "PARTICIPANT" as const,
+					}),
+				},
+			},
+			"room-1",
+			"member-1",
+		);
+
+		expect(detail.participantCount).toBe(2);
+		expect(detail.spectatorCount).toBe(1);
+		expect(detail.viewerRole).toBe("PARTICIPANT");
 	});
 
 	it("requires authentication to list owned rooms", async () => {

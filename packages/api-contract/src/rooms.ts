@@ -1,5 +1,6 @@
 import { ROOM_STATUS } from "@app/shared";
 import { z } from "zod";
+import { viewerRoleSchema } from "./memberships.ts";
 
 export const ROOM_TITLE_MAX = 120;
 export const ROOM_MOTION_MAX = 300;
@@ -44,12 +45,18 @@ export const roomSchema = z.object({
 	isHost: z.boolean(),
 });
 
+export const roomDetailSchema = roomSchema.extend({
+	participantCount: z.number().int().nonnegative(),
+	spectatorCount: z.number().int().nonnegative(),
+	viewerRole: viewerRoleSchema.nullable(),
+});
+
 export const roomIdInputSchema = z.object({
 	id: z.string().min(1),
 });
 
 export const listRoomsInputSchema = z.object({
-	scope: z.enum(["public", "mine"]).default("public"),
+	scope: z.enum(["public", "mine", "joined"]).default("public"),
 	status: roomStatusSchema.optional(),
 	cursor: z.string().min(1).optional(),
 	limit: z.number().int().min(1).max(50).optional(),
@@ -83,6 +90,7 @@ export const updateRoomInputSchema = roomConfigurationSchema.partial().extend({
 });
 
 export type Room = z.infer<typeof roomSchema>;
+export type RoomDetail = z.infer<typeof roomDetailSchema>;
 export type RoomHost = z.infer<typeof roomHostSchema>;
 export type RoomStatusValue = z.infer<typeof roomStatusSchema>;
 export type ListRoomsInput = z.input<typeof listRoomsInputSchema>;

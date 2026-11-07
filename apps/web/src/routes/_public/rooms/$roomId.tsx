@@ -1,9 +1,17 @@
 import { Badge } from "@app/components/ui/badge";
 import { Button } from "@app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
-import { ROOM } from "@app/messages";
+import { MEMBERSHIP, ROOM } from "@app/messages";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCancelRoom, usePublishRoom, useRoom } from "@/libs/api/queries.ts";
+import {
+	useCancelRoom,
+	useJoinRoom,
+	useLeaveRoom,
+	useMembers,
+	usePublishRoom,
+	useRoom,
+	useSession,
+} from "@/libs/api/queries.ts";
 import { RoomStatusBadge } from "@/routes/_components/room-status-badge.tsx";
 
 export const Route = createFileRoute("/_public/rooms/$roomId")({
@@ -15,8 +23,12 @@ const formatDate = (value: string): string => new Date(value).toLocaleString();
 function RoomDetailPage() {
 	const { roomId } = Route.useParams();
 	const room = useRoom(roomId);
+	const members = useMembers(roomId);
+	const session = useSession();
 	const publish = usePublishRoom();
 	const cancel = useCancelRoom();
+	const join = useJoinRoom();
+	const leave = useLeaveRoom();
 
 	if (room.isPending) {
 		return <p className="text-sm text-muted-foreground">Loading debate…</p>;
@@ -41,8 +53,17 @@ function RoomDetailPage() {
 	}
 
 	const current = room.data;
-	const actionError = publish.error?.message ?? cancel.error?.message ?? null;
-	const actionPending = publish.isPending || cancel.isPending;
+	const authenticated = Boolean(session.data?.session);
+	const isOpen = current.status === "PUBLISHED" || current.status === "IN_PROGRESS";
+	const participantCapacity = current.teamSize * 2;
+	const participantSlotsFull = current.participantCount >= participantCapacity;
+	const actionPending = publish.isPending || cancel.isPending || join.isPending || leave.isPending;
+	const actionError =
+		publish.error?.message ??
+		cancel.error?.message ??
+		join.error?.message ??
+		leave.error?.message ??
+		null;
 
 	return (
 		<div className="space-y-6">
@@ -63,14 +84,16 @@ function RoomDetailPage() {
 					<Button variant="outline" asChild>
 						<Link to="/">{ROOM.backToExplore}</Link>
 					</Button>
-					{current.isHost && current.status === "DRAFT" ? (
+
+					{current.viewerRole === "HOST" && current.status === "DRAFT" ? (
 						<Button variant="outline" asChild>
 							<Link to="/rooms/$roomId/edit" params={{ roomId: current.id }}>
 								{ROOM.edit}
 							</Link>
 						</Button>
 					) : null}
-					{current.isHost && current.status === "DRAFT" ? (
+
+					{current.viewerRole === "HOST" && current.status === "DRAFT" ? (
 						<Button
 							disabled={actionPending}
 							onClick={() => void publish.mutate({ id: current.id })}
@@ -78,13 +101,56 @@ function RoomDetailPage() {
 							{publish.isPending ? ROOM.publishing : ROOM.publish}
 						</Button>
 					) : null}
-					{current.isHost && (current.status === "DRAFT" || current.status === "PUBLISHED") ? (
+
+					{current.viewerRole === "HOST" &&
+					(current.status === "DRAFT" || current.status === "PUBLISHED") ? (
 						<Button
 							variant="destructive"
 							disabled={actionPending}
 							onClick={() => void cancel.mutate({ id: current.id })}
 						>
 							{cancel.isPending ? ROOM.cancelling : ROOM.cancel}
+						</Button>
+					) : null}
+
+					{current.viewerRole === null && isOpen && authenticated ? (
+						<>
+							<Button
+								disabled={actionPending || participantSlotsFull}
+								title={participantSlotsFull ? MEMBERSHIP.full : undefined}
+								onClick={() => void join.mutate({ roomId: current.id, role: "PARTICIPANT" })}
+							>
+								{join.isPending && join.variables?.role === "PARTICIPANT"
+									? MEMBERSHIP.joining
+									: MEMBERSHIP.joinAsParticipant}
+							</Button>
+							<Button
+								variant="outline"
+								disabled={actionPending}
+								onClick={() => void join.mutate({ roomId: current.id, role: "SPECTATOR" })}
+							>
+								{join.isPending && join.variables?.role === "SPECTATOR"
+									? MEMBERSHIP.joining
+									: MEMBERSHIP.joinAsSpectator}
+							</Button>
+						</>
+					) : null}
+
+					{current.viewerRole === null && isOpen && !authenticated ? (
+						<Button asChild>
+							<Link to="/login" search={{ redirect: `/rooms/${current.id}` }}>
+								{MEMBERSHIP.signInToJoin}
+							</Link>
+						</Button>
+					) : null}
+
+					{current.viewerRole === "PARTICIPANT" || current.viewerRole === "SPECTATOR" ? (
+						<Button
+							variant="outline"
+							disabled={actionPending}
+							onClick={() => void leave.mutate({ roomId: current.id })}
+						>
+							{leave.isPending ? MEMBERSHIP.leaving : MEMBERSHIP.leave}
 						</Button>
 					) : null}
 				</div>
@@ -127,6 +193,49 @@ function RoomDetailPage() {
 									{current.spectatorVotingEnabled ? ROOM.enabled : ROOM.disabled}
 								</Badge>
 							</div>
+						</CardContent>
+					</Card>
+
+					<Card>
+						<CardHeader>
+							<CardTitle>{MEMBERSHIP.roster}</CardTitle>
+							<CardDescription>
+								{MEMBERSHIP.participants}:{" "}
+								{MEMBERSHIP.capacity(current.participantCount, participantCapacity)} ·{" "}
+								{MEMBERSHIP.spectators}: {current.spectatorCount}
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<ul className="space-y-2 text-sm">
+								<li className="flex items-center justify-between gap-3">
+									<span>
+										{current.host.displayName}
+										{current.host.username ? (
+											<span className="text-muted-foreground"> @{current.host.username}</span>
+										) : null}
+									</span>
+									<Badge variant="outline">{MEMBERSHIP.role.HOST}</Badge>
+								</li>
+
+								{members.data?.items.map((member) => (
+									<li
+										key={member.id}
+										className="flex items-center justify-between gap-3 border-t border-border/60 pt-2"
+									>
+										<span>
+											{member.user.displayName}
+											{member.user.username ? (
+												<span className="text-muted-foreground"> @{member.user.username}</span>
+											) : null}
+										</span>
+										<Badge variant="secondary">{MEMBERSHIP.role[member.role]}</Badge>
+									</li>
+								))}
+							</ul>
+
+							{members.data && members.data.items.length === 0 ? (
+								<p className="mt-3 text-sm text-muted-foreground">{MEMBERSHIP.emptyRoster}</p>
+							) : null}
 						</CardContent>
 					</Card>
 				</div>

@@ -1,5 +1,14 @@
 import { relations } from "drizzle-orm";
-import { boolean, index, integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	index,
+	integer,
+	pgTable,
+	text,
+	timestamp,
+	uniqueIndex,
+	varchar,
+} from "drizzle-orm/pg-core";
 
 /**
  * Authentication tables are owned by Better Auth.
@@ -111,6 +120,27 @@ export const debateRooms = pgTable(
 	],
 );
 
+export const roomMemberships = pgTable(
+	"room_memberships",
+	{
+		id: text("id").primaryKey(),
+		roomId: text("room_id")
+			.notNull()
+			.references(() => debateRooms.id, { onDelete: "cascade" }),
+		userId: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		role: text("role").notNull(),
+		team: text("team"),
+		joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("uq_room_memberships_room_user").on(table.roomId, table.userId),
+		index("idx_room_memberships_room_role").on(table.roomId, table.role),
+		index("idx_room_memberships_user").on(table.userId),
+	],
+);
+
 export const usersRelations = relations(users, ({ one, many }) => ({
 	profile: one(userProfiles, {
 		fields: [users.id],
@@ -119,6 +149,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 	sessions: many(sessions),
 	accounts: many(accounts),
 	hostedRooms: many(debateRooms),
+	memberships: many(roomMemberships),
 }));
 
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
@@ -128,9 +159,21 @@ export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
 	}),
 }));
 
-export const debateRoomsRelations = relations(debateRooms, ({ one }) => ({
+export const debateRoomsRelations = relations(debateRooms, ({ one, many }) => ({
 	host: one(users, {
 		fields: [debateRooms.hostId],
+		references: [users.id],
+	}),
+	memberships: many(roomMemberships),
+}));
+
+export const roomMembershipsRelations = relations(roomMemberships, ({ one }) => ({
+	room: one(debateRooms, {
+		fields: [roomMemberships.roomId],
+		references: [debateRooms.id],
+	}),
+	user: one(users, {
+		fields: [roomMemberships.userId],
 		references: [users.id],
 	}),
 }));

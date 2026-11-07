@@ -1,4 +1,5 @@
-import type { Room } from "@app/api-contract";
+import type { Room, RoomDetail } from "@app/api-contract";
+import type { RoomParticipationSnapshot } from "../ports/room-participation-reader.ts";
 import type { RoomWithHost } from "../ports/room-repository.ts";
 
 export const toRoomDto = ({ room, host }: RoomWithHost, actorId: string | null): Room => ({
@@ -22,4 +23,15 @@ export const toRoomDto = ({ room, host }: RoomWithHost, actorId: string | null):
 	createdAt: room.createdAt.toISOString(),
 	updatedAt: room.updatedAt.toISOString(),
 	isHost: actorId !== null && room.hostId === actorId,
+});
+
+export const toRoomDetailDto = (
+	found: RoomWithHost,
+	actorId: string | null,
+	participation: RoomParticipationSnapshot,
+): RoomDetail => ({
+	...toRoomDto(found, actorId),
+	participantCount: participation.participantCount,
+	spectatorCount: participation.spectatorCount,
+	viewerRole: actorId !== null && found.room.hostId === actorId ? "HOST" : participation.viewerRole,
 });

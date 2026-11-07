@@ -169,6 +169,19 @@ Live deploy requires `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, a Neon
 Domain modules (membership, assignment, execution, voting, results, moderation)
 follow in M3–M7 as vertical slices.
 
+## M3 scope (membership)
+
+- `room_memberships` table (`PARTICIPANT` / `SPECTATOR`, `team` reserved for M4)
+- Join/leave endpoints: `memberships.join`, `memberships.leave`,
+  `memberships.list`
+- Participants capped at `teamSize × 2`; spectators are unlimited
+- Only published/in-progress rooms accept members; hosts cannot join or leave
+- Room detail now includes participant/spectator counts and the viewer role
+- Members roster on the room page with join/leave actions, plus a Joined
+  Debates section on My Debates
+- Unit and Playwright coverage for join, leave, counts, capacity guards and
+  anonymous roster visibility
+
 ## End-to-end tests
 
 ```bash
