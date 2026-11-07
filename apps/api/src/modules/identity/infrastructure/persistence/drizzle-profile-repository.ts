@@ -1,4 +1,4 @@
-import type { Database } from "@app/database";
+import { isUniqueViolation, type Database } from "@app/database";
 import { userProfiles, users } from "@app/database/schema";
 import { APPLICATION_ERROR_CODE, ApplicationError } from "@app/shared";
 import { and, eq, ne } from "drizzle-orm";
@@ -28,15 +28,6 @@ const rowToProfile = (userId: string, row: ProfileRow): ProfileRecord | null => 
 		avatarUrl: row.avatarUrl,
 		bio: row.bio,
 	};
-};
-
-const isUniqueViolation = (error: unknown): boolean => {
-	return (
-		typeof error === "object" &&
-		error !== null &&
-		"code" in error &&
-		(error as { code?: unknown }).code === "23505"
-	);
 };
 
 export const createDrizzleProfileRepository = (db: Database): ProfileRepository => {

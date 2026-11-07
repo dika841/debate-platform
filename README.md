@@ -153,8 +153,21 @@ Live deploy requires `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, a Neon
 - Display name kept in sync with the Better Auth user record
 - Playwright coverage for registration, profile update, sign-out and invalid credentials
 
-Domain modules (rooms, membership, assignment, execution, voting, results,
-moderation) follow in M2–M7 as vertical slices.
+## M2 scope (debate rooms)
+
+- `debate_rooms` table and migration with team size, rounds, submission/voting
+  windows and spectator-voting configuration
+- Room lifecycle: `DRAFT → PUBLISHED → CANCELLED` (start/complete reserved for
+  later milestones)
+- `rooms.list`, `rooms.get`, `rooms.create`, `rooms.update`, `rooms.publish`
+  and `rooms.cancel` in the oRPC contract
+- Host-only mutations; drafts are hidden from other users
+- Explore page with published rooms, protected My Debates list, create and edit
+  forms, and a public room detail page
+- Unit, contract and Playwright coverage for create/edit/publish/cancel flows
+
+Domain modules (membership, assignment, execution, voting, results, moderation)
+follow in M3–M7 as vertical slices.
 
 ## End-to-end tests
 

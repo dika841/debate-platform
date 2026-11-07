@@ -12,6 +12,7 @@
 		"test": "vitest run --passWithNoTests"
 	},
 	"dependencies": {
+		"@app/shared": "workspace:*",
 		"@orpc/contract": "catalog:",
 		"zod": "catalog:"
 	},

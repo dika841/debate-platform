@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { boolean, index, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Authentication tables are owned by Better Auth.
@@ -84,6 +84,33 @@ export const userProfiles = pgTable(
 	(table) => [index("idx_user_profiles_username").on(table.username)],
 );
 
+export const debateRooms = pgTable(
+	"debate_rooms",
+	{
+		id: text("id").primaryKey(),
+		hostId: text("host_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		title: varchar("title", { length: 120 }).notNull(),
+		motion: varchar("motion", { length: 300 }).notNull(),
+		description: varchar("description", { length: 2000 }),
+		status: text("status").notNull().default("DRAFT"),
+		teamSize: integer("team_size").notNull().default(3),
+		roundCount: integer("round_count").notNull().default(3),
+		submissionDurationMinutes: integer("submission_duration_minutes").notNull().default(30),
+		votingDurationMinutes: integer("voting_duration_minutes").notNull().default(30),
+		spectatorVotingEnabled: boolean("spectator_voting_enabled").notNull().default(true),
+		publishedAt: timestamp("published_at", { withTimezone: true }),
+		cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+		updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		index("idx_debate_rooms_host").on(table.hostId),
+		index("idx_debate_rooms_status_created").on(table.status, table.createdAt),
+	],
+);
+
 export const usersRelations = relations(users, ({ one, many }) => ({
 	profile: one(userProfiles, {
 		fields: [users.id],
@@ -91,11 +118,19 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 	}),
 	sessions: many(sessions),
 	accounts: many(accounts),
+	hostedRooms: many(debateRooms),
 }));
 
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
 	user: one(users, {
 		fields: [userProfiles.userId],
+		references: [users.id],
+	}),
+}));
+
+export const debateRoomsRelations = relations(debateRooms, ({ one }) => ({
+	host: one(users, {
+		fields: [debateRooms.hostId],
 		references: [users.id],
 	}),
 }));

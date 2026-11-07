@@ -582,6 +582,9 @@ importers:
 
   packages/api-contract:
     dependencies:
+      '@app/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@orpc/contract':
         specifier: 'catalog:'
         version: 1.16.2

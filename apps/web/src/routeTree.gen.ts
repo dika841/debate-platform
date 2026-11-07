@@ -16,6 +16,10 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicHealthRouteImport } from './routes/_public/health'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicRegisterRouteImport } from './routes/_public/register'
+import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms/index'
+import { Route as AuthenticatedRoomsNewRouteImport } from './routes/_authenticated/rooms/new'
+import { Route as PublicRoomsRoomIdRouteImport } from './routes/_public/rooms/$roomId'
+import { Route as AuthenticatedRoomsRoomIdEditRouteImport } from './routes/_authenticated/rooms/$roomId/edit'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -50,6 +54,27 @@ const PublicRegisterRoute = PublicRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
+  id: '/rooms/',
+  path: '/rooms/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRoomsNewRoute = AuthenticatedRoomsNewRouteImport.update({
+  id: '/rooms/new',
+  path: '/rooms/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const PublicRoomsRoomIdRoute = PublicRoomsRoomIdRouteImport.update({
+  id: '/rooms/$roomId',
+  path: '/rooms/$roomId',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const AuthenticatedRoomsRoomIdEditRoute =
+  AuthenticatedRoomsRoomIdEditRouteImport.update({
+    id: '/rooms/$roomId/edit',
+    path: '/rooms/$roomId/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
@@ -57,6 +82,10 @@ export interface FileRoutesByFullPath {
   '/health': typeof PublicHealthRoute
   '/login': typeof PublicLoginRoute
   '/register': typeof PublicRegisterRoute
+  '/rooms/new': typeof AuthenticatedRoomsNewRoute
+  '/rooms/$roomId': typeof PublicRoomsRoomIdRoute
+  '/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/rooms/$roomId/edit': typeof AuthenticatedRoomsRoomIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
@@ -64,6 +93,10 @@ export interface FileRoutesByTo {
   '/health': typeof PublicHealthRoute
   '/login': typeof PublicLoginRoute
   '/register': typeof PublicRegisterRoute
+  '/rooms/new': typeof AuthenticatedRoomsNewRoute
+  '/rooms/$roomId': typeof PublicRoomsRoomIdRoute
+  '/rooms': typeof AuthenticatedRoomsIndexRoute
+  '/rooms/$roomId/edit': typeof AuthenticatedRoomsRoomIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -74,12 +107,34 @@ export interface FileRoutesById {
   '/_public/login': typeof PublicLoginRoute
   '/_public/register': typeof PublicRegisterRoute
   '/_public/': typeof PublicIndexRoute
+  '/_authenticated/rooms/new': typeof AuthenticatedRoomsNewRoute
+  '/_public/rooms/$roomId': typeof PublicRoomsRoomIdRoute
+  '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/_authenticated/rooms/$roomId/edit': typeof AuthenticatedRoomsRoomIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profile' | '/health' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/profile'
+    | '/health'
+    | '/login'
+    | '/register'
+    | '/rooms/new'
+    | '/rooms/$roomId'
+    | '/rooms/'
+    | '/rooms/$roomId/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/profile' | '/health' | '/login' | '/register'
+  to:
+    | '/'
+    | '/profile'
+    | '/health'
+    | '/login'
+    | '/register'
+    | '/rooms/new'
+    | '/rooms/$roomId'
+    | '/rooms'
+    | '/rooms/$roomId/edit'
   id:
     | '__root__'
     | '/_authenticated'
@@ -89,6 +144,10 @@ export interface FileRouteTypes {
     | '/_public/login'
     | '/_public/register'
     | '/_public/'
+    | '/_authenticated/rooms/new'
+    | '/_public/rooms/$roomId'
+    | '/_authenticated/rooms/'
+    | '/_authenticated/rooms/$roomId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -147,15 +206,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRegisterRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_authenticated/rooms/': {
+      id: '/_authenticated/rooms/'
+      path: '/rooms'
+      fullPath: '/rooms/'
+      preLoaderRoute: typeof AuthenticatedRoomsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/rooms/new': {
+      id: '/_authenticated/rooms/new'
+      path: '/rooms/new'
+      fullPath: '/rooms/new'
+      preLoaderRoute: typeof AuthenticatedRoomsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_public/rooms/$roomId': {
+      id: '/_public/rooms/$roomId'
+      path: '/rooms/$roomId'
+      fullPath: '/rooms/$roomId'
+      preLoaderRoute: typeof PublicRoomsRoomIdRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_authenticated/rooms/$roomId/edit': {
+      id: '/_authenticated/rooms/$roomId/edit'
+      path: '/rooms/$roomId/edit'
+      fullPath: '/rooms/$roomId/edit'
+      preLoaderRoute: typeof AuthenticatedRoomsRoomIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRoomsNewRoute: typeof AuthenticatedRoomsNewRoute
+  AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute
+  AuthenticatedRoomsRoomIdEditRoute: typeof AuthenticatedRoomsRoomIdEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedRoomsNewRoute: AuthenticatedRoomsNewRoute,
+  AuthenticatedRoomsIndexRoute: AuthenticatedRoomsIndexRoute,
+  AuthenticatedRoomsRoomIdEditRoute: AuthenticatedRoomsRoomIdEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -166,6 +259,7 @@ interface PublicRouteRouteChildren {
   PublicLoginRoute: typeof PublicLoginRoute
   PublicRegisterRoute: typeof PublicRegisterRoute
   PublicIndexRoute: typeof PublicIndexRoute
+  PublicRoomsRoomIdRoute: typeof PublicRoomsRoomIdRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
@@ -173,6 +267,7 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicLoginRoute: PublicLoginRoute,
   PublicRegisterRoute: PublicRegisterRoute,
   PublicIndexRoute: PublicIndexRoute,
+  PublicRoomsRoomIdRoute: PublicRoomsRoomIdRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(

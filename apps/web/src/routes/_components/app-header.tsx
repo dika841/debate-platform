@@ -29,6 +29,16 @@ export const AppHeader = () => {
 					<Link to="/" className="hover:text-foreground">
 						{NAV.explore}
 					</Link>
+					{user ? (
+						<>
+							<Link to="/rooms" className="hover:text-foreground">
+								{NAV.myDebates}
+							</Link>
+							<Link to="/rooms/new" className="hover:text-foreground">
+								{NAV.createDebate}
+							</Link>
+						</>
+					) : null}
 					<Link to="/health" className="hover:text-foreground">
 						Health
 					</Link>

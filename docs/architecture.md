@@ -59,6 +59,28 @@ Profiles are created lazily on first read, so pre-existing Better Auth users do
 not need a backfill migration. Updating `displayName` also updates the Better
 Auth user name to keep the session header consistent.
 
+M2 adds the debate-room context as the first domain slice:
+
+```text
+apps/api/src/modules/debate-room/
+├── domain/room.ts                    configuration validation and lifecycle
+├── application/
+│   ├── ports/room-repository.ts
+│   ├── room-access.ts                load + host authorization
+│   ├── use-cases/{create,get,list,update,publish,cancel}-room.ts
+│   └── mappers/room-mapper.ts
+├── infrastructure/persistence/drizzle-room-repository.ts
+└── presentation/rooms-router.ts      oRPC procedures
+```
+
+Room visibility and transitions are domain rules: drafts and cancelled rooms are
+only readable by the host, published rooms are public, and only drafts can be
+edited. The lifecycle is `DRAFT → PUBLISHED → CANCELLED` for M2; starting and
+completing debates arrive with execution and results.
+
+Transport errors are mapped once in `platform/orpc/errors.ts`, so future
+contexts share the same domain/application → HTTP status translation.
+
 ## Frontend architecture
 
 The frontend intentionally uses **Vite + React 19 + TanStack Router** (SPA)
@@ -70,7 +92,8 @@ Assets.
 apps/web/src/
 ├── routes/            file-based TanStack Router routes
 │   ├── __root.tsx
-│   └── _public/       public layout + pages
+│   ├── _public/       public layout + explore, room detail, auth pages
+│   └── _authenticated/ protected profile, My Debates, create/edit room
 ├── libs/
 │   ├── orpc/          typed client + TanStack Query utils
 │   └── api/           query helpers
@@ -121,7 +144,7 @@ instances.
 
 `packages/api-contract` is the only shared API surface:
 
-- procedure definitions (`health.check`, `auth.getSession` in M0)
+- procedure definitions (`health.check`, `auth.getSession`, `users.*`, `rooms.*`)
 - Zod input/output schemas
 - public DTO types
 

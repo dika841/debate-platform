@@ -4,6 +4,7 @@ import { implement } from "@orpc/server";
 import { healthCheckOutputSchema, HEALTH_STATUS } from "@app/api-contract";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { usersRouter } from "#/modules/identity/index.ts";
+import { roomsRouter } from "#/modules/debate-room/index.ts";
 
 const APP_VERSION = "0.1.0";
 
@@ -46,4 +47,5 @@ export const appRouter = os.router({
 		getSession,
 	},
 	users: usersRouter,
+	rooms: roomsRouter,
 });
