@@ -1,0 +1,14 @@
+$schema: "https://moonrepo.dev/schemas/project.json"
+
+tasks:
+  dev:
+    command: "pnpm run dev"
+    options:
+      persistent: true
+      runInCI: false
+
+  preview:
+    command: "pnpm run preview"
+    options:
+      persistent: true
+      runInCI: false

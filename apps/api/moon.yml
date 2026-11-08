@@ -1,0 +1,50 @@
+$schema: "https://moonrepo.dev/schemas/project.json"
+
+tasks:
+  dev:
+    command: "pnpm run dev"
+    options:
+      persistent: true
+      runInCI: false
+
+  start:
+    command: "pnpm run start"
+    options:
+      persistent: true
+      runInCI: false
+
+  migrate:
+    command: "pnpm run migrate"
+    options:
+      runInCI: false
+
+  db-seed:
+    command: "pnpm run db:seed"
+    options:
+      runInCI: false
+
+  db-generate:
+    command: "pnpm run db:generate"
+    options:
+      runInCI: false
+
+  db-push:
+    command: "pnpm run db:push"
+    options:
+      runInCI: false
+
+  db-studio:
+    command: "pnpm run db:studio"
+    options:
+      persistent: true
+      runInCI: false
+
+  deploy:
+    command: "pnpm run deploy"
+    options:
+      runInCI: false
+
+  deploy-dry-run:
+    command: "pnpm run deploy:dry-run"
+    options:
+      runInCI: false
