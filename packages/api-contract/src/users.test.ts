@@ -9,6 +9,7 @@ describe("user profile contract", () => {
 			name: "Demo",
 			image: null,
 			role: "USER",
+			twoFactorEnabled: false,
 			profile: {
 				username: "demo_user",
 				displayName: "Demo User",

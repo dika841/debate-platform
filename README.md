@@ -287,7 +287,8 @@ All planned domain slices (M2–M7) are now implemented.
   structured `RATE_LIMITED` body.
 - The default limiter is in-memory (fine for one Node instance). Set
   `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to share limits across
-  instances and Cloudflare isolates.
+  instances and Cloudflare isolates. Cloudflare production refuses to start
+  without Upstash; other production deployments log a warning.
 
 ### Request limits and headers
 
@@ -313,6 +314,10 @@ All planned domain slices (M2–M7) are now implemented.
 - Password reset (`/forgot-password`, `/reset-password`) and password change
   (`/profile`) are available; changing a password revokes other sessions, and a
   "Sign out other devices" action is provided.
+- Two-factor authentication (TOTP + backup codes) is available from the profile
+  security card; login prompts for the authenticator code when enabled.
+- Users can download their data (`/api/me/export`) and delete their account
+  from the profile page.
 - Reset/verification emails are sent with Resend (`RESEND_API_KEY`,
   `EMAIL_FROM`). Without a provider key, development logs delivery locally and
   production logs a warning.
@@ -326,6 +331,24 @@ All planned domain slices (M2–M7) are now implemented.
 - Security-sensitive actions are written to `audit_events`: room publish/cancel,
   assignment finalization, round start/advance, round/room result finalization
   and report resolution.
+
+### Privacy and retention
+
+- `/api/me/export` returns the authenticated user's profile, hosted rooms,
+  memberships, submissions, votes, reports and notifications as JSON.
+- Account deletion is self-service with password confirmation; foreign keys
+  cascade owned data.
+- Worker retention defaults: read notifications 90 days, resolved reports 365
+  days, audit events 730 days. Override with
+  `NOTIFICATION_RETENTION_DAYS`, `REPORT_RETENTION_DAYS` and
+  `AUDIT_RETENTION_DAYS`.
+
+### Supply chain and database roles
+
+- `pnpm audit --prod`, gitleaks and CodeQL run in `.github/workflows/security.yml`.
+- The esbuild advisory is pinned out via a workspace override.
+- Migrations can use `MIGRATION_DATABASE_URL` with an owner role while the API
+  runtime uses a least-privilege `DATABASE_URL`.
 
 ### Production guards
 

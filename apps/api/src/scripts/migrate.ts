@@ -8,7 +8,8 @@ import { logger } from "#/platform/observability/logger.ts";
 
 const migrationsFolder = fileURLToPath(new URL("../../drizzle", import.meta.url));
 
-const pool = new Pool({ connectionString: env.DATABASE_URL });
+const databaseUrl = process.env.MIGRATION_DATABASE_URL ?? env.DATABASE_URL;
+const pool = new Pool({ connectionString: databaseUrl });
 
 try {
 	logger.info({ migrationsFolder }, "migrate.start");

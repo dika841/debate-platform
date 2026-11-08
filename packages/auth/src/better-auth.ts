@@ -1,7 +1,8 @@
 import type { Database } from "@app/database";
-import { accounts, sessions, users, verifications } from "@app/database/schema";
+import { accounts, sessions, twoFactors, users, verifications } from "@app/database/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { twoFactor } from "better-auth/plugins";
 
 export type AuthEmailMessage = {
 	readonly to: string;
@@ -36,8 +37,14 @@ export const authCreate = (options: AuthCreateOptions) => {
 				session: sessions,
 				account: accounts,
 				verification: verifications,
+				twoFactor: twoFactors,
 			},
 		}),
+		plugins: [
+			twoFactor({
+				issuer: "Debate Platform",
+			}),
+		],
 		advanced: {
 			database: {
 				generateId: (): string => crypto.randomUUID(),
@@ -93,6 +100,9 @@ export const authCreate = (options: AuthCreateOptions) => {
 				}
 			: {}),
 		user: {
+			deleteUser: {
+				enabled: true,
+			},
 			additionalFields: {
 				role: {
 					type: "string",

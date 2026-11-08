@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
-import { env } from "#/platform/config/env.ts";
+import { env, isProduction } from "#/platform/config/env.ts";
+import { logger } from "#/platform/observability/logger.ts";
 import { createMemoryRateLimiter, type RateLimiter } from "./memory-rate-limiter.ts";
 import { createUpstashRateLimiter } from "./upstash-rate-limiter.ts";
 
@@ -24,6 +25,13 @@ export const createRateLimiters = (): {
 					token: env.UPSTASH_REDIS_REST_TOKEN,
 				})
 			: null;
+
+	if (isProduction && !redis) {
+		logger.warn(
+			{},
+			"rate_limit.in_memory_production: set UPSTASH_REDIS_REST_URL/TOKEN for shared limits across instances",
+		);
+	}
 
 	return {
 		rpc: createLimiter(redis, env.RATE_LIMIT_RPC_PER_MINUTE),

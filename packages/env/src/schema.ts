@@ -78,6 +78,14 @@ export const apiEnvSchema = z
 					message: "WEB_ORIGIN must use https in Cloudflare production",
 				});
 			}
+
+			if (!value.UPSTASH_REDIS_REST_URL || !value.UPSTASH_REDIS_REST_TOKEN) {
+				ctx.addIssue({
+					code: "custom",
+					path: ["UPSTASH_REDIS_REST_URL"],
+					message: "Cloudflare deployments require Upstash Redis for shared rate limits",
+				});
+			}
 		}
 	});
 

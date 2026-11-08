@@ -15,6 +15,7 @@ export const userProfileSchema = z.object({
 	name: z.string(),
 	image: z.string().nullable(),
 	role: z.string(),
+	twoFactorEnabled: z.boolean(),
 	profile: profileSchema,
 });
 

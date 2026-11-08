@@ -5,6 +5,9 @@ const INTERVAL_MS = 60_000;
 const tick = async (): Promise<void> => {
 	const results = await runScheduledJobs(new Date(), {
 		DATABASE_URL: process.env.DATABASE_URL,
+		NOTIFICATION_RETENTION_DAYS: process.env.NOTIFICATION_RETENTION_DAYS,
+		REPORT_RETENTION_DAYS: process.env.REPORT_RETENTION_DAYS,
+		AUDIT_RETENTION_DAYS: process.env.AUDIT_RETENTION_DAYS,
 	});
 	logger.debug({ results }, "worker.local.tick");
 };

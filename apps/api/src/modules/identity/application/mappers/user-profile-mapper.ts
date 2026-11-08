@@ -7,6 +7,7 @@ export const toUserProfile = (user: IdentityUser, profile: ProfileRecord): UserP
 	name: user.name,
 	image: user.image,
 	role: user.role,
+	twoFactorEnabled: user.twoFactorEnabled,
 	profile: {
 		username: profile.username,
 		displayName: profile.displayName,

@@ -5,7 +5,7 @@ import { Input } from "@app/components/ui/input";
 import { Label } from "@app/components/ui/label";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { signIn } from "@/libs/auth/client.ts";
+import { signIn, twoFactor } from "@/libs/auth/client.ts";
 import { safeInternalPath } from "@/libs/navigation.ts";
 import { useInvalidateAccount } from "@/libs/api/queries.ts";
 
@@ -30,6 +30,14 @@ function LoginPage() {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [pending, setPending] = useState(false);
+	const [twoFactorRequired, setTwoFactorRequired] = useState(false);
+	const [code, setCode] = useState("");
+	const [verifying, setVerifying] = useState(false);
+
+	const finishSignIn = async (): Promise<void> => {
+		await invalidate();
+		await navigate({ to: safeInternalPath(search.redirect) });
+	};
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
 		event.preventDefault();
@@ -44,9 +52,33 @@ function LoginPage() {
 			return;
 		}
 
-		await invalidate();
+		const data = result.data as { twoFactorRedirect?: boolean } | null;
+
+		if (data?.twoFactorRedirect) {
+			setTwoFactorRequired(true);
+			setPending(false);
+			return;
+		}
+
 		setPending(false);
-		await navigate({ to: safeInternalPath(search.redirect) });
+		await finishSignIn();
+	};
+
+	const handleVerify = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+		event.preventDefault();
+		setError(null);
+		setVerifying(true);
+
+		const result = await twoFactor.verifyTotp({ code });
+
+		if (result.error) {
+			setError(result.error.message ?? "Invalid code");
+			setVerifying(false);
+			return;
+		}
+
+		setVerifying(false);
+		await finishSignIn();
 	};
 
 	return (
@@ -57,37 +89,60 @@ function LoginPage() {
 					<CardDescription>Use your email and password to continue.</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form className="space-y-4" onSubmit={(event) => void handleSubmit(event)}>
-						<div className="space-y-2">
-							<Label htmlFor="email">Email</Label>
-							<Input
-								id="email"
-								type="email"
-								autoComplete="email"
-								required
-								value={email}
-								onChange={(event) => setEmail(event.target.value)}
-							/>
-						</div>
+					{twoFactorRequired ? (
+						<form className="space-y-4" onSubmit={(event) => void handleVerify(event)}>
+							<CardDescription>{AUTH.twoFactorRequired}</CardDescription>
+							<div className="space-y-2">
+								<Label htmlFor="twoFactorCode">{AUTH.twoFactorCode}</Label>
+								<Input
+									id="twoFactorCode"
+									inputMode="numeric"
+									autoComplete="one-time-code"
+									required
+									value={code}
+									onChange={(event) => setCode(event.target.value)}
+								/>
+							</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="password">Password</Label>
-							<Input
-								id="password"
-								type="password"
-								autoComplete="current-password"
-								required
-								value={password}
-								onChange={(event) => setPassword(event.target.value)}
-							/>
-						</div>
+							{error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-						{error ? <p className="text-sm text-destructive">{error}</p> : null}
+							<Button type="submit" className="w-full" disabled={verifying}>
+								{verifying ? AUTH.verifyingCode : AUTH.verifyCode}
+							</Button>
+						</form>
+					) : (
+						<form className="space-y-4" onSubmit={(event) => void handleSubmit(event)}>
+							<div className="space-y-2">
+								<Label htmlFor="email">Email</Label>
+								<Input
+									id="email"
+									type="email"
+									autoComplete="email"
+									required
+									value={email}
+									onChange={(event) => setEmail(event.target.value)}
+								/>
+							</div>
 
-						<Button type="submit" className="w-full" disabled={pending}>
-							{pending ? "Signing in…" : AUTH.signIn}
-						</Button>
-					</form>
+							<div className="space-y-2">
+								<Label htmlFor="password">Password</Label>
+								<Input
+									id="password"
+									type="password"
+									autoComplete="current-password"
+									required
+									value={password}
+									onChange={(event) => setPassword(event.target.value)}
+								/>
+							</div>
+
+							{error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+							<Button type="submit" className="w-full" disabled={pending}>
+								{pending ? "Signing in…" : AUTH.signIn}
+							</Button>
+						</form>
+					)}
 
 					<div className="mt-3 text-right">
 						<Link

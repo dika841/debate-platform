@@ -4,6 +4,7 @@ export type IdentityUser = {
 	readonly name: string;
 	readonly image: string | null;
 	readonly role: string;
+	readonly twoFactorEnabled: boolean;
 };
 
 export type ProfileRecord = {

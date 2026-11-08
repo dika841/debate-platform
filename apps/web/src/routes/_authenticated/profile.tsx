@@ -5,9 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/
 import { Input } from "@app/components/ui/input";
 import { Label } from "@app/components/ui/label";
 import { Textarea } from "@app/components/ui/textarea";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { changePassword, revokeOtherSessions } from "@/libs/auth/client.ts";
+import {
+	changePassword,
+	deleteUser,
+	revokeOtherSessions,
+	signOut,
+	twoFactor,
+} from "@/libs/auth/client.ts";
+import { apiUrl } from "@/libs/orpc/index.ts";
 import { useProfile, useUpdateProfile } from "@/libs/api/queries.ts";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -31,6 +38,7 @@ const EMPTY_FORM: ProfileForm = {
 function ProfilePage() {
 	const profile = useProfile();
 	const update = useUpdateProfile();
+	const navigate = useNavigate();
 	const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
 	const [feedback, setFeedback] = useState<string | null>(null);
 	const [currentPassword, setCurrentPassword] = useState("");
@@ -39,6 +47,17 @@ function ProfilePage() {
 	const [securityFeedback, setSecurityFeedback] = useState<string | null>(null);
 	const [securityPending, setSecurityPending] = useState(false);
 	const [revoking, setRevoking] = useState(false);
+	const [deletePassword, setDeletePassword] = useState("");
+	const [deleteConfirmation, setDeleteConfirmation] = useState("");
+	const [deleteFeedback, setDeleteFeedback] = useState<string | null>(null);
+	const [deleting, setDeleting] = useState(false);
+	const [twoFactorSetup, setTwoFactorSetup] = useState<{
+		uri: string;
+		backupCodes: string[];
+	} | null>(null);
+	const [twoFactorCode, setTwoFactorCode] = useState("");
+	const [twoFactorFeedback, setTwoFactorFeedback] = useState<string | null>(null);
+	const [twoFactorPending, setTwoFactorPending] = useState(false);
 
 	useEffect(() => {
 		if (!profile.data) {
@@ -110,6 +129,95 @@ function ProfilePage() {
 		}
 
 		setSecurityFeedback(AUTH.otherSessionsRevoked);
+	};
+
+	const twoFactorEnabled = Boolean(profile.data?.twoFactorEnabled);
+
+	const handleEnableTwoFactor = async (): Promise<void> => {
+		setTwoFactorFeedback(null);
+
+		if (!currentPassword) {
+			setTwoFactorFeedback("Enter your current password first.");
+			return;
+		}
+
+		setTwoFactorPending(true);
+		const result = await twoFactor.enable({ password: currentPassword });
+		setTwoFactorPending(false);
+
+		if (result.error) {
+			setTwoFactorFeedback(result.error.message ?? AUTH.twoFactorFailed);
+			return;
+		}
+
+		if (result.data?.method !== "totp") {
+			setTwoFactorFeedback(AUTH.twoFactorFailed);
+			return;
+		}
+
+		setTwoFactorSetup({
+			uri: result.data.totpURI,
+			backupCodes: result.data.backupCodes,
+		});
+	};
+
+	const handleVerifyTwoFactor = async (): Promise<void> => {
+		setTwoFactorFeedback(null);
+		setTwoFactorPending(true);
+		const result = await twoFactor.verifyTotp({ code: twoFactorCode });
+		setTwoFactorPending(false);
+
+		if (result.error) {
+			setTwoFactorFeedback(result.error.message ?? AUTH.twoFactorFailed);
+			return;
+		}
+
+		setTwoFactorSetup(null);
+		setTwoFactorCode("");
+		setTwoFactorFeedback(AUTH.twoFactorEnabled);
+		await profile.refetch();
+	};
+
+	const handleDisableTwoFactor = async (): Promise<void> => {
+		setTwoFactorFeedback(null);
+
+		if (!currentPassword) {
+			setTwoFactorFeedback("Enter your current password first.");
+			return;
+		}
+
+		setTwoFactorPending(true);
+		const result = await twoFactor.disable({ password: currentPassword });
+		setTwoFactorPending(false);
+
+		if (result.error) {
+			setTwoFactorFeedback(result.error.message ?? AUTH.twoFactorFailed);
+			return;
+		}
+
+		setTwoFactorFeedback(AUTH.twoFactorDisabled);
+		await profile.refetch();
+	};
+
+	const handleDeleteAccount = async (): Promise<void> => {
+		setDeleteFeedback(null);
+
+		if (deleteConfirmation !== AUTH.deleteConfirmationValue) {
+			setDeleteFeedback(AUTH.deleteConfirmation);
+			return;
+		}
+
+		setDeleting(true);
+		const result = await deleteUser({ password: deletePassword });
+		setDeleting(false);
+
+		if (result.error) {
+			setDeleteFeedback(result.error.message ?? AUTH.deleteAccountFailed);
+			return;
+		}
+
+		await signOut();
+		await navigate({ to: "/" });
 	};
 
 	if (profile.isPending) {
@@ -301,6 +409,123 @@ function ProfilePage() {
 							</Button>
 						</div>
 					</form>
+
+					<div className="space-y-3 border-t border-border/60 pt-4">
+						<div className="flex flex-wrap items-center justify-between gap-2">
+							<h3 className="text-sm font-semibold">{AUTH.twoFactor}</h3>
+							<Badge variant={twoFactorEnabled ? "secondary" : "outline"}>
+								{twoFactorEnabled ? AUTH.twoFactorEnabled : AUTH.twoFactorDisabled}
+							</Badge>
+						</div>
+
+						{twoFactorFeedback ? (
+							<p className="text-sm text-muted-foreground">{twoFactorFeedback}</p>
+						) : null}
+
+						{twoFactorSetup ? (
+							<div className="space-y-3 rounded-md border border-border/70 p-3 text-sm">
+								<p className="text-muted-foreground">{AUTH.twoFactorUri}</p>
+								<code className="block break-all rounded bg-muted p-2 text-xs">
+									{twoFactorSetup.uri}
+								</code>
+								<div>
+									<p className="text-muted-foreground">{AUTH.backupCodes}</p>
+									<pre className="mt-1 whitespace-pre-wrap text-xs">
+										{twoFactorSetup.backupCodes.join("\n")}
+									</pre>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="twoFactorSetupCode">{AUTH.twoFactorCode}</Label>
+									<Input
+										id="twoFactorSetupCode"
+										inputMode="numeric"
+										autoComplete="one-time-code"
+										value={twoFactorCode}
+										onChange={(event) => setTwoFactorCode(event.target.value)}
+									/>
+								</div>
+								<Button
+									type="button"
+									size="sm"
+									disabled={twoFactorPending}
+									onClick={() => void handleVerifyTwoFactor()}
+								>
+									{twoFactorPending ? AUTH.verifyingCode : AUTH.verifyCode}
+								</Button>
+							</div>
+						) : twoFactorEnabled ? (
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								disabled={twoFactorPending}
+								onClick={() => void handleDisableTwoFactor()}
+							>
+								{twoFactorPending ? AUTH.updatingPassword : AUTH.disableTwoFactor}
+							</Button>
+						) : (
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								disabled={twoFactorPending}
+								onClick={() => void handleEnableTwoFactor()}
+							>
+								{twoFactorPending ? AUTH.updatingPassword : AUTH.enableTwoFactor}
+							</Button>
+						)}
+					</div>
+				</CardContent>
+			</Card>
+
+			<Card className="md:col-span-2">
+				<CardHeader>
+					<CardTitle>{AUTH.deleteAccount}</CardTitle>
+					<CardDescription>{AUTH.deleteAccountHint}</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="flex flex-wrap gap-2">
+						<Button variant="outline" asChild>
+							<a href={apiUrl("/api/me/export")} download>
+								{AUTH.downloadData}
+							</a>
+						</Button>
+					</div>
+
+					<div className="grid gap-4 sm:grid-cols-2">
+						<div className="space-y-2">
+							<Label htmlFor="deletePassword">{AUTH.currentPassword}</Label>
+							<Input
+								id="deletePassword"
+								type="password"
+								autoComplete="current-password"
+								value={deletePassword}
+								onChange={(event) => setDeletePassword(event.target.value)}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="deleteConfirmation">{AUTH.deleteConfirmation}</Label>
+							<Input
+								id="deleteConfirmation"
+								value={deleteConfirmation}
+								onChange={(event) => setDeleteConfirmation(event.target.value)}
+								placeholder={AUTH.deleteConfirmationValue}
+							/>
+						</div>
+					</div>
+
+					{deleteFeedback ? (
+						<p className="text-sm text-muted-foreground">{deleteFeedback}</p>
+					) : null}
+
+					<Button
+						type="button"
+						variant="destructive"
+						disabled={deleting}
+						onClick={() => void handleDeleteAccount()}
+					>
+						{deleting ? AUTH.deletingAccount : AUTH.deleteAccount}
+					</Button>
 				</CardContent>
 			</Card>
 		</div>

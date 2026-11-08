@@ -83,6 +83,7 @@ export const createDrizzleProfileRepository = (db: Database): ProfileRepository 
 					name: users.name,
 					image: users.image,
 					role: users.role,
+					twoFactorEnabled: users.twoFactorEnabled,
 					username: userProfiles.username,
 					displayName: userProfiles.displayName,
 					avatarUrl: userProfiles.avatarUrl,
@@ -104,6 +105,7 @@ export const createDrizzleProfileRepository = (db: Database): ProfileRepository 
 					name: row.name,
 					image: row.image,
 					role: row.role,
+					twoFactorEnabled: row.twoFactorEnabled,
 				},
 				profile: rowToProfile(userId, row),
 			};

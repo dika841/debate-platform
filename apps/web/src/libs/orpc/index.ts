@@ -7,4 +7,6 @@ export const apiClient = createApiClient({
 	url: `${baseOrigin}/rpc`,
 });
 
+export const apiUrl = (path: string): string => `${baseOrigin}${path}`;
+
 export const orpc = createApiUtils(apiClient);

@@ -61,7 +61,7 @@ test("changes the password and signs in with the new one", async ({ page }) => {
 	const { email, password } = await register(page);
 	const newPassword = "NewPassword123!";
 
-	await page.getByLabel("Current password").fill(password);
+	await page.locator("#currentPassword").fill(password);
 	await page.getByLabel("New password", { exact: true }).fill(newPassword);
 	await page.getByLabel("Confirm password").fill(newPassword);
 	await page.getByRole("button", { name: "Update password" }).click();

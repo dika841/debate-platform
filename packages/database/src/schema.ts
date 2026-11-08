@@ -22,6 +22,7 @@ export const users = pgTable("users", {
 	emailVerified: boolean("email_verified").notNull().default(false),
 	image: text("image"),
 	role: text("role").notNull().default("USER"),
+	twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
 	createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -456,6 +457,32 @@ export const auditEvents = pgTable(
 export const auditEventsRelations = relations(auditEvents, ({ one }) => ({
 	actor: one(users, {
 		fields: [auditEvents.actorId],
+		references: [users.id],
+	}),
+}));
+
+export const twoFactors = pgTable(
+	"two_factor",
+	{
+		id: text("id").primaryKey(),
+		secret: text("secret").notNull(),
+		backupCodes: text("backup_codes").notNull(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		verified: boolean("verified").notNull().default(true),
+		failedVerificationCount: integer("failed_verification_count").notNull().default(0),
+		lockedUntil: timestamp("locked_until", { withTimezone: true }),
+	},
+	(table) => [
+		index("idx_two_factor_secret").on(table.secret),
+		index("idx_two_factor_user").on(table.userId),
+	],
+);
+
+export const twoFactorsRelations = relations(twoFactors, ({ one }) => ({
+	user: one(users, {
+		fields: [twoFactors.userId],
 		references: [users.id],
 	}),
 }));

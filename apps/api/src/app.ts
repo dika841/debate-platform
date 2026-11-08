@@ -10,6 +10,7 @@ import { env, isCloudflare, isProduction } from "#/platform/config/env.ts";
 import { db } from "#/platform/db/index.ts";
 import { buildContext, rpcHandler } from "#/platform/http/orpc.ts";
 import { originGuard } from "#/platform/http/origin-guard.ts";
+import { exportUserData } from "#/modules/privacy/infrastructure/drizzle-user-data-export.ts";
 import { logger } from "#/platform/observability/logger.ts";
 import { isMetricsAuthorized } from "#/platform/observability/metrics-auth.ts";
 import { metrics } from "#/platform/observability/metrics.ts";
@@ -132,6 +133,34 @@ export const createApp = (): Hono => {
 	});
 
 	app.on(["GET", "POST"], "/api/auth/*", (context) => auth.handler(context.req.raw));
+
+	app.get(
+		"/api/me/export",
+		rateLimitMiddleware({
+			limiter: rateLimiters.rpc,
+			scope: "export",
+			proxyMode,
+		}),
+		async (context) => {
+			const session = await auth.api.getSession({
+				headers: context.req.raw.headers,
+			});
+
+			if (!session) {
+				return context.json({ error: "UNAUTHORIZED", message: "Authentication required" }, 401);
+			}
+
+			const data = await exportUserData(db, session.user.id);
+
+			if (!data) {
+				return context.notFound();
+			}
+
+			return context.json(data, 200, {
+				"content-disposition": 'attachment; filename="debate-platform-export.json"',
+			});
+		},
+	);
 
 	app.all("/rpc/*", async (context) => {
 		const orpcContext = await buildContext(context);

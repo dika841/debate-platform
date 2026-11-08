@@ -54,6 +54,26 @@ export const AUTH = {
 	otherSessionsRevoked: "Other sessions revoked",
 	changePasswordFailed: "Unable to update password",
 	resetFailed: "Unable to reset password",
+	downloadData: "Download my data",
+	deleteAccount: "Delete account",
+	deletingAccount: "Deleting…",
+	deleteAccountHint:
+		"This permanently deletes your account, rooms you host, memberships, submissions and votes.",
+	deleteConfirmation: "Type DELETE to confirm",
+	deleteConfirmationValue: "DELETE",
+	deleteAccountFailed: "Unable to delete account",
+	twoFactor: "Two-factor authentication",
+	twoFactorEnabled: "Two-factor authentication is enabled.",
+	twoFactorDisabled: "Two-factor authentication is disabled.",
+	enableTwoFactor: "Enable two-factor",
+	disableTwoFactor: "Disable two-factor",
+	twoFactorCode: "Authenticator code",
+	verifyCode: "Verify code",
+	verifyingCode: "Verifying…",
+	twoFactorRequired: "Enter the 6-digit code from your authenticator app.",
+	twoFactorUri: "Add this URI to your authenticator app:",
+	backupCodes: "Backup codes",
+	twoFactorFailed: "Unable to update two-factor authentication",
 } as const;
 
 export const ROOM = {

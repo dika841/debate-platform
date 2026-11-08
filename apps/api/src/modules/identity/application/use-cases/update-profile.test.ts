@@ -14,6 +14,7 @@ const user = {
 	name: "Demo User",
 	image: null,
 	role: "USER",
+	twoFactorEnabled: false,
 };
 
 const profile: ProfileRecord = {

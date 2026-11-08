@@ -16,7 +16,9 @@ describe("worker jobs", () => {
 	it("keeps future jobs as no-ops", async () => {
 		const results = await runScheduledJobs(new Date("2026-05-01T00:00:00.000Z"), {});
 		const voting = results.find((result) => result.name === JOBS.VOTING_CLOSE);
+		const retention = results.find((result) => result.name === JOBS.RETENTION_CLEANUP);
 
 		expect(voting?.executed).toBe(false);
+		expect(retention?.executed).toBe(false);
 	});
 });

@@ -1,14 +1,21 @@
 import { databaseCreate, type DatabaseTransaction } from "@app/database";
-import { debateRooms, debateRounds, notifications, roomMemberships } from "@app/database/schema";
-import { redactError } from "@app/logger";
-import { createLogger } from "@app/logger";
-import { NOTIFICATION_TYPE, ROUND_STATUS, ROOM_STATUS } from "@app/shared";
-import { and, eq, lte } from "drizzle-orm";
+import {
+	auditEvents,
+	contentReports,
+	debateRooms,
+	debateRounds,
+	notifications,
+	roomMemberships,
+} from "@app/database/schema";
+import { createLogger, redactError } from "@app/logger";
+import { NOTIFICATION_TYPE, REPORT_STATUS, ROUND_STATUS, ROOM_STATUS } from "@app/shared";
+import { and, eq, isNotNull, lt, lte, ne } from "drizzle-orm";
 
 export const JOBS = {
 	ROUND_DEADLINE: "round.deadline",
 	VOTING_CLOSE: "voting.close",
 	NOTIFICATION_DISPATCH: "notification.dispatch",
+	RETENTION_CLEANUP: "retention.cleanup",
 } as const;
 
 export type JobName = (typeof JOBS)[keyof typeof JOBS];
@@ -21,6 +28,9 @@ export type JobResult = {
 
 export type JobEnv = {
 	readonly DATABASE_URL?: string;
+	readonly NOTIFICATION_RETENTION_DAYS?: string;
+	readonly REPORT_RETENTION_DAYS?: string;
+	readonly AUDIT_RETENTION_DAYS?: string;
 };
 
 export const logger = createLogger({
@@ -211,6 +221,60 @@ const closeExpiredRounds = async (
 	}
 };
 
+const retentionDays = (value: string | undefined, fallback: number): number => {
+	const parsed = Number(value);
+	return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const cleanupRetention = async (
+	databaseUrl: string,
+	now: Date,
+	env: JobEnv,
+): Promise<{ notifications: number; reports: number; audit: number }> => {
+	const handle = databaseCreate(databaseUrl);
+
+	try {
+		const notificationCutoff = new Date(
+			now.getTime() - retentionDays(env.NOTIFICATION_RETENTION_DAYS, 90) * 86_400_000,
+		);
+		const reportCutoff = new Date(
+			now.getTime() - retentionDays(env.REPORT_RETENTION_DAYS, 365) * 86_400_000,
+		);
+		const auditCutoff = new Date(
+			now.getTime() - retentionDays(env.AUDIT_RETENTION_DAYS, 730) * 86_400_000,
+		);
+
+		const deletedNotifications = await handle.db
+			.delete(notifications)
+			.where(and(isNotNull(notifications.readAt), lt(notifications.createdAt, notificationCutoff)))
+			.returning({ id: notifications.id });
+
+		const deletedReports = await handle.db
+			.delete(contentReports)
+			.where(
+				and(
+					ne(contentReports.status, REPORT_STATUS.PENDING),
+					isNotNull(contentReports.resolvedAt),
+					lt(contentReports.resolvedAt, reportCutoff),
+				),
+			)
+			.returning({ id: contentReports.id });
+
+		const deletedAudit = await handle.db
+			.delete(auditEvents)
+			.where(lt(auditEvents.createdAt, auditCutoff))
+			.returning({ id: auditEvents.id });
+
+		return {
+			notifications: deletedNotifications.length,
+			reports: deletedReports.length,
+			audit: deletedAudit.length,
+		};
+	} finally {
+		await handle.close();
+	}
+};
+
 export const runScheduledJobs = async (
 	now: Date,
 	env: JobEnv = { DATABASE_URL: process.env.DATABASE_URL },
@@ -220,6 +284,11 @@ export const runScheduledJobs = async (
 	if (!env.DATABASE_URL) {
 		results.push({
 			name: JOBS.ROUND_DEADLINE,
+			executed: false,
+			reason: "DATABASE_URL is not configured",
+		});
+		results.push({
+			name: JOBS.RETENTION_CLEANUP,
 			executed: false,
 			reason: "DATABASE_URL is not configured",
 		});
@@ -241,6 +310,27 @@ export const runScheduledJobs = async (
 				name: JOBS.ROUND_DEADLINE,
 				executed: false,
 				reason: "round deadline job failed",
+			});
+		}
+
+		try {
+			const cleaned = await cleanupRetention(env.DATABASE_URL, now, env);
+			const total = cleaned.notifications + cleaned.reports + cleaned.audit;
+
+			results.push({
+				name: JOBS.RETENTION_CLEANUP,
+				executed: total > 0,
+				reason:
+					total > 0
+						? `deleted ${cleaned.notifications} notification(s), ${cleaned.reports} report(s), ${cleaned.audit} audit event(s)`
+						: "nothing to clean up",
+			});
+		} catch (error) {
+			logger.error({ err: redactError(error) }, "job.retention.failed");
+			results.push({
+				name: JOBS.RETENTION_CLEANUP,
+				executed: false,
+				reason: "retention cleanup failed",
 			});
 		}
 	}
