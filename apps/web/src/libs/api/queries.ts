@@ -58,6 +58,15 @@ export const useReports = (status?: "PENDING" | "ACTIONED" | "DISMISSED") =>
 		}),
 	);
 
+export const useNotifications = () => useQuery(orpc.notifications.list.queryOptions({ input: {} }));
+
+export const useNotificationUnreadCount = (enabled = true) =>
+	useQuery({
+		...orpc.notifications.list.queryOptions({ input: { limit: 1 } }),
+		enabled,
+		select: (data) => data.unreadCount,
+	});
+
 const useInvalidateRooms = () => {
 	const queryClient = useQueryClient();
 
@@ -288,6 +297,36 @@ export const useResolveReport = () => {
 		...orpc.reports.resolve.mutationOptions(),
 		onSuccess: async () => {
 			await queryClient.invalidateQueries({ queryKey: orpc.reports.key() });
+		},
+	});
+};
+
+const useInvalidateNotifications = () => {
+	const queryClient = useQueryClient();
+
+	return async (): Promise<void> => {
+		await queryClient.invalidateQueries({ queryKey: orpc.notifications.key() });
+	};
+};
+
+export const useMarkNotificationRead = () => {
+	const invalidateNotifications = useInvalidateNotifications();
+
+	return useMutation({
+		...orpc.notifications.markRead.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateNotifications();
+		},
+	});
+};
+
+export const useMarkAllNotificationsRead = () => {
+	const invalidateNotifications = useInvalidateNotifications();
+
+	return useMutation({
+		...orpc.notifications.markAllRead.mutationOptions(),
+		onSuccess: async () => {
+			await invalidateNotifications();
 		},
 	});
 };

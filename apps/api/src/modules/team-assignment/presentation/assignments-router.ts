@@ -1,9 +1,11 @@
 import { contract } from "@app/api-contract";
+import { NOTIFICATION_TYPE } from "@app/shared";
 import { implement } from "@orpc/server";
 import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { createDrizzleRoomRepository } from "#/modules/debate-room/infrastructure/persistence/drizzle-room-repository.ts";
 import { createDrizzleMembershipRepository } from "#/modules/membership/infrastructure/persistence/drizzle-membership-repository.ts";
+import { notificationServiceFor, safeNotify } from "#/modules/notifications/index.ts";
 import { autoAssignTeams } from "../application/use-cases/auto-assign-teams.ts";
 import { finalizeAssignments } from "../application/use-cases/finalize-assignments.ts";
 import { setTeam } from "../application/use-cases/set-team.ts";
@@ -40,7 +42,22 @@ export const assignmentsRouter = {
 		const userId = requireUserId(context);
 
 		try {
-			return await finalizeAssignments(depsFrom(context), userId, input.roomId);
+			const summary = await finalizeAssignments(depsFrom(context), userId, input.roomId);
+
+			await safeNotify(
+				notificationServiceFor(context.db).notifyRoomMembers(
+					input.roomId,
+					{
+						type: NOTIFICATION_TYPE.ASSIGNMENT_FINALIZED,
+						title: "Teams finalized",
+						body: "Team assignments are locked. The host can start the debate.",
+						roomId: input.roomId,
+					},
+					{ excludeUserId: userId },
+				),
+			);
+
+			return summary;
 		} catch (error) {
 			return toOrpcError(error);
 		}

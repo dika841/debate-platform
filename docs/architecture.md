@@ -203,6 +203,30 @@ roles package keeps those capabilities separate, and a resolved report cannot
 be resolved again. Room pages expose the results panel and report form, while
 `/moderation` is the protected queue.
 
+## Hardening
+
+```text
+apps/api/src/platform/
+├── observability/  structured request logs, metrics registry, /metrics
+└── rate-limit/     in-memory + Upstash limiters, Hono middleware
+```
+
+`requestLogging()` records `http_requests_total` and duration counters, emits a
+JSON access log with the request id, and echoes `x-request-id`. `/metrics`
+renders the registry in Prometheus text format.
+
+Rate limiting runs before the auth and RPC routes. RPC keys use the session
+cookie (hashed, falling back to IP) so users behind a shared NAT keep their own
+bucket; auth keys use the client IP. Both return rate-limit headers and a `429`
+with `retry-after`. The in-memory limiter is per-process; Upstash Redis is used
+when `UPSTASH_REDIS_REST_URL`/`TOKEN` are set.
+
+Notifications are written by the notification service after successful
+mutations (membership, assignment, execution, results, moderation) and directly
+by the worker for deadline-driven round transitions. Each notification stores
+its type, room/round references and read state; the UI exposes a header unread
+count plus `/notifications`.
+
 ## Frontend architecture
 
 The frontend intentionally uses **Vite + React 19 + TanStack Router** (SPA)

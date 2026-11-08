@@ -1,8 +1,10 @@
 import { contract } from "@app/api-contract";
+import { NOTIFICATION_TYPE } from "@app/shared";
 import { implement } from "@orpc/server";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import { createDrizzleRoomRepository } from "#/modules/debate-room/infrastructure/persistence/drizzle-room-repository.ts";
+import { notificationServiceFor, safeNotify } from "#/modules/notifications/index.ts";
 import { joinRoom } from "../application/use-cases/join-room.ts";
 import { leaveRoom } from "../application/use-cases/leave-room.ts";
 import { listMembers } from "../application/use-cases/list-members.ts";
@@ -24,7 +26,18 @@ export const membershipsRouter = {
 		const userId = requireUserId(context);
 
 		try {
-			return await joinRoom(depsFrom(context), userId, input);
+			const membership = await joinRoom(depsFrom(context), userId, input);
+
+			await safeNotify(
+				notificationServiceFor(context.db).notifyHost(input.roomId, {
+					type: NOTIFICATION_TYPE.MEMBER_JOINED,
+					title: "New member joined",
+					body: `${membership.user.displayName} joined as ${input.role.toLowerCase()}.`,
+					roomId: input.roomId,
+				}),
+			);
+
+			return membership;
 		} catch (error) {
 			return toOrpcError(error);
 		}

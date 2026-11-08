@@ -396,6 +396,44 @@ export const contentReportsRelations = relations(contentReports, ({ one }) => ({
 	}),
 }));
 
+export const notifications = pgTable(
+	"notifications",
+	{
+		id: text("id").primaryKey(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		type: text("type").notNull(),
+		title: varchar("title", { length: 160 }).notNull(),
+		body: varchar("body", { length: 500 }).notNull(),
+		roomId: text("room_id").references(() => debateRooms.id, { onDelete: "set null" }),
+		roundId: text("round_id").references(() => debateRounds.id, {
+			onDelete: "set null",
+		}),
+		readAt: timestamp("read_at", { withTimezone: true }),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		index("idx_notifications_user_created").on(table.userId, table.createdAt),
+		index("idx_notifications_user_read").on(table.userId, table.readAt),
+	],
+);
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+	user: one(users, {
+		fields: [notifications.userId],
+		references: [users.id],
+	}),
+	room: one(debateRooms, {
+		fields: [notifications.roomId],
+		references: [debateRooms.id],
+	}),
+	round: one(debateRounds, {
+		fields: [notifications.roundId],
+		references: [debateRounds.id],
+	}),
+}));
+
 export const roomMembershipsRelations = relations(roomMemberships, ({ one }) => ({
 	room: one(debateRooms, {
 		fields: [roomMemberships.roomId],

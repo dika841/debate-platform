@@ -1,8 +1,10 @@
 import { contract } from "@app/api-contract";
+import { NOTIFICATION_TYPE } from "@app/shared";
 import { implement } from "@orpc/server";
 import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { createDrizzleRoomRepository } from "#/modules/debate-room/infrastructure/persistence/drizzle-room-repository.ts";
+import { notificationServiceFor, safeNotify } from "#/modules/notifications/index.ts";
 import {
 	createDrizzleMembershipRepository,
 	createDrizzleRoomParticipationReader,
@@ -38,7 +40,26 @@ export const roundsRouter = {
 		const userId = requireUserId(context);
 
 		try {
-			return await startDebate(depsFrom(context), userId, input.roomId);
+			const result = await startDebate(depsFrom(context), userId, input.roomId);
+			const firstRound = result.items[0];
+
+			await safeNotify(
+				notificationServiceFor(context.db).notifyRoomMembers(
+					input.roomId,
+					{
+						type: NOTIFICATION_TYPE.DEBATE_STARTED,
+						title: "Debate started",
+						body: firstRound
+							? `Round ${firstRound.roundNumber} is now open for submissions.`
+							: "The debate has started.",
+						roomId: input.roomId,
+						roundId: firstRound?.id ?? null,
+					},
+					{ excludeUserId: userId },
+				),
+			);
+
+			return result;
 		} catch (error) {
 			return toOrpcError(error);
 		}
@@ -48,7 +69,41 @@ export const roundsRouter = {
 		const userId = requireUserId(context);
 
 		try {
-			return await advanceRound(depsFrom(context), userId, input.roomId);
+			const result = await advanceRound(depsFrom(context), userId, input.roomId);
+			const votingRound = result.items.find((round) => round.status === "VOTING");
+			const openedRound = result.items.find((round) => round.status === "OPEN");
+
+			if (votingRound) {
+				await safeNotify(
+					notificationServiceFor(context.db).notifyRoomMembers(
+						input.roomId,
+						{
+							type: NOTIFICATION_TYPE.ROUND_VOTING,
+							title: "Voting opened",
+							body: `Round ${votingRound.roundNumber} is now open for voting.`,
+							roomId: input.roomId,
+							roundId: votingRound.id,
+						},
+						{ excludeUserId: userId },
+					),
+				);
+			} else if (openedRound) {
+				await safeNotify(
+					notificationServiceFor(context.db).notifyRoomMembers(
+						input.roomId,
+						{
+							type: NOTIFICATION_TYPE.ROUND_OPENED,
+							title: "New round opened",
+							body: `Round ${openedRound.roundNumber} is now open for submissions.`,
+							roomId: input.roomId,
+							roundId: openedRound.id,
+						},
+						{ excludeUserId: userId },
+					),
+				);
+			}
+
+			return result;
 		} catch (error) {
 			return toOrpcError(error);
 		}

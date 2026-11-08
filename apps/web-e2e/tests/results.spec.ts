@@ -96,6 +96,12 @@ test("finalizes round and room results and submits a report", async ({ browser }
 	await expect(hostPage.getByText("Winner: PRO")).toBeVisible();
 	await expect(hostPage.getByText("Completed", { exact: true })).toBeVisible();
 
+	await memberOnePage.goto("/notifications");
+	await expect(memberOnePage.getByText("Round 1 result")).toBeVisible();
+	await expect(memberOnePage.getByText("Debate completed")).toBeVisible();
+	await memberOnePage.getByRole("button", { name: "Mark all as read" }).click();
+	await expect(memberOnePage.getByText("Unread", { exact: true })).toHaveCount(0);
+
 	await memberOnePage.goto(roomUrl);
 	await memberOnePage.getByLabel("Category").click();
 	await memberOnePage.getByRole("option", { name: "Spam" }).click();

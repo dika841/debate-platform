@@ -125,6 +125,7 @@ const createHarness = (
 		findById: async () => member,
 		findByRoomAndUser: async () => member,
 		listParticipants: async () => [],
+		listUserIds: async () => [],
 		updateTeam: async () => {
 			throw new Error("not used");
 		},

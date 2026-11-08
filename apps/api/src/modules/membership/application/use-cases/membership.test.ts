@@ -77,6 +77,7 @@ const membershipRepository = (
 	findById: async () => membership,
 	findByRoomAndUser: async () => membership,
 	listParticipants: async () => [membership],
+	listUserIds: async () => [membership.user.id],
 	updateTeam: async (_id, team) => ({
 		...membership,
 		membership: { ...membership.membership, team },

@@ -50,6 +50,13 @@ import {
 	reportSchema,
 	resolveReportInputSchema,
 } from "./reports.ts";
+import {
+	listNotificationsInputSchema,
+	listNotificationsOutputSchema,
+	markAllNotificationsReadOutputSchema,
+	markNotificationReadInputSchema,
+	notificationSchema,
+} from "./notifications.ts";
 
 export const contract = {
 	health: {
@@ -103,12 +110,18 @@ export const contract = {
 		list: oc.input(listReportsInputSchema).output(listReportsOutputSchema),
 		resolve: oc.input(resolveReportInputSchema).output(reportSchema),
 	},
+	notifications: {
+		list: oc.input(listNotificationsInputSchema).output(listNotificationsOutputSchema),
+		markRead: oc.input(markNotificationReadInputSchema).output(notificationSchema),
+		markAllRead: oc.output(markAllNotificationsReadOutputSchema),
+	},
 } as const;
 
 export * from "./assignments.ts";
 export * from "./execution.ts";
 export * from "./health.ts";
 export * from "./memberships.ts";
+export * from "./notifications.ts";
 export * from "./reports.ts";
 export * from "./results.ts";
 export * from "./rooms.ts";

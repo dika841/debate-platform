@@ -10,6 +10,7 @@ import { roundsRouter, submissionsRouter } from "#/modules/debate-execution/inde
 import { votesRouter } from "#/modules/voting/index.ts";
 import { resultsRouter } from "#/modules/results/index.ts";
 import { reportsRouter } from "#/modules/moderation/index.ts";
+import { notificationsRouter } from "#/modules/notifications/index.ts";
 import { roomsRouter } from "#/modules/debate-room/index.ts";
 
 const APP_VERSION = "0.1.0";
@@ -61,4 +62,5 @@ export const appRouter = os.router({
 	votes: votesRouter,
 	results: resultsRouter,
 	reports: reportsRouter,
+	notifications: notificationsRouter,
 });

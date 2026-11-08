@@ -50,6 +50,13 @@
       "when": 1794080366915,
       "tag": "0006_brown_roughhouse",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794138177639,
+      "tag": "0007_chubby_emma_frost",
+      "breakpoints": true
     }
   ]
 }

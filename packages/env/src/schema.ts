@@ -30,6 +30,10 @@ export const apiEnvSchema = z.object({
 	WEB_ORIGIN: z.string().url(),
 	LOG_LEVEL: logLevelSchema,
 	CLOUDFLARE: z.string().optional(),
+	RATE_LIMIT_RPC_PER_MINUTE: z.coerce.number().int().positive().default(120),
+	RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().positive().default(60),
+	UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+	UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
 });
 
 export const workerEnvSchema = z.object({

@@ -1,10 +1,12 @@
 import { contract } from "@app/api-contract";
+import { NOTIFICATION_TYPE } from "@app/shared";
 import { implement } from "@orpc/server";
 import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { createDrizzleSubmissionRepository } from "#/modules/debate-execution/infrastructure/persistence/drizzle-submission-repository.ts";
 import { createDrizzleRoomRepository } from "#/modules/debate-room/infrastructure/persistence/drizzle-room-repository.ts";
 import { createDrizzleRoomParticipationReader } from "#/modules/membership/infrastructure/persistence/drizzle-membership-repository.ts";
+import { notificationServiceFor, safeNotify } from "#/modules/notifications/index.ts";
 import { createDrizzleReportRepository } from "../infrastructure/persistence/drizzle-report-repository.ts";
 import { createReport } from "../application/use-cases/create-report.ts";
 import { listReports } from "../application/use-cases/list-reports.ts";
@@ -44,12 +46,23 @@ export const reportsRouter = {
 		const userId = requireUserId(context);
 
 		try {
-			return await resolveReport(
+			const report = await resolveReport(
 				depsFrom(context),
 				userId,
 				context.session?.user.role ?? "USER",
 				input,
 			);
+
+			await safeNotify(
+				notificationServiceFor(context.db).notifyUser(report.reporter.id, {
+					type: NOTIFICATION_TYPE.REPORT_RESOLVED,
+					title: "Report resolved",
+					body: `Your report for "${report.room.title}" was ${report.status.toLowerCase()}.`,
+					roomId: report.room.id,
+				}),
+			);
+
+			return report;
 		} catch (error) {
 			return toOrpcError(error);
 		}

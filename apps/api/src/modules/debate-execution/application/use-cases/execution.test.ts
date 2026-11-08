@@ -160,6 +160,7 @@ const createHarness = (
 				(entry) => entry.membership.roomId === roomId && entry.membership.userId === userId,
 			) ?? null,
 		listParticipants: async () => participants,
+		listUserIds: async () => participants.map((entry) => entry.user.id),
 		updateTeam: async () => {
 			throw new Error("not used");
 		},

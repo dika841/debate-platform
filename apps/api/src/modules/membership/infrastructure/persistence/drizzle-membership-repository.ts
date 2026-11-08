@@ -248,6 +248,15 @@ export const createDrizzleMembershipRepository = (db: Database): MembershipRepos
 			return rows.map(rowToMembership);
 		},
 
+		async listUserIds(roomId: string) {
+			const rows = await db
+				.select({ userId: roomMemberships.userId })
+				.from(roomMemberships)
+				.where(eq(roomMemberships.roomId, roomId));
+
+			return rows.map((row) => row.userId);
+		},
+
 		async updateTeam(id: string, team: TeamSide | null) {
 			const [updated] = await db
 				.update(roomMemberships)

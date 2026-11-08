@@ -2,6 +2,7 @@ export * from "./clock.ts";
 export * from "./errors.ts";
 export * from "./id.ts";
 export * from "./membership.ts";
+export * from "./notification.ts";
 export * from "./outcome.ts";
 export * from "./pagination.ts";
 export * from "./report.ts";

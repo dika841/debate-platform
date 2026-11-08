@@ -267,6 +267,43 @@ follow in M3–M7 as vertical slices.
 
 All planned domain slices (M2–M7) are now implemented.
 
+## Hardening
+
+### Rate limits
+
+- `/rpc/*` is limited per session cookie (falling back to client IP) with
+  `RATE_LIMIT_RPC_PER_MINUTE` (default 120/min).
+- `/api/auth/*` is limited per client IP with `RATE_LIMIT_AUTH_PER_MINUTE`
+  (default 60/min).
+- Responses include `x-ratelimit-limit`, `x-ratelimit-remaining` and
+  `x-ratelimit-reset`; rejected requests return `429` with `retry-after` and a
+  structured `RATE_LIMITED` body.
+- The default limiter is in-memory (fine for one Node instance). Set
+  `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to share limits across
+  instances and Cloudflare isolates.
+
+### Notifications
+
+- In-app notifications are stored in `notifications` and exposed through
+  `notifications.list`, `notifications.markRead` and `notifications.markAllRead`.
+- Events: member joined (host), teams finalized, debate started, round voting
+  opened, new round opened (API and worker), round result, debate completed and
+  report resolved.
+- The header shows an unread count and `/notifications` lists, links and marks
+  notifications as read.
+
+### Observability
+
+- Every request is logged as structured JSON with `requestId`, method, path,
+  route, status and duration (`http.request`); health/metrics endpoints log at
+  debug level.
+- Responses include `x-request-id`; unhandled errors keep the same id.
+- `GET /metrics` exposes Prometheus text metrics:
+  `http_requests_total`, request duration sum/count, and
+  `rate_limit_rejections_total`.
+- The web root has an error boundary so API failures render a clear message
+  instead of an uncaught route error.
+
 ## End-to-end tests
 
 ```bash

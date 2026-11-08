@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedModerationRouteImport } from './routes/_authenticated/moderation'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicHealthRouteImport } from './routes/_public/health'
@@ -35,6 +36,12 @@ const AuthenticatedModerationRoute = AuthenticatedModerationRouteImport.update({
   path: '/moderation',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -85,6 +92,7 @@ const AuthenticatedRoomsRoomIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/moderation': typeof AuthenticatedModerationRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/health': typeof PublicHealthRoute
   '/login': typeof PublicLoginRoute
@@ -97,6 +105,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/moderation': typeof AuthenticatedModerationRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/health': typeof PublicHealthRoute
   '/login': typeof PublicLoginRoute
@@ -111,6 +120,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
   '/_authenticated/moderation': typeof AuthenticatedModerationRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_public/health': typeof PublicHealthRoute
   '/_public/login': typeof PublicLoginRoute
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/moderation'
+    | '/notifications'
     | '/profile'
     | '/health'
     | '/login'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/moderation'
+    | '/notifications'
     | '/profile'
     | '/health'
     | '/login'
@@ -151,6 +163,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/_public'
     | '/_authenticated/moderation'
+    | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_public/health'
     | '/_public/login'
@@ -188,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/moderation'
       fullPath: '/moderation'
       preLoaderRoute: typeof AuthenticatedModerationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
@@ -258,6 +278,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedModerationRoute: typeof AuthenticatedModerationRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRoomsNewRoute: typeof AuthenticatedRoomsNewRoute
   AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute
@@ -266,6 +287,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedModerationRoute: AuthenticatedModerationRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRoomsNewRoute: AuthenticatedRoomsNewRoute,
   AuthenticatedRoomsIndexRoute: AuthenticatedRoomsIndexRoute,

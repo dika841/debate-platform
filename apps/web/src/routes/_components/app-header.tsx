@@ -3,13 +3,18 @@ import { Badge } from "@app/components/ui/badge";
 import { Button } from "@app/components/ui/button";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { signOut } from "@/libs/auth/client.ts";
-import { useInvalidateAccount, useSession } from "@/libs/api/queries.ts";
+import {
+	useInvalidateAccount,
+	useNotificationUnreadCount,
+	useSession,
+} from "@/libs/api/queries.ts";
 
 export const AppHeader = () => {
 	const session = useSession();
 	const invalidate = useInvalidateAccount();
 	const navigate = useNavigate();
 	const user = session.data?.session?.user;
+	const unreadCount = useNotificationUnreadCount(Boolean(user));
 
 	const handleSignOut = async (): Promise<void> => {
 		await signOut();
@@ -36,6 +41,12 @@ export const AppHeader = () => {
 							</Link>
 							<Link to="/rooms/new" className="hover:text-foreground">
 								{NAV.createDebate}
+							</Link>
+							<Link to="/notifications" className="flex items-center gap-1 hover:text-foreground">
+								{NAV.notifications}
+								{unreadCount.data && unreadCount.data > 0 ? (
+									<Badge variant="secondary">{unreadCount.data}</Badge>
+								) : null}
 							</Link>
 							{user.role === "MODERATOR" || user.role === "ADMIN" ? (
 								<Link to="/moderation" className="hover:text-foreground">

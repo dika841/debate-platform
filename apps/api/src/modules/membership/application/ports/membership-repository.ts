@@ -60,6 +60,7 @@ export interface MembershipRepository {
 	findById(id: string): Promise<MembershipWithUser | null>;
 	findByRoomAndUser(roomId: string, userId: string): Promise<MembershipWithUser | null>;
 	listParticipants(roomId: string): Promise<readonly MembershipWithUser[]>;
+	listUserIds(roomId: string): Promise<readonly string[]>;
 	updateTeam(id: string, team: TeamSide | null): Promise<MembershipWithUser>;
 	assignTeams(assignments: readonly TeamAssignment[]): Promise<void>;
 }

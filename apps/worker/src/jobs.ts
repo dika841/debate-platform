@@ -1,7 +1,7 @@
-import { databaseCreate } from "@app/database";
-import { debateRooms, debateRounds } from "@app/database/schema";
+import { databaseCreate, type DatabaseTransaction } from "@app/database";
+import { debateRooms, debateRounds, notifications, roomMemberships } from "@app/database/schema";
 import { createLogger } from "@app/logger";
-import { ROUND_STATUS, ROOM_STATUS } from "@app/shared";
+import { NOTIFICATION_TYPE, ROUND_STATUS, ROOM_STATUS } from "@app/shared";
 import { and, eq, lte } from "drizzle-orm";
 
 export const JOBS = {
@@ -26,6 +26,42 @@ export const logger = createLogger({
 	base: { service: "worker" },
 });
 
+const notifyRoom = async (
+	tx: DatabaseTransaction,
+	input: {
+		readonly roomId: string;
+		readonly hostId: string;
+		readonly type: (typeof NOTIFICATION_TYPE)[keyof typeof NOTIFICATION_TYPE];
+		readonly title: string;
+		readonly body: string;
+		readonly roundId: string | null;
+	},
+	now: Date,
+): Promise<void> => {
+	const members = await tx
+		.select({ userId: roomMemberships.userId })
+		.from(roomMemberships)
+		.where(eq(roomMemberships.roomId, input.roomId));
+	const recipients = [...new Set([input.hostId, ...members.map((member) => member.userId)])];
+
+	if (recipients.length === 0) {
+		return;
+	}
+
+	await tx.insert(notifications).values(
+		recipients.map((userId) => ({
+			id: crypto.randomUUID(),
+			userId,
+			type: input.type,
+			title: input.title,
+			body: input.body,
+			roomId: input.roomId,
+			roundId: input.roundId,
+			createdAt: now,
+		})),
+	);
+};
+
 const closeExpiredRounds = async (
 	databaseUrl: string,
 	now: Date,
@@ -38,6 +74,7 @@ const closeExpiredRounds = async (
 				.select({
 					id: debateRounds.id,
 					roomId: debateRounds.roomId,
+					hostId: debateRooms.hostId,
 					roundNumber: debateRounds.roundNumber,
 					submissionDeadline: debateRounds.submissionDeadline,
 					votingDeadline: debateRounds.votingDeadline,
@@ -75,6 +112,19 @@ const closeExpiredRounds = async (
 
 				if (updated.length > 0) {
 					voting += 1;
+
+					await notifyRoom(
+						tx,
+						{
+							roomId: round.roomId,
+							hostId: round.hostId,
+							type: NOTIFICATION_TYPE.ROUND_VOTING,
+							title: "Voting opened",
+							body: `Round ${round.roundNumber} is now open for voting.`,
+							roundId: round.id,
+						},
+						now,
+					);
 				}
 			}
 
@@ -82,6 +132,7 @@ const closeExpiredRounds = async (
 				.select({
 					id: debateRounds.id,
 					roomId: debateRounds.roomId,
+					hostId: debateRooms.hostId,
 					roundNumber: debateRounds.roundNumber,
 					submissionDurationMinutes: debateRooms.submissionDurationMinutes,
 					votingDurationMinutes: debateRooms.votingDurationMinutes,
@@ -118,7 +169,7 @@ const closeExpiredRounds = async (
 					nextSubmissionDeadline.getTime() + round.votingDurationMinutes * 60_000,
 				);
 
-				await tx
+				const opened = await tx
 					.update(debateRounds)
 					.set({
 						status: ROUND_STATUS.OPEN,
@@ -133,7 +184,23 @@ const closeExpiredRounds = async (
 							eq(debateRounds.roundNumber, round.roundNumber + 1),
 							eq(debateRounds.status, ROUND_STATUS.PENDING),
 						),
+					)
+					.returning({ id: debateRounds.id });
+
+				if (opened.length > 0) {
+					await notifyRoom(
+						tx,
+						{
+							roomId: round.roomId,
+							hostId: round.hostId,
+							type: NOTIFICATION_TYPE.ROUND_OPENED,
+							title: "New round opened",
+							body: `Round ${round.roundNumber + 1} is now open for submissions.`,
+							roundId: opened[0]?.id ?? null,
+						},
+						now,
 					);
+				}
 			}
 
 			return { closed, voting };

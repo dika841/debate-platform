@@ -1,4 +1,5 @@
 import { contract } from "@app/api-contract";
+import { NOTIFICATION_TYPE } from "@app/shared";
 import { implement } from "@orpc/server";
 import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
@@ -6,6 +7,7 @@ import { createDrizzleRoundRepository } from "#/modules/debate-execution/infrast
 import { createDrizzleRoomRepository } from "#/modules/debate-room/infrastructure/persistence/drizzle-room-repository.ts";
 import { createDrizzleRoomParticipationReader } from "#/modules/membership/infrastructure/persistence/drizzle-membership-repository.ts";
 import { createDrizzleVoteRepository } from "#/modules/voting/infrastructure/persistence/drizzle-vote-repository.ts";
+import { notificationServiceFor, safeNotify } from "#/modules/notifications/index.ts";
 import { createDrizzleResultRepository } from "../infrastructure/persistence/drizzle-result-repository.ts";
 import { finalizeRoom } from "../application/use-cases/finalize-room.ts";
 import { finalizeRound } from "../application/use-cases/finalize-round.ts";
@@ -32,9 +34,29 @@ export const resultsRouter = {
 
 	finalizeRound: os.results.finalizeRound.handler(async ({ context, input }) => {
 		const userId = requireUserId(context);
+		const deps = depsFrom(context);
 
 		try {
-			return await finalizeRound(depsFrom(context), userId, input.roundId);
+			const result = await finalizeRound(deps, userId, input.roundId);
+			const round = await deps.rounds.findById(input.roundId);
+
+			if (round) {
+				await safeNotify(
+					notificationServiceFor(context.db).notifyRoomMembers(
+						round.roomId,
+						{
+							type: NOTIFICATION_TYPE.ROUND_RESULT,
+							title: `Round ${result.roundNumber} result`,
+							body: `${result.outcome}: PRO ${result.proCount} · CONTRA ${result.contraCount} (${result.totalVotes} votes).`,
+							roomId: round.roomId,
+							roundId: result.roundId,
+						},
+						{ excludeUserId: userId },
+					),
+				);
+			}
+
+			return result;
 		} catch (error) {
 			return toOrpcError(error);
 		}
@@ -44,7 +66,25 @@ export const resultsRouter = {
 		const userId = requireUserId(context);
 
 		try {
-			return await finalizeRoom(depsFrom(context), userId, input.roomId);
+			const result = await finalizeRoom(depsFrom(context), userId, input.roomId);
+
+			await safeNotify(
+				notificationServiceFor(context.db).notifyRoomMembers(
+					input.roomId,
+					{
+						type: NOTIFICATION_TYPE.ROOM_RESULT,
+						title: "Debate completed",
+						body:
+							result.outcome === "DRAW"
+								? `The debate ended in a draw: PRO ${result.proWins} · CONTRA ${result.contraWins}.`
+								: `${result.outcome} won the debate: PRO ${result.proWins} · CONTRA ${result.contraWins}.`,
+						roomId: input.roomId,
+					},
+					{ excludeUserId: userId },
+				),
+			);
+
+			return result;
 		} catch (error) {
 			return toOrpcError(error);
 		}

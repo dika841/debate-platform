@@ -87,6 +87,7 @@ const createHarness = (participants: MembershipWithUser[], room = roomWith()) =>
 		findByRoomAndUser: async (_roomId, userId) =>
 			currentParticipants.find((item) => item.membership.userId === userId) ?? null,
 		listParticipants: async () => currentParticipants,
+		listUserIds: async () => currentParticipants.map((item) => item.user.id),
 		updateTeam: async (id, team) => {
 			currentParticipants = currentParticipants.map((item) =>
 				item.membership.id === id ? { ...item, membership: { ...item.membership, team } } : item,
