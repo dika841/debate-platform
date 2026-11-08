@@ -1,7 +1,7 @@
 import { Badge } from "@app/components/ui/badge";
 import { Button } from "@app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
-import { MODERATION } from "@app/messages";
+import { AUTH, MODERATION } from "@app/messages";
 import { hasPermission, PERMISSION, ROLE, type Role } from "@app/permissions";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -23,12 +23,12 @@ const formatDate = (value: string): string => new Date(value).toLocaleString();
 function ModerationPage() {
 	const session = useSession();
 	const [status, setStatus] = useState<ReportStatusFilter>("PENDING");
-	const reports = useReports(status);
-	const resolve = useResolveReport();
-
 	const role = roleOf(session.data?.session?.user.role);
 	const canReview = hasPermission(role, PERMISSION.MODERATION_REVIEW);
 	const canAct = hasPermission(role, PERMISSION.MODERATION_ACTION);
+	const twoFactorEnabled = session.data?.session?.user.twoFactorEnabled ?? false;
+	const reports = useReports(status, canReview && twoFactorEnabled);
+	const resolve = useResolveReport();
 
 	if (!canReview) {
 		return (
@@ -41,11 +41,34 @@ function ModerationPage() {
 		);
 	}
 
+	if (!twoFactorEnabled) {
+		return (
+			<Card className="max-w-2xl">
+				<CardHeader>
+					<CardTitle>{MODERATION.title}</CardTitle>
+					<CardDescription>{MODERATION.mfaRequired}</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<Button asChild>
+						<Link to="/profile">{AUTH.enableTwoFactor}</Link>
+					</Button>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	return (
 		<div className="space-y-6">
-			<div className="space-y-1">
-				<h1 className="text-2xl font-semibold tracking-tight">{MODERATION.title}</h1>
-				<p className="text-sm text-muted-foreground">{MODERATION.description}</p>
+			<div className="flex flex-wrap items-end justify-between gap-3">
+				<div className="space-y-1">
+					<h1 className="text-2xl font-semibold tracking-tight">{MODERATION.title}</h1>
+					<p className="text-sm text-muted-foreground">{MODERATION.description}</p>
+				</div>
+				{canAct ? (
+					<Button variant="outline" asChild>
+						<Link to="/audit">{MODERATION.auditLink}</Link>
+					</Button>
+				) : null}
 			</div>
 
 			<div className="flex flex-wrap gap-2">

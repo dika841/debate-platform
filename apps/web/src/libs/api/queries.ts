@@ -51,12 +51,19 @@ export const useRoomResults = (roomId: string) =>
 		enabled: roomId.length > 0,
 	});
 
-export const useReports = (status?: "PENDING" | "ACTIONED" | "DISMISSED") =>
-	useQuery(
-		orpc.reports.list.queryOptions({
+export const useReports = (status?: "PENDING" | "ACTIONED" | "DISMISSED", enabled = true) =>
+	useQuery({
+		...orpc.reports.list.queryOptions({
 			input: status ? { status } : {},
 		}),
-	);
+		enabled,
+	});
+
+export const useAuditEvents = (enabled = true) =>
+	useQuery({
+		...orpc.audit.list.queryOptions({ input: { limit: 50 } }),
+		enabled,
+	});
 
 export const useNotifications = () => useQuery(orpc.notifications.list.queryOptions({ input: {} }));
 

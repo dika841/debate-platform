@@ -57,6 +57,7 @@ import {
 	markNotificationReadInputSchema,
 	notificationSchema,
 } from "./notifications.ts";
+import { listAuditEventsInputSchema, listAuditEventsOutputSchema } from "./audit.ts";
 
 export const contract = {
 	health: {
@@ -115,9 +116,13 @@ export const contract = {
 		markRead: oc.input(markNotificationReadInputSchema).output(notificationSchema),
 		markAllRead: oc.output(markAllNotificationsReadOutputSchema),
 	},
+	audit: {
+		list: oc.input(listAuditEventsInputSchema).output(listAuditEventsOutputSchema),
+	},
 } as const;
 
 export * from "./assignments.ts";
+export * from "./audit.ts";
 export * from "./execution.ts";
 export * from "./health.ts";
 export * from "./memberships.ts";

@@ -2,7 +2,7 @@ import { contract } from "@app/api-contract";
 import { NOTIFICATION_TYPE } from "@app/shared";
 import { implement } from "@orpc/server";
 import { auditLoggerFor, safeAudit } from "#/modules/audit/index.ts";
-import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
+import { requireTwoFactor, requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { createDrizzleSubmissionRepository } from "#/modules/debate-execution/infrastructure/persistence/drizzle-submission-repository.ts";
 import { createDrizzleRoomRepository } from "#/modules/debate-room/infrastructure/persistence/drizzle-room-repository.ts";
@@ -34,7 +34,7 @@ export const reportsRouter = {
 	}),
 
 	list: os.reports.list.handler(async ({ context, input }) => {
-		requireUserId(context);
+		requireTwoFactor(context);
 
 		try {
 			return await listReports(depsFrom(context), context.session?.user.role ?? "USER", input);
@@ -44,7 +44,7 @@ export const reportsRouter = {
 	}),
 
 	resolve: os.reports.resolve.handler(async ({ context, input }) => {
-		const userId = requireUserId(context);
+		const userId = requireTwoFactor(context);
 
 		try {
 			const report = await resolveReport(

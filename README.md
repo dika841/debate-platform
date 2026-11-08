@@ -75,7 +75,9 @@ All demo accounts use `DemoPassword123!` (override with `SEED_PASSWORD`; the hos
 email uses `SEED_EMAIL`). Seeded rooms cover every lifecycle state: completed
 with results, in-progress with round 1 in voting, published and accepting
 members, a draft and a cancelled room. Three moderation reports are included
-(two pending, one dismissed).
+(two pending, one dismissed). The seeded moderator/admin must enable two-factor
+authentication from `/profile` before the moderation queue and audit log become
+accessible.
 
 ## Common commands
 
@@ -316,8 +318,10 @@ All planned domain slices (M2–M7) are now implemented.
   "Sign out other devices" action is provided.
 - Two-factor authentication (TOTP + backup codes) is available from the profile
   security card; login prompts for the authenticator code when enabled.
+  Moderators/admins must enable it before using moderation or the audit log.
 - Users can download their data (`/api/me/export`) and delete their account
   from the profile page.
+- Admins with MFA can browse the immutable audit log at `/audit`.
 - Reset/verification emails are sent with Resend (`RESEND_API_KEY`,
   `EMAIL_FROM`). Without a provider key, development logs delivery locally and
   production logs a warning.

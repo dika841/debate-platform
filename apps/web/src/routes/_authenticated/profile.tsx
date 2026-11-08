@@ -15,7 +15,7 @@ import {
 	twoFactor,
 } from "@/libs/auth/client.ts";
 import { apiUrl } from "@/libs/orpc/index.ts";
-import { useProfile, useUpdateProfile } from "@/libs/api/queries.ts";
+import { useInvalidateAccount, useProfile, useUpdateProfile } from "@/libs/api/queries.ts";
 
 export const Route = createFileRoute("/_authenticated/profile")({
 	component: ProfilePage,
@@ -38,6 +38,7 @@ const EMPTY_FORM: ProfileForm = {
 function ProfilePage() {
 	const profile = useProfile();
 	const update = useUpdateProfile();
+	const invalidateAccount = useInvalidateAccount();
 	const navigate = useNavigate();
 	const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
 	const [feedback, setFeedback] = useState<string | null>(null);
@@ -175,7 +176,7 @@ function ProfilePage() {
 		setTwoFactorSetup(null);
 		setTwoFactorCode("");
 		setTwoFactorFeedback(AUTH.twoFactorEnabled);
-		await profile.refetch();
+		await Promise.all([profile.refetch(), invalidateAccount()]);
 	};
 
 	const handleDisableTwoFactor = async (): Promise<void> => {
@@ -196,7 +197,7 @@ function ProfilePage() {
 		}
 
 		setTwoFactorFeedback(AUTH.twoFactorDisabled);
-		await profile.refetch();
+		await Promise.all([profile.refetch(), invalidateAccount()]);
 	};
 
 	const handleDeleteAccount = async (): Promise<void> => {
@@ -420,6 +421,11 @@ function ProfilePage() {
 
 						{twoFactorFeedback ? (
 							<p className="text-sm text-muted-foreground">{twoFactorFeedback}</p>
+						) : null}
+
+						{!twoFactorEnabled &&
+						(profile.data.role === "MODERATOR" || profile.data.role === "ADMIN") ? (
+							<p className="text-sm text-destructive">{AUTH.mfaRequiredForRole}</p>
 						) : null}
 
 						{twoFactorSetup ? (

@@ -60,8 +60,9 @@ the API/worker environment to the runtime role.
 
 ## Known follow-ups
 
-- Two-factor authentication is opt-in; there is no enforced MFA policy for
-  admin roles yet.
-- Audit events are stored but no moderator-facing audit UI/API exists.
+- MFA is enforced for moderation and audit access; any future admin-only
+  capability must call `requireTwoFactor`.
 - Email delivery requires an external provider (Resend); Mailpit is receive-only.
 - CSP is strict and may need tuning if new third-party assets are introduced.
+- WAF rules are documented in the Cloudflare guide but must be created in the
+  dashboard/Terraform for each zone.

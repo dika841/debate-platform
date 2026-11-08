@@ -90,7 +90,24 @@ secure: true;
 ```
 
 `WEB_ORIGIN` must exactly match the web origin, and `trustedOrigins` includes
-both the production web origin and `http://localhost:5173`.
+the production web origin. `http://localhost:5173` is only added in
+non-production environments.
 
 For the Docker stack, nginx proxies `/rpc` and `/api`, keeping cookies
 same-origin and avoiding third-party cookie restrictions.
+
+## 8. WAF and bot protection
+
+Add these rules in the Cloudflare dashboard (or Terraform) for the API zone:
+
+- Rate limiting rule: `/api/auth/sign-up/email` and
+  `/api/auth/request-password-reset` — 10 requests/minute per IP, action
+  Managed Challenge.
+- Rate limiting rule: `/api/auth/*` — 60 requests/minute per IP, action Block.
+- Managed Challenge when `cf.threat_score > 10` on `/api/auth/*`.
+- Enable Bot Fight Mode (or Super Bot Fight Mode) for the API hostname.
+- Lock the API origin to Cloudflare (Authenticated Origin Pulls or IP
+  allowlist) so origin headers cannot be spoofed by direct connections.
+- Optionally add a WAF rule blocking POST `/rpc/*` requests whose `Origin` does
+  not equal `WEB_ORIGIN` (the application also enforces this).
+

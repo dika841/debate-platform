@@ -8,6 +8,7 @@ export const sessionUserSchema = z.object({
 	email: z.string().email(),
 	image: z.string().nullable(),
 	role: z.string(),
+	twoFactorEnabled: z.boolean(),
 });
 
 export const sessionSchema = z.object({

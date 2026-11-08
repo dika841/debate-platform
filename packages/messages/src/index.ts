@@ -74,6 +74,7 @@ export const AUTH = {
 	twoFactorUri: "Add this URI to your authenticator app:",
 	backupCodes: "Backup codes",
 	twoFactorFailed: "Unable to update two-factor authentication",
+	mfaRequiredForRole: "Two-factor authentication is required for moderator and admin access.",
 } as const;
 
 export const ROOM = {
@@ -271,6 +272,8 @@ export const MODERATION = {
 	title: "Moderation queue",
 	description: "Review reports submitted by the community.",
 	accessDenied: "Moderator access is required to view this page.",
+	mfaRequired: "Enable two-factor authentication in your profile to access moderation.",
+	auditLink: "View audit log",
 	filter: {
 		PENDING: "Pending",
 		ACTIONED: "Actioned",
@@ -294,4 +297,14 @@ export const NOTIFICATION = {
 	markAllRead: "Mark all as read",
 	unread: "Unread",
 	openRoom: "Open debate",
+} as const;
+
+export const AUDIT = {
+	title: "Audit log",
+	description: "Security-sensitive actions performed by moderators and admins.",
+	accessDenied: "Admin access with two-factor authentication is required.",
+	empty: "No audit events yet.",
+	actor: "Actor",
+	entity: "Entity",
+	metadata: "Metadata",
 } as const;

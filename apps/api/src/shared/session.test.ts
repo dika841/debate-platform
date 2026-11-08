@@ -13,6 +13,7 @@ const betterAuthSession = {
 		email: "demo@example.com",
 		image: null,
 		role: "USER",
+		twoFactorEnabled: false,
 	},
 };
 

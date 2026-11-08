@@ -33,6 +33,18 @@ export const requireUserId = (context: OrpcContext): string => {
 	return context.session.userId;
 };
 
+export const requireTwoFactor = (context: OrpcContext): string => {
+	const userId = requireUserId(context);
+
+	if (!context.session?.user.twoFactorEnabled) {
+		throw new ORPCError("FORBIDDEN", {
+			message: "Enable two-factor authentication to access this area",
+		});
+	}
+
+	return userId;
+};
+
 export const toOrpcError = (error: unknown): never => {
 	if (error instanceof DomainError) {
 		if (CONFLICT_DOMAIN_CODES.has(error.code)) {

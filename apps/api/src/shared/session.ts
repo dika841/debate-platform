@@ -25,6 +25,7 @@ type BetterAuthSession = {
 		email: string;
 		image?: string | null;
 		role?: string | null;
+		twoFactorEnabled?: boolean | null;
 	};
 };
 
@@ -38,6 +39,7 @@ export const sessionFromBetterAuth = (session: BetterAuthSession): AppSession =>
 		email: session.user.email,
 		image: session.user.image ?? null,
 		role: session.user.role ?? "USER",
+		twoFactorEnabled: session.user.twoFactorEnabled ?? false,
 	},
 });
 
