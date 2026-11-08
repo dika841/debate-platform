@@ -36,7 +36,7 @@ worker: ## Run the worker loop
 db-migrate: ## Apply pending migrations
 	moon run api:migrate
 
-db-seed: ## Seed a demo user
+db-seed: ## Seed demo users, rooms, votes and reports
 	moon run api:db-seed
 
 db-generate: ## Generate a migration from the Drizzle schema

@@ -54,6 +54,29 @@ make dev           # api :3001 + web :5173
 
 Open `http://localhost:5173` — the landing page shows the live API/database health.
 
+## Demo data
+
+```bash
+make db-seed
+```
+
+The seed is idempotent and creates:
+
+| Email | Role | Purpose |
+|---|---|---|
+| `demo@example.com` | USER | Host of all seeded rooms |
+| `aisha@example.com` | USER | PRO participant (completed + voting rooms) |
+| `budi@example.com` | USER | CONTRA participant (completed + voting rooms) |
+| `citra@example.com` | USER | Spectator/voter and reporter |
+| `moderator@example.com` | MODERATOR | Moderation queue reviewer |
+| `admin@example.com` | ADMIN | Full moderation actions |
+
+All demo accounts use `DemoPassword123!` (override with `SEED_PASSWORD`; the host
+email uses `SEED_EMAIL`). Seeded rooms cover every lifecycle state: completed
+with results, in-progress with round 1 in voting, published and accepting
+members, a draft and a cancelled room. Three moderation reports are included
+(two pending, one dismissed).
+
 ## Common commands
 
 | Command | Description |
@@ -61,7 +84,7 @@ Open `http://localhost:5173` — the landing page shows the live API/database he
 | `make services` | Start local Postgres and Mailpit |
 | `make dev` | Run API and web on the host |
 | `make db-migrate` | Apply Drizzle migrations |
-| `make db-seed` | Create a demo user |
+| `make db-seed` | Seed demo users, rooms, votes and reports |
 | `make check` | Biome check |
 | `make arch` | Architecture boundary checks |
 | `make typecheck` | TypeScript across all projects |
