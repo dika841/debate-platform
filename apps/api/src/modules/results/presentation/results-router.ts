@@ -1,6 +1,7 @@
 import { contract } from "@app/api-contract";
 import { NOTIFICATION_TYPE } from "@app/shared";
 import { implement } from "@orpc/server";
+import { auditLoggerFor, safeAudit } from "#/modules/audit/index.ts";
 import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { createDrizzleRoundRepository } from "#/modules/debate-execution/infrastructure/persistence/drizzle-round-repository.ts";
@@ -54,6 +55,21 @@ export const resultsRouter = {
 						{ excludeUserId: userId },
 					),
 				);
+
+				await safeAudit(
+					auditLoggerFor(context.db).record({
+						actorId: userId,
+						actorRole: context.session?.user.role ?? "USER",
+						action: "result.finalize_round",
+						entityType: "round",
+						entityId: result.roundId,
+						metadata: {
+							roomId: round.roomId,
+							outcome: result.outcome,
+							totalVotes: result.totalVotes,
+						},
+					}),
+				);
 			}
 
 			return result;
@@ -82,6 +98,21 @@ export const resultsRouter = {
 					},
 					{ excludeUserId: userId },
 				),
+			);
+
+			await safeAudit(
+				auditLoggerFor(context.db).record({
+					actorId: userId,
+					actorRole: context.session?.user.role ?? "USER",
+					action: "result.finalize_room",
+					entityType: "room",
+					entityId: input.roomId,
+					metadata: {
+						outcome: result.outcome,
+						proWins: result.proWins,
+						contraWins: result.contraWins,
+					},
+				}),
 			);
 
 			return result;

@@ -6,6 +6,7 @@ import { Label } from "@app/components/ui/label";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { signIn } from "@/libs/auth/client.ts";
+import { safeInternalPath } from "@/libs/navigation.ts";
 import { useInvalidateAccount } from "@/libs/api/queries.ts";
 
 export type LoginSearch = {
@@ -45,7 +46,7 @@ function LoginPage() {
 
 		await invalidate();
 		setPending(false);
-		await navigate({ to: search.redirect ?? "/" });
+		await navigate({ to: safeInternalPath(search.redirect) });
 	};
 
 	return (
@@ -87,6 +88,15 @@ function LoginPage() {
 							{pending ? "Signing in…" : AUTH.signIn}
 						</Button>
 					</form>
+
+					<div className="mt-3 text-right">
+						<Link
+							to="/forgot-password"
+							className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+						>
+							{AUTH.forgotPassword}
+						</Link>
+					</div>
 
 					<p className="mt-4 text-center text-sm text-muted-foreground">
 						No account yet?{" "}

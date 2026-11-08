@@ -38,6 +38,22 @@ export const AUTH = {
 	signUp: "Create account",
 	sessionAnonymous: "Guest",
 	sessionUnavailable: "Session unavailable",
+	forgotPassword: "Forgot password?",
+	resetPassword: "Reset password",
+	resetRequested: "If an account exists for that email, a reset link has been sent.",
+	newPassword: "New password",
+	confirmPassword: "Confirm password",
+	passwordHint: "At least 12 characters.",
+	passwordUpdated: "Password updated",
+	verifyEmailSent: "Check your email to verify your account before signing in.",
+	security: "Security",
+	currentPassword: "Current password",
+	updatePassword: "Update password",
+	updatingPassword: "Updating…",
+	signOutOtherDevices: "Sign out other devices",
+	otherSessionsRevoked: "Other sessions revoked",
+	changePasswordFailed: "Unable to update password",
+	resetFailed: "Unable to reset password",
 } as const;
 
 export const ROOM = {

@@ -7,12 +7,14 @@ export type RateLimitMiddlewareOptions = {
 	readonly limiter: RateLimiter;
 	readonly scope: string;
 	readonly proxyMode: ProxyMode;
+	readonly keyByPath?: boolean;
 	readonly now?: () => Date;
 };
 
 export const rateLimitMiddleware = (options: RateLimitMiddlewareOptions): MiddlewareHandler => {
 	return async (context, next) => {
-		const identifier = resolveClientIp(context.req.raw.headers, options.proxyMode);
+		const ip = resolveClientIp(context.req.raw.headers, options.proxyMode);
+		const identifier = options.keyByPath ? `${ip}:${context.req.path}` : ip;
 		const limited = await applyRateLimit(context, {
 			limiter: options.limiter,
 			scope: options.scope,

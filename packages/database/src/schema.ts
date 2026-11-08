@@ -3,6 +3,7 @@ import {
 	boolean,
 	index,
 	integer,
+	jsonb,
 	pgTable,
 	text,
 	timestamp,
@@ -431,6 +432,31 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 	round: one(debateRounds, {
 		fields: [notifications.roundId],
 		references: [debateRounds.id],
+	}),
+}));
+
+export const auditEvents = pgTable(
+	"audit_events",
+	{
+		id: text("id").primaryKey(),
+		actorId: text("actor_id").references(() => users.id, { onDelete: "set null" }),
+		actorRole: text("actor_role").notNull(),
+		action: text("action").notNull(),
+		entityType: text("entity_type").notNull(),
+		entityId: text("entity_id"),
+		metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+		createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+	},
+	(table) => [
+		index("idx_audit_events_actor_created").on(table.actorId, table.createdAt),
+		index("idx_audit_events_action_created").on(table.action, table.createdAt),
+	],
+);
+
+export const auditEventsRelations = relations(auditEvents, ({ one }) => ({
+	actor: one(users, {
+		fields: [auditEvents.actorId],
+		references: [users.id],
 	}),
 }));
 

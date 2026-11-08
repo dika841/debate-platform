@@ -1,4 +1,5 @@
 import type { Database } from "@app/database";
+import { redactError } from "@app/logger";
 import { logger } from "#/platform/observability/logger.ts";
 import { createDrizzleRoomRepository } from "#/modules/debate-room/infrastructure/persistence/drizzle-room-repository.ts";
 import { createDrizzleMembershipRepository } from "#/modules/membership/infrastructure/persistence/drizzle-membership-repository.ts";
@@ -19,6 +20,6 @@ export const safeNotify = async (work: Promise<unknown>): Promise<void> => {
 	try {
 		await work;
 	} catch (error) {
-		logger.warn({ err: error }, "notification.dispatch_failed");
+		logger.warn({ err: redactError(error) }, "notification.dispatch_failed");
 	}
 };

@@ -5,6 +5,8 @@ export const LOG_LEVEL = {
 	ERROR: "error",
 } as const;
 
+export { redactError } from "./redact.ts";
+
 export type LogLevel = (typeof LOG_LEVEL)[keyof typeof LOG_LEVEL];
 
 const LEVEL_WEIGHT: Record<LogLevel, number> = {

@@ -1,4 +1,5 @@
 import { RPCHandler } from "@orpc/server/fetch";
+import { redactError } from "@app/logger";
 import { onError } from "@orpc/server";
 import type { Context } from "hono";
 import { appRouter } from "#/bootstrap/router.ts";
@@ -16,7 +17,7 @@ import type { OrpcContext } from "#/platform/orpc/context.ts";
 export const rpcHandler = new RPCHandler(appRouter, {
 	interceptors: [
 		onError((error) => {
-			logger.error({ err: error }, "orpc.error");
+			logger.error({ err: redactError(error) }, "orpc.error");
 		}),
 	],
 });
@@ -26,7 +27,7 @@ const resolveSession = async (headers: Headers): Promise<SessionResolution> => {
 		const session = await auth.api.getSession({ headers });
 		return sessionResolutionOf(session);
 	} catch (error) {
-		logger.error({ err: error }, "session.resolve.failed");
+		logger.error({ err: redactError(error) }, "session.resolve.failed");
 		return unavailableResolution();
 	}
 };

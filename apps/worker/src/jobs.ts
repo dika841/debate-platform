@@ -1,5 +1,6 @@
 import { databaseCreate, type DatabaseTransaction } from "@app/database";
 import { debateRooms, debateRounds, notifications, roomMemberships } from "@app/database/schema";
+import { redactError } from "@app/logger";
 import { createLogger } from "@app/logger";
 import { NOTIFICATION_TYPE, ROUND_STATUS, ROOM_STATUS } from "@app/shared";
 import { and, eq, lte } from "drizzle-orm";
@@ -235,7 +236,7 @@ export const runScheduledJobs = async (
 						: "no expired rounds",
 			});
 		} catch (error) {
-			logger.error({ err: error }, "job.round_deadline.failed");
+			logger.error({ err: redactError(error) }, "job.round_deadline.failed");
 			results.push({
 				name: JOBS.ROUND_DEADLINE,
 				executed: false,

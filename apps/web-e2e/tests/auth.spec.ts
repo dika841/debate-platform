@@ -26,7 +26,7 @@ test("registers, updates the profile and signs out", async ({ page }) => {
 	await expect(page.getByText("Profile updated")).toBeVisible();
 	await expect(page.getByRole("link", { name: "E2E Updated" })).toBeVisible();
 
-	await page.getByRole("button", { name: "Sign out" }).click();
+	await page.getByRole("button", { name: "Sign out", exact: true }).click();
 	await expect(page).toHaveURL(/\/$/);
 	await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
 });
@@ -34,7 +34,7 @@ test("registers, updates the profile and signs out", async ({ page }) => {
 test("redirects anonymous users to login and returns to the profile", async ({ page }) => {
 	const { email, password } = await register(page);
 
-	await page.getByRole("button", { name: "Sign out" }).click();
+	await page.getByRole("button", { name: "Sign out", exact: true }).click();
 	await expect(page).toHaveURL(/\/$/);
 
 	await page.goto("/profile");
@@ -55,4 +55,31 @@ test("shows an error for invalid credentials", async ({ page }) => {
 	await page.getByRole("button", { name: "Sign in" }).click();
 
 	await expect(page.getByText(/invalid/i)).toBeVisible();
+});
+
+test("changes the password and signs in with the new one", async ({ page }) => {
+	const { email, password } = await register(page);
+	const newPassword = "NewPassword123!";
+
+	await page.getByLabel("Current password").fill(password);
+	await page.getByLabel("New password", { exact: true }).fill(newPassword);
+	await page.getByLabel("Confirm password").fill(newPassword);
+	await page.getByRole("button", { name: "Update password" }).click();
+	await expect(page.getByText("Password updated")).toBeVisible();
+
+	await page.getByRole("button", { name: "Sign out", exact: true }).click();
+	await expect(page).toHaveURL(/\/$/);
+
+	await page.goto("/login?redirect=/profile");
+	await page.getByLabel("Email").fill(email);
+	await page.getByLabel("Password", { exact: true }).fill(newPassword);
+	await page.getByRole("button", { name: "Sign in" }).click();
+	await expect(page).toHaveURL(/\/profile$/);
+});
+
+test("requests a password reset without leaking account existence", async ({ page }) => {
+	await page.goto("/forgot-password");
+	await page.getByLabel("Email").fill("missing@example.com");
+	await page.getByRole("button", { name: "Reset password" }).click();
+	await expect(page.getByText(/If an account exists/)).toBeVisible();
 });

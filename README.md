@@ -299,6 +299,33 @@ All planned domain slices (M2–M7) are now implemented.
   production and a restrictive `Permissions-Policy`.
 - The nginx image and the Cloudflare `_headers` file send CSP, HSTS,
   clickjacking, MIME-sniffing, referrer and permissions headers for the SPA.
+- Browser mutations on `/rpc/*` must come from `WEB_ORIGIN` (Origin/Referer
+  guard); requests without browser origin headers remain available to CLI and
+  server clients.
+- `GET /metrics` requires `Authorization: Bearer $METRICS_TOKEN` when the token
+  is set, and is disabled in production when no token is configured.
+
+### Authentication hardening
+
+- Password policy is 12–128 characters.
+- Email verification is sent on signup; verification is enforced in production
+  when `RESEND_API_KEY` is configured.
+- Password reset (`/forgot-password`, `/reset-password`) and password change
+  (`/profile`) are available; changing a password revokes other sessions, and a
+  "Sign out other devices" action is provided.
+- Reset/verification emails are sent with Resend (`RESEND_API_KEY`,
+  `EMAIL_FROM`). Without a provider key, development logs delivery locally and
+  production logs a warning.
+- Login redirects only accept same-site paths, preventing open redirects.
+
+### Logging and audit
+
+- Error logs are redacted (`redactError`): SQL params, pg `detail`, messages,
+  emails and sensitive object keys are removed while keeping codes, constraints
+  and stack frames.
+- Security-sensitive actions are written to `audit_events`: room publish/cancel,
+  assignment finalization, round start/advance, round/room result finalization
+  and report resolution.
 
 ### Production guards
 

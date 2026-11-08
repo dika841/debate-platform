@@ -5,7 +5,7 @@ import { Input } from "@app/components/ui/input";
 import { Label } from "@app/components/ui/label";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { signUp } from "@/libs/auth/client.ts";
+import { signUp, getSession } from "@/libs/auth/client.ts";
 import { useInvalidateAccount } from "@/libs/api/queries.ts";
 
 export const Route = createFileRoute("/_public/register")({
@@ -20,11 +20,13 @@ function RegisterPage() {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
+	const [info, setInfo] = useState<string | null>(null);
 	const [pending, setPending] = useState(false);
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
 		event.preventDefault();
 		setError(null);
+		setInfo(null);
 
 		if (password !== confirmPassword) {
 			setError("Passwords do not match");
@@ -36,6 +38,14 @@ function RegisterPage() {
 
 		if (result.error) {
 			setError(result.error.message ?? "Unable to create an account");
+			setPending(false);
+			return;
+		}
+
+		const session = await getSession();
+
+		if (!session.data?.session) {
+			setInfo(AUTH.verifyEmailSent);
 			setPending(false);
 			return;
 		}
@@ -83,7 +93,7 @@ function RegisterPage() {
 								id="password"
 								type="password"
 								autoComplete="new-password"
-								minLength={8}
+								minLength={12}
 								required
 								value={password}
 								onChange={(event) => setPassword(event.target.value)}
@@ -96,7 +106,7 @@ function RegisterPage() {
 								id="confirm-password"
 								type="password"
 								autoComplete="new-password"
-								minLength={8}
+								minLength={12}
 								required
 								value={confirmPassword}
 								onChange={(event) => setConfirmPassword(event.target.value)}
@@ -104,6 +114,7 @@ function RegisterPage() {
 						</div>
 
 						{error ? <p className="text-sm text-destructive">{error}</p> : null}
+						{info ? <p className="text-sm text-muted-foreground">{info}</p> : null}
 
 						<Button type="submit" className="w-full" disabled={pending}>
 							{pending ? "Creating account…" : AUTH.signUp}

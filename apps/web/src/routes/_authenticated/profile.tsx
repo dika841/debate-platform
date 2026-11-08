@@ -7,6 +7,7 @@ import { Label } from "@app/components/ui/label";
 import { Textarea } from "@app/components/ui/textarea";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
+import { changePassword, revokeOtherSessions } from "@/libs/auth/client.ts";
 import { useProfile, useUpdateProfile } from "@/libs/api/queries.ts";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -32,6 +33,12 @@ function ProfilePage() {
 	const update = useUpdateProfile();
 	const [form, setForm] = useState<ProfileForm>(EMPTY_FORM);
 	const [feedback, setFeedback] = useState<string | null>(null);
+	const [currentPassword, setCurrentPassword] = useState("");
+	const [newPassword, setNewPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
+	const [securityFeedback, setSecurityFeedback] = useState<string | null>(null);
+	const [securityPending, setSecurityPending] = useState(false);
+	const [revoking, setRevoking] = useState(false);
 
 	useEffect(() => {
 		if (!profile.data) {
@@ -61,6 +68,48 @@ function ProfilePage() {
 		} catch (error) {
 			setFeedback(error instanceof Error ? error.message : "Unable to update profile");
 		}
+	};
+
+	const handleChangePassword = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+		event.preventDefault();
+		setSecurityFeedback(null);
+
+		if (newPassword !== confirmPassword) {
+			setSecurityFeedback("Passwords do not match");
+			return;
+		}
+
+		setSecurityPending(true);
+		const result = await changePassword({
+			currentPassword,
+			newPassword,
+			revokeOtherSessions: true,
+		});
+		setSecurityPending(false);
+
+		if (result.error) {
+			setSecurityFeedback(result.error.message ?? AUTH.changePasswordFailed);
+			return;
+		}
+
+		setCurrentPassword("");
+		setNewPassword("");
+		setConfirmPassword("");
+		setSecurityFeedback(AUTH.passwordUpdated);
+	};
+
+	const handleRevokeOtherSessions = async (): Promise<void> => {
+		setSecurityFeedback(null);
+		setRevoking(true);
+		const result = await revokeOtherSessions();
+		setRevoking(false);
+
+		if (result.error) {
+			setSecurityFeedback(result.error.message ?? AUTH.changePasswordFailed);
+			return;
+		}
+
+		setSecurityFeedback(AUTH.otherSessionsRevoked);
 	};
 
 	if (profile.isPending) {
@@ -186,6 +235,72 @@ function ProfilePage() {
 						<span className="text-muted-foreground">{AUTH.sessionAnonymous}</span>
 						<span>{profile.data.profile.username ?? "—"}</span>
 					</div>
+				</CardContent>
+			</Card>
+			<Card className="md:col-span-2">
+				<CardHeader>
+					<CardTitle>{AUTH.security}</CardTitle>
+					<CardDescription>{AUTH.passwordHint}</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<form
+						className="grid gap-4 sm:grid-cols-3"
+						onSubmit={(event) => void handleChangePassword(event)}
+					>
+						<div className="space-y-2">
+							<Label htmlFor="currentPassword">{AUTH.currentPassword}</Label>
+							<Input
+								id="currentPassword"
+								type="password"
+								autoComplete="current-password"
+								required
+								value={currentPassword}
+								onChange={(event) => setCurrentPassword(event.target.value)}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="newPassword">{AUTH.newPassword}</Label>
+							<Input
+								id="newPassword"
+								type="password"
+								autoComplete="new-password"
+								minLength={12}
+								required
+								value={newPassword}
+								onChange={(event) => setNewPassword(event.target.value)}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="confirmNewPassword">{AUTH.confirmPassword}</Label>
+							<Input
+								id="confirmNewPassword"
+								type="password"
+								autoComplete="new-password"
+								minLength={12}
+								required
+								value={confirmPassword}
+								onChange={(event) => setConfirmPassword(event.target.value)}
+							/>
+						</div>
+
+						{securityFeedback ? (
+							<p className="text-sm text-muted-foreground sm:col-span-3">{securityFeedback}</p>
+						) : null}
+
+						<div className="flex flex-wrap gap-2 sm:col-span-3">
+							<Button type="submit" disabled={securityPending}>
+								{securityPending ? AUTH.updatingPassword : AUTH.updatePassword}
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								disabled={revoking}
+								onClick={() => void handleRevokeOtherSessions()}
+							>
+								{revoking ? AUTH.updatingPassword : AUTH.signOutOtherDevices}
+							</Button>
+						</div>
+					</form>
 				</CardContent>
 			</Card>
 		</div>

@@ -1,6 +1,7 @@
 import { contract } from "@app/api-contract";
 import { NOTIFICATION_TYPE } from "@app/shared";
 import { implement } from "@orpc/server";
+import { auditLoggerFor, safeAudit } from "#/modules/audit/index.ts";
 import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { createDrizzleSubmissionRepository } from "#/modules/debate-execution/infrastructure/persistence/drizzle-submission-repository.ts";
@@ -59,6 +60,17 @@ export const reportsRouter = {
 					title: "Report resolved",
 					body: `Your report for "${report.room.title}" was ${report.status.toLowerCase()}.`,
 					roomId: report.room.id,
+				}),
+			);
+
+			await safeAudit(
+				auditLoggerFor(context.db).record({
+					actorId: userId,
+					actorRole: context.session?.user.role ?? "USER",
+					action: "report.resolve",
+					entityType: "report",
+					entityId: report.id,
+					metadata: { status: report.status, roomId: report.room.id },
 				}),
 			);
 

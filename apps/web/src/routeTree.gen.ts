@@ -15,9 +15,11 @@ import { Route as AuthenticatedModerationRouteImport } from './routes/_authentic
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicForgotPasswordRouteImport } from './routes/_public/forgot-password'
 import { Route as PublicHealthRouteImport } from './routes/_public/health'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
 import { Route as PublicRegisterRouteImport } from './routes/_public/register'
+import { Route as PublicResetPasswordRouteImport } from './routes/_public/reset-password'
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms/index'
 import { Route as AuthenticatedRoomsNewRouteImport } from './routes/_authenticated/rooms/new'
 import { Route as PublicRoomsRoomIdRouteImport } from './routes/_public/rooms/$roomId'
@@ -52,6 +54,11 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicForgotPasswordRoute = PublicForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicHealthRoute = PublicHealthRouteImport.update({
   id: '/health',
   path: '/health',
@@ -65,6 +72,11 @@ const PublicLoginRoute = PublicLoginRouteImport.update({
 const PublicRegisterRoute = PublicRegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicResetPasswordRoute = PublicResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
@@ -94,9 +106,11 @@ export interface FileRoutesByFullPath {
   '/moderation': typeof AuthenticatedModerationRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/forgot-password': typeof PublicForgotPasswordRoute
   '/health': typeof PublicHealthRoute
   '/login': typeof PublicLoginRoute
   '/register': typeof PublicRegisterRoute
+  '/reset-password': typeof PublicResetPasswordRoute
   '/rooms/new': typeof AuthenticatedRoomsNewRoute
   '/rooms/$roomId': typeof PublicRoomsRoomIdRoute
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
@@ -107,9 +121,11 @@ export interface FileRoutesByTo {
   '/moderation': typeof AuthenticatedModerationRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/forgot-password': typeof PublicForgotPasswordRoute
   '/health': typeof PublicHealthRoute
   '/login': typeof PublicLoginRoute
   '/register': typeof PublicRegisterRoute
+  '/reset-password': typeof PublicResetPasswordRoute
   '/rooms/new': typeof AuthenticatedRoomsNewRoute
   '/rooms/$roomId': typeof PublicRoomsRoomIdRoute
   '/rooms': typeof AuthenticatedRoomsIndexRoute
@@ -122,9 +138,11 @@ export interface FileRoutesById {
   '/_authenticated/moderation': typeof AuthenticatedModerationRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_public/forgot-password': typeof PublicForgotPasswordRoute
   '/_public/health': typeof PublicHealthRoute
   '/_public/login': typeof PublicLoginRoute
   '/_public/register': typeof PublicRegisterRoute
+  '/_public/reset-password': typeof PublicResetPasswordRoute
   '/_public/': typeof PublicIndexRoute
   '/_authenticated/rooms/new': typeof AuthenticatedRoomsNewRoute
   '/_public/rooms/$roomId': typeof PublicRoomsRoomIdRoute
@@ -138,9 +156,11 @@ export interface FileRouteTypes {
     | '/moderation'
     | '/notifications'
     | '/profile'
+    | '/forgot-password'
     | '/health'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/rooms/new'
     | '/rooms/$roomId'
     | '/rooms/'
@@ -151,9 +171,11 @@ export interface FileRouteTypes {
     | '/moderation'
     | '/notifications'
     | '/profile'
+    | '/forgot-password'
     | '/health'
     | '/login'
     | '/register'
+    | '/reset-password'
     | '/rooms/new'
     | '/rooms/$roomId'
     | '/rooms'
@@ -165,9 +187,11 @@ export interface FileRouteTypes {
     | '/_authenticated/moderation'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
+    | '/_public/forgot-password'
     | '/_public/health'
     | '/_public/login'
     | '/_public/register'
+    | '/_public/reset-password'
     | '/_public/'
     | '/_authenticated/rooms/new'
     | '/_public/rooms/$roomId'
@@ -224,6 +248,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/forgot-password': {
+      id: '/_public/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof PublicForgotPasswordRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/health': {
       id: '/_public/health'
       path: '/health'
@@ -243,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof PublicRegisterRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/reset-password': {
+      id: '/_public/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof PublicResetPasswordRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_authenticated/rooms/': {
@@ -298,17 +336,21 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface PublicRouteRouteChildren {
+  PublicForgotPasswordRoute: typeof PublicForgotPasswordRoute
   PublicHealthRoute: typeof PublicHealthRoute
   PublicLoginRoute: typeof PublicLoginRoute
   PublicRegisterRoute: typeof PublicRegisterRoute
+  PublicResetPasswordRoute: typeof PublicResetPasswordRoute
   PublicIndexRoute: typeof PublicIndexRoute
   PublicRoomsRoomIdRoute: typeof PublicRoomsRoomIdRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicForgotPasswordRoute: PublicForgotPasswordRoute,
   PublicHealthRoute: PublicHealthRoute,
   PublicLoginRoute: PublicLoginRoute,
   PublicRegisterRoute: PublicRegisterRoute,
+  PublicResetPasswordRoute: PublicResetPasswordRoute,
   PublicIndexRoute: PublicIndexRoute,
   PublicRoomsRoomIdRoute: PublicRoomsRoomIdRoute,
 }

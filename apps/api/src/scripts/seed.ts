@@ -24,6 +24,7 @@ import {
 import { eq } from "drizzle-orm";
 import { auth } from "#/platform/auth/index.ts";
 import { databaseHandle } from "#/platform/db/index.ts";
+import { redactError } from "@app/logger";
 import { logger } from "#/platform/observability/logger.ts";
 
 const db = databaseHandle.db;
@@ -107,7 +108,7 @@ const ensureUser = async (demo: DemoUser): Promise<SeedAccount> => {
 			body: { email: demo.email, password, name: demo.name },
 		});
 	} catch (error) {
-		logger.warn({ err: error, email: demo.email }, "seed.user_signup_failed_retrying");
+		logger.warn({ err: redactError(error) }, "seed.user_signup_failed_retrying");
 	}
 
 	const [created] = await db
@@ -650,7 +651,7 @@ const seed = async (): Promise<void> => {
 try {
 	await seed();
 } catch (error) {
-	logger.error({ err: error }, "seed.failed");
+	logger.error({ err: redactError(error) }, "seed.failed");
 	process.exitCode = 1;
 } finally {
 	await databaseHandle.close();

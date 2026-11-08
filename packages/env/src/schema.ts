@@ -35,6 +35,9 @@ export const apiEnvSchema = z
 		RATE_LIMIT_AUTH_PER_MINUTE: z.coerce.number().int().positive().default(60),
 		UPSTASH_REDIS_REST_URL: z.string().url().optional(),
 		UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+		RESEND_API_KEY: z.string().min(1).optional(),
+		EMAIL_FROM: z.string().min(3).default("Debate Platform <no-reply@example.com>"),
+		METRICS_TOKEN: z.string().min(16).optional(),
 	})
 	.superRefine((value, ctx) => {
 		if (value.NODE_ENV !== NODE_ENV.PRODUCTION) {

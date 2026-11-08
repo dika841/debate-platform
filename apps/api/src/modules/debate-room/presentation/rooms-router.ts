@@ -1,5 +1,6 @@
 import { contract } from "@app/api-contract";
 import { implement } from "@orpc/server";
+import { auditLoggerFor, safeAudit } from "#/modules/audit/index.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import { cancelRoom } from "../application/use-cases/cancel-room.ts";
@@ -67,7 +68,20 @@ export const roomsRouter = {
 		const userId = requireUserId(context);
 
 		try {
-			return await publishRoom({ repository: repositoryFrom(context) }, userId, input.id);
+			const room = await publishRoom({ repository: repositoryFrom(context) }, userId, input.id);
+
+			await safeAudit(
+				auditLoggerFor(context.db).record({
+					actorId: userId,
+					actorRole: context.session?.user.role ?? "USER",
+					action: "room.publish",
+					entityType: "room",
+					entityId: room.id,
+					metadata: { status: room.status },
+				}),
+			);
+
+			return room;
 		} catch (error) {
 			return toOrpcError(error);
 		}
@@ -77,7 +91,20 @@ export const roomsRouter = {
 		const userId = requireUserId(context);
 
 		try {
-			return await cancelRoom({ repository: repositoryFrom(context) }, userId, input.id);
+			const room = await cancelRoom({ repository: repositoryFrom(context) }, userId, input.id);
+
+			await safeAudit(
+				auditLoggerFor(context.db).record({
+					actorId: userId,
+					actorRole: context.session?.user.role ?? "USER",
+					action: "room.cancel",
+					entityType: "room",
+					entityId: room.id,
+					metadata: { status: room.status },
+				}),
+			);
+
+			return room;
 		} catch (error) {
 			return toOrpcError(error);
 		}

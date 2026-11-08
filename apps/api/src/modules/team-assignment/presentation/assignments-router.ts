@@ -1,6 +1,7 @@
 import { contract } from "@app/api-contract";
 import { NOTIFICATION_TYPE } from "@app/shared";
 import { implement } from "@orpc/server";
+import { auditLoggerFor, safeAudit } from "#/modules/audit/index.ts";
 import { requireUserId, toOrpcError } from "#/platform/orpc/errors.ts";
 import type { OrpcContext } from "#/platform/orpc/context.ts";
 import { createDrizzleRoomRepository } from "#/modules/debate-room/infrastructure/persistence/drizzle-room-repository.ts";
@@ -55,6 +56,20 @@ export const assignmentsRouter = {
 					},
 					{ excludeUserId: userId },
 				),
+			);
+
+			await safeAudit(
+				auditLoggerFor(context.db).record({
+					actorId: userId,
+					actorRole: context.session?.user.role ?? "USER",
+					action: "assignment.finalize",
+					entityType: "room",
+					entityId: input.roomId,
+					metadata: {
+						proCount: summary.proCount,
+						contraCount: summary.contraCount,
+					},
+				}),
 			);
 
 			return summary;

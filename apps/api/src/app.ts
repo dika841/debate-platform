@@ -4,11 +4,14 @@ import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
 import { secureHeaders } from "hono/secure-headers";
+import { redactError } from "@app/logger";
 import { auth } from "#/platform/auth/index.ts";
 import { env, isCloudflare, isProduction } from "#/platform/config/env.ts";
 import { db } from "#/platform/db/index.ts";
 import { buildContext, rpcHandler } from "#/platform/http/orpc.ts";
+import { originGuard } from "#/platform/http/origin-guard.ts";
 import { logger } from "#/platform/observability/logger.ts";
+import { isMetricsAuthorized } from "#/platform/observability/metrics-auth.ts";
 import { metrics } from "#/platform/observability/metrics.ts";
 import { requestLogging } from "#/platform/observability/request-logging.ts";
 import { resolveClientIp, type ProxyMode } from "#/platform/rate-limit/client-ip.ts";
@@ -99,22 +102,34 @@ export const createApp = (): Hono => {
 
 	app.use("/api/auth/*", bodyLimit({ maxSize: AUTH_BODY_LIMIT, onError: tooLargeResponse }));
 	app.use("/rpc/*", bodyLimit({ maxSize: RPC_BODY_LIMIT, onError: tooLargeResponse }));
+	app.use("/rpc/*", originGuard([env.WEB_ORIGIN]));
 	app.use(
 		"/api/auth/*",
 		rateLimitMiddleware({
 			limiter: rateLimiters.auth,
 			scope: "auth",
 			proxyMode,
+			keyByPath: true,
 		}),
 	);
 
 	app.get("/health", async (context) => context.json(await healthPayload()));
 	app.get("/healthz", async (context) => context.json(await healthPayload()));
-	app.get("/metrics", (context) =>
-		context.text(metrics.render(), 200, {
+	app.get("/metrics", (context) => {
+		const authorized = isMetricsAuthorized({
+			authorization: context.req.header("authorization"),
+			token: env.METRICS_TOKEN,
+			production: isProduction,
+		});
+
+		if (!authorized) {
+			return context.notFound();
+		}
+
+		return context.text(metrics.render(), 200, {
 			"content-type": "text/plain; version=0.0.4; charset=utf-8",
-		}),
-	);
+		});
+	});
 
 	app.on(["GET", "POST"], "/api/auth/*", (context) => auth.handler(context.req.raw));
 
@@ -151,7 +166,7 @@ export const createApp = (): Hono => {
 
 	app.onError((error, context) => {
 		const requestIdValue = context.get("requestId") ?? "unknown";
-		logger.error({ err: error, requestId: requestIdValue }, "http.unhandled_error");
+		logger.error({ err: redactError(error), requestId: requestIdValue }, "http.unhandled_error");
 
 		return context.json(
 			{
