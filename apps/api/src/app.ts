@@ -1,18 +1,34 @@
 import { sql } from "drizzle-orm";
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
+import { secureHeaders } from "hono/secure-headers";
 import { auth } from "#/platform/auth/index.ts";
-import { env } from "#/platform/config/env.ts";
+import { env, isCloudflare, isProduction } from "#/platform/config/env.ts";
 import { db } from "#/platform/db/index.ts";
 import { buildContext, rpcHandler } from "#/platform/http/orpc.ts";
 import { logger } from "#/platform/observability/logger.ts";
 import { metrics } from "#/platform/observability/metrics.ts";
 import { requestLogging } from "#/platform/observability/request-logging.ts";
+import { resolveClientIp, type ProxyMode } from "#/platform/rate-limit/client-ip.ts";
+import { applyRateLimit } from "#/platform/rate-limit/http.ts";
 import { createRateLimiters } from "#/platform/rate-limit/index.ts";
 import { rateLimitMiddleware } from "#/platform/rate-limit/middleware.ts";
 
 const rateLimiters = createRateLimiters();
+const proxyMode: ProxyMode = isCloudflare ? "cloudflare" : "proxy";
+const RPC_BODY_LIMIT = 256 * 1024;
+const AUTH_BODY_LIMIT = 64 * 1024;
+
+const tooLargeResponse = (context: Context): Response =>
+	context.json(
+		{
+			error: "PAYLOAD_TOO_LARGE",
+			message: "Request body exceeds the allowed size",
+		},
+		413,
+	);
 
 const databaseStatus = async (): Promise<"up" | "down"> => {
 	try {
@@ -48,6 +64,24 @@ export const createApp = (): Hono => {
 	app.use("*", requestLogging());
 	app.use(
 		"*",
+		secureHeaders({
+			contentSecurityPolicy: {
+				defaultSrc: ["'none'"],
+				frameAncestors: ["'none'"],
+			},
+			crossOriginResourcePolicy: false,
+			referrerPolicy: "no-referrer",
+			strictTransportSecurity: isProduction ? "max-age=31536000; includeSubDomains" : false,
+			xFrameOptions: "DENY",
+			permissionsPolicy: {
+				camera: [],
+				microphone: [],
+				geolocation: [],
+			},
+		}),
+	);
+	app.use(
+		"*",
 		cors({
 			origin: env.WEB_ORIGIN,
 			credentials: true,
@@ -63,13 +97,14 @@ export const createApp = (): Hono => {
 		}),
 	);
 
-	app.use("/api/auth/*", rateLimitMiddleware({ limiter: rateLimiters.auth, scope: "auth" }));
+	app.use("/api/auth/*", bodyLimit({ maxSize: AUTH_BODY_LIMIT, onError: tooLargeResponse }));
+	app.use("/rpc/*", bodyLimit({ maxSize: RPC_BODY_LIMIT, onError: tooLargeResponse }));
 	app.use(
-		"/rpc/*",
+		"/api/auth/*",
 		rateLimitMiddleware({
-			limiter: rateLimiters.rpc,
-			scope: "rpc",
-			keyBy: "session",
+			limiter: rateLimiters.auth,
+			scope: "auth",
+			proxyMode,
 		}),
 	);
 
@@ -85,6 +120,19 @@ export const createApp = (): Hono => {
 
 	app.all("/rpc/*", async (context) => {
 		const orpcContext = await buildContext(context);
+		const identifier = orpcContext.session
+			? `user:${orpcContext.session.userId}`
+			: `ip:${resolveClientIp(context.req.raw.headers, proxyMode)}`;
+		const limited = await applyRateLimit(context, {
+			limiter: rateLimiters.rpc,
+			scope: "rpc",
+			identifier,
+		});
+
+		if (limited) {
+			return limited;
+		}
+
 		const { matched, response } = await rpcHandler.handle(context.req.raw, {
 			prefix: "/rpc",
 			context: orpcContext,

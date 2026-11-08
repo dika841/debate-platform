@@ -27,6 +27,22 @@ import { databaseHandle } from "#/platform/db/index.ts";
 import { logger } from "#/platform/observability/logger.ts";
 
 const db = databaseHandle.db;
+const isProduction = process.env.NODE_ENV === "production";
+const allowProduction = process.env.SEED_ALLOW_PRODUCTION === "true";
+
+if (isProduction && !allowProduction) {
+	logger.error(
+		{},
+		"seed.blocked: refusing to create demo accounts with NODE_ENV=production (set SEED_ALLOW_PRODUCTION=true to override)",
+	);
+	process.exit(1);
+}
+
+if (isProduction && !process.env.SEED_PASSWORD) {
+	logger.error({}, "seed.blocked: SEED_PASSWORD is required when seeding production");
+	process.exit(1);
+}
+
 const password = process.env.SEED_PASSWORD ?? "DemoPassword123!";
 const now = Date.now();
 const minutesAgo = (minutes: number): Date => new Date(now - minutes * 60_000);
@@ -626,7 +642,6 @@ const seed = async (): Promise<void> => {
 				"seed-room-cancelled",
 			],
 			reports: 3,
-			password,
 		},
 		"seed.complete",
 	);

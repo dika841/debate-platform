@@ -4,9 +4,20 @@ import { databaseHandle } from "#/platform/db/index.ts";
 import { env } from "#/platform/config/env.ts";
 import { logger } from "#/platform/observability/logger.ts";
 
-const server = serve({ fetch: app.fetch, port: env.PORT }, (info) => {
-	logger.info({ port: info.port }, "api listening");
-});
+const server = serve(
+	{
+		fetch: app.fetch,
+		port: env.PORT,
+		serverOptions: {
+			requestTimeout: 30_000,
+			headersTimeout: 10_000,
+			keepAliveTimeout: 5_000,
+		},
+	},
+	(info) => {
+		logger.info({ port: info.port }, "api listening");
+	},
+);
 
 const shutdown = async (signal: string): Promise<void> => {
 	logger.info({ signal }, "api stopping");

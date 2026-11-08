@@ -1,9 +1,10 @@
 import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
+import { resolveClientIp } from "./client-ip.ts";
 import { createMemoryRateLimiter } from "./memory-rate-limiter.ts";
 import { rateLimitMiddleware } from "./middleware.ts";
 
-const buildApp = (keyBy: "ip" | "session" = "ip") => {
+const buildApp = () => {
 	const app = new Hono();
 	app.use(
 		"*",
@@ -14,7 +15,7 @@ const buildApp = (keyBy: "ip" | "session" = "ip") => {
 				now: () => new Date("2026-06-01T10:00:00.000Z"),
 			}),
 			scope: "test",
-			keyBy,
+			proxyMode: "proxy",
 			now: () => new Date("2026-06-01T10:00:00.000Z"),
 		}),
 	);
@@ -22,10 +23,42 @@ const buildApp = (keyBy: "ip" | "session" = "ip") => {
 	return app;
 };
 
+describe("client ip resolution", () => {
+	it("trusts nginx X-Real-IP and ignores a forged first X-Forwarded-For", () => {
+		const headers = new Headers({
+			"x-real-ip": "203.0.113.7",
+			"x-forwarded-for": "10.0.0.99, 203.0.113.7",
+		});
+
+		expect(resolveClientIp(headers, "proxy")).toBe("203.0.113.7");
+	});
+
+	it("uses the last X-Forwarded-For entry when X-Real-IP is absent", () => {
+		const headers = new Headers({
+			"x-forwarded-for": "10.0.0.99, 198.51.100.4",
+		});
+
+		expect(resolveClientIp(headers, "proxy")).toBe("198.51.100.4");
+	});
+
+	it("uses CF-Connecting-IP in Cloudflare mode", () => {
+		const headers = new Headers({
+			"cf-connecting-ip": "192.0.2.10",
+			"x-forwarded-for": "10.0.0.99",
+		});
+
+		expect(resolveClientIp(headers, "cloudflare")).toBe("192.0.2.10");
+	});
+
+	it("falls back to unknown for garbage", () => {
+		expect(resolveClientIp(new Headers({ "x-real-ip": "not an ip" }), "proxy")).toBe("unknown");
+	});
+});
+
 describe("rate limit middleware", () => {
 	it("returns 429 with rate-limit headers after the limit", async () => {
 		const app = buildApp();
-		const headers = { "x-forwarded-for": "203.0.113.7" };
+		const headers = { "x-real-ip": "203.0.113.7" };
 
 		const first = await app.request("/", { headers });
 		expect(first.status).toBe(200);
@@ -40,16 +73,8 @@ describe("rate limit middleware", () => {
 		expect(body.error).toBe("RATE_LIMITED");
 
 		const otherClient = await app.request("/", {
-			headers: { "x-forwarded-for": "203.0.113.8" },
+			headers: { "x-real-ip": "203.0.113.8" },
 		});
 		expect(otherClient.status).toBe(200);
-	});
-
-	it("keys by session cookie when configured", async () => {
-		const app = buildApp("session");
-
-		expect((await app.request("/", { headers: { cookie: "session=one" } })).status).toBe(200);
-		expect((await app.request("/", { headers: { cookie: "session=one" } })).status).toBe(429);
-		expect((await app.request("/", { headers: { cookie: "session=two" } })).status).toBe(200);
 	});
 });

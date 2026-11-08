@@ -128,6 +128,8 @@ Environment parsing lives in `@app/env` and fails fast on missing/invalid values
 
 ```bash
 cp .env.docker.example .env.docker
+# required: production rejects the placeholder secret
+# BETTER_AUTH_SECRET=$(openssl rand -hex 32)
 docker compose up -d --build   # postgres, migrate, api, worker, web (nginx)
 ```
 
@@ -271,16 +273,41 @@ All planned domain slices (M2–M7) are now implemented.
 
 ### Rate limits
 
-- `/rpc/*` is limited per session cookie (falling back to client IP) with
-  `RATE_LIMIT_RPC_PER_MINUTE` (default 120/min).
-- `/api/auth/*` is limited per client IP with `RATE_LIMIT_AUTH_PER_MINUTE`
-  (default 60/min).
+- `/rpc/*` is limited per authenticated `userId`, falling back to the trusted
+  client IP for anonymous requests, with `RATE_LIMIT_RPC_PER_MINUTE`
+  (default 120/min). RPC limits run after session resolution so rotating cookies
+  cannot create new buckets.
+- `/api/auth/*` is limited per trusted client IP with
+  `RATE_LIMIT_AUTH_PER_MINUTE` (default 60/min).
+- Client IPs come from `CF-Connecting-IP` in Cloudflare mode, otherwise from
+  nginx `X-Real-IP` / the last `X-Forwarded-For` hop. The first
+  `X-Forwarded-For` value is never trusted.
 - Responses include `x-ratelimit-limit`, `x-ratelimit-remaining` and
   `x-ratelimit-reset`; rejected requests return `429` with `retry-after` and a
   structured `RATE_LIMITED` body.
 - The default limiter is in-memory (fine for one Node instance). Set
   `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to share limits across
   instances and Cloudflare isolates.
+
+### Request limits and headers
+
+- RPC bodies are capped at 256 KB and auth bodies at 64 KB (`413
+  PAYLOAD_TOO_LARGE`). The Node server enforces 10s header, 30s request and 5s
+  keep-alive timeouts.
+- The API sends CSP (`default-src 'none'`), `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, HSTS in
+  production and a restrictive `Permissions-Policy`.
+- The nginx image and the Cloudflare `_headers` file send CSP, HSTS,
+  clickjacking, MIME-sniffing, referrer and permissions headers for the SPA.
+
+### Production guards
+
+- `make db-seed` refuses to run with `NODE_ENV=production` unless
+  `SEED_ALLOW_PRODUCTION=true`, and then requires an explicit `SEED_PASSWORD`.
+  The seed never logs passwords.
+- Production startup rejects placeholder `BETTER_AUTH_SECRET` values; Cloudflare
+  deployments additionally require `https` for `BETTER_AUTH_URL` and
+  `WEB_ORIGIN`.
 
 ### Notifications
 
