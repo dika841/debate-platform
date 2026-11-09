@@ -388,9 +388,21 @@ All planned domain slices (M2–M7) are now implemented.
 ## End-to-end tests
 
 ```bash
+# HTTP integration tests: runs migrations, starts the API on :3101 and cleans up
+DATABASE_URL=postgresql://app:app@localhost:5434/app pnpm --filter @app/api-e2e test
+
+# Playwright: starts the API (:3001) and web app (:5173) automatically
 pnpm --filter @app/web-e2e exec playwright install chromium
 pnpm --filter @app/web-e2e test:e2e
 ```
 
-The smoke test expects the web app on `http://localhost:5173` (or set
-`E2E_BASE_URL`).
+The API integration suite exercises health, auth/session, profiles, rooms,
+membership, assignments, execution, voting, results, notifications, moderation,
+audit and privacy export over real HTTP. It is skipped when `DATABASE_URL` is
+not set.
+
+Playwright reuses a running API/web server when available. Set `E2E_BASE_URL` to
+point at an already deployed environment and skip the local servers entirely.
+
+CI runs both suites in the `End-to-end` job with a PostgreSQL service. The
+Playwright suite is no longer executed only manually.

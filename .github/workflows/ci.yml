@@ -32,6 +32,46 @@ jobs:
       - name: Build
         run: moon run :build
 
+  e2e:
+    name: End-to-end
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://app:app@localhost:5432/app
+      BETTER_AUTH_URL: http://localhost:3001
+      BETTER_AUTH_SECRET: ci-e2e-secret-ci-e2e-secret-1234567890
+      WEB_ORIGIN: http://localhost:5173
+      LOG_LEVEL: error
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Apply migrations
+        run: pnpm --filter @app/api migrate
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @app/web-e2e exec playwright install --with-deps chromium
+
+      - name: API HTTP integration tests
+        run: pnpm --filter @app/api-e2e test
+
+      - name: Playwright end-to-end tests
+        run: pnpm --filter @app/web-e2e test:e2e
+
   docker:
     name: Docker image
     runs-on: ubuntu-latest

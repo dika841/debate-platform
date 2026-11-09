@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const reuseExistingServer = !process.env.CI;
+
 export default defineConfig({
 	testDir: "./tests",
 	fullyParallel: true,
@@ -16,12 +18,21 @@ export default defineConfig({
 			use: { ...devices["Desktop Chrome"] },
 		},
 	],
-	webServer: process.env.E2E_BASE_URL
-		? undefined
-		: {
-				command: "pnpm --filter @app/web dev",
-				url: "http://localhost:5173",
-				reuseExistingServer: true,
-				timeout: 120_000,
-			},
+	webServer:
+		process.env.E2E_BASE_URL !== undefined
+			? undefined
+			: [
+					{
+						command: "pnpm --filter @app/api start",
+						url: "http://localhost:3001/health",
+						reuseExistingServer,
+						timeout: 120_000,
+					},
+					{
+						command: "pnpm --filter @app/web dev",
+						url: "http://localhost:5173",
+						reuseExistingServer,
+						timeout: 120_000,
+					},
+				],
 });
