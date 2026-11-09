@@ -178,6 +178,17 @@ describe("debate room use cases", () => {
 		expect(result.title).toBe("Updated debate");
 	});
 
+	it("rejects updates after the room is published", async () => {
+		const repository = createRepository([roomWith("room-1", "host-1", ROOM_STATUS.PUBLISHED)]);
+
+		await expect(
+			updateRoom({ repository, clock: CLOCK }, "host-1", {
+				id: "room-1",
+				title: "Too late",
+			}),
+		).rejects.toBeInstanceOf(DomainError);
+	});
+
 	it("rejects updates from a different user", async () => {
 		const repository = createRepository([roomWith("room-1", "host-1")]);
 

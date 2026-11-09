@@ -1,6 +1,6 @@
 import type { Room, UpdateRoomInput } from "@app/api-contract";
 import { type Clock, systemClock } from "@app/shared";
-import { validateRoomConfiguration } from "../../domain/room.ts";
+import { assertRoomEditable, validateRoomConfiguration } from "../../domain/room.ts";
 import { toRoomDto } from "../mappers/room-mapper.ts";
 import type { RoomRepository } from "../ports/room-repository.ts";
 import { assertRoomHost, loadRoom } from "../room-access.ts";
@@ -17,6 +17,7 @@ export const updateRoom = async (
 ): Promise<Room> => {
 	const found = await loadRoom(deps.repository, input.id);
 	assertRoomHost(found, actorId);
+	assertRoomEditable(found.room.status);
 
 	const current = found.room;
 	const configuration = validateRoomConfiguration({
