@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
 				autoCodeSplitting: true,
 				routesDirectory: "./src/routes",
 				generatedRouteTree: "./src/routeTree.gen.ts",
-				routeFileIgnorePattern: "^(_components|_libs|__tests__)",
+				routeFileIgnorePattern: "^(_components|_hooks|_stores|_libs|__tests__)",
 			}),
 			viteReact(),
 		],

@@ -1,0 +1,20 @@
+export const MODERATION = {
+	title: "Moderation queue",
+	description: "Review reports submitted by the community.",
+	accessDenied: "Moderator access is required to view this page.",
+	mfaRequired: "Enable two-factor authentication in your profile to access moderation.",
+	auditLink: "View audit log",
+	filter: {
+		PENDING: "Pending",
+		ACTIONED: "Actioned",
+		DISMISSED: "Dismissed",
+	},
+	action: "Mark actioned",
+	dismiss: "Dismiss",
+	resolving: "Resolving…",
+	empty: "No reports in this queue.",
+	reporter: "Reporter",
+	resolved: "Resolved",
+	note: "Resolution note",
+	openRoom: "Open debate",
+} as const;

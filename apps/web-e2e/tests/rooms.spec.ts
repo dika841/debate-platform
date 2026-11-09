@@ -62,3 +62,24 @@ test("cancels a published room", async ({ page }) => {
 	await page.getByRole("button", { name: "Cancel debate" }).click();
 	await expect(page.getByText("Cancelled", { exact: true })).toBeVisible();
 });
+
+test("filters rooms with debounced search", async ({ page }) => {
+	await register(page);
+	const title = `E2E Search Debate ${Date.now()}`;
+	await createDraft(page, title);
+	await page.getByRole("button", { name: "Publish debate" }).click();
+	await expect(page.getByText("Open", { exact: true })).toBeVisible();
+
+	await page.goto("/");
+	const search = page.getByRole("combobox", { name: "Search debates" });
+
+	await search.fill("no-such-room-xyz");
+	await expect(page.getByText("No debates match your search.")).toBeVisible();
+
+	await search.fill(title);
+	await expect(page.getByRole("link", { name: title })).toBeVisible();
+
+	await search.press("Enter");
+	await search.fill("");
+	await expect(page.getByRole("option", { name: title })).toBeVisible();
+});

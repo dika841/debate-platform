@@ -4,6 +4,7 @@ import { Button } from "@app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
 import { createFileRoute } from "@tanstack/react-router";
 import { useHealth } from "@/libs/api/queries.ts";
+import { formatDateTime } from "@/libs/format.ts";
 
 export const Route = createFileRoute("/_public/health")({
 	component: HealthPage,
@@ -54,7 +55,7 @@ function HealthPage() {
 						</div>
 						<div className="flex items-center justify-between gap-4">
 							<dt className="text-muted-foreground">{HEALTH.checkedAt}</dt>
-							<dd>{new Date(health.data.time).toLocaleString()}</dd>
+							<dd>{formatDateTime(health.data.time)}</dd>
 						</div>
 					</dl>
 				) : null}

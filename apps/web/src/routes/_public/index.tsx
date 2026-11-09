@@ -3,8 +3,13 @@ import { Badge } from "@app/components/ui/badge";
 import { Button } from "@app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useHealth, useRooms, useSession } from "@/libs/api/queries.ts";
+import { useMemo, useState } from "react";
+import { useHealth, useInfiniteRooms } from "@/libs/api/queries.ts";
+import { useSession } from "@/libs/auth/use-session.ts";
+import { formatDateTime } from "@/libs/format.ts";
 import { RoomCard } from "@/routes/_components/room-card.tsx";
+import { RoomGridSkeleton } from "@/routes/_components/room-card-skeleton.tsx";
+import { SearchField } from "@/routes/_components/search-field.tsx";
 
 export const Route = createFileRoute("/_public/")({
 	component: HomePage,
@@ -13,19 +18,37 @@ export const Route = createFileRoute("/_public/")({
 function HomePage() {
 	const health = useHealth();
 	const session = useSession();
-	const rooms = useRooms({ scope: "public" });
-	const authenticated = Boolean(session.data?.session);
+	const [search, setSearch] = useState("");
+	const searchTerm = search.trim();
+	const rooms = useInfiniteRooms({
+		scope: "public",
+		search: searchTerm ? searchTerm : undefined,
+	});
+	const roomItems = useMemo(
+		() => rooms.data?.pages.flatMap((page) => page.items) ?? [],
+		[rooms.data],
+	);
+	const suggestions = useMemo(
+		() => Array.from(new Set(roomItems.map((room) => room.title))),
+		[roomItems],
+	);
+	const authenticated = Boolean(session);
 
 	return (
 		<div className="space-y-12">
-			<div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-				<section className="space-y-6">
-					<Badge variant="outline">MVP foundation</Badge>
-					<h1 className="max-w-2xl text-4xl font-semibold tracking-tight md:text-5xl">
+			<div className="grid gap-10 lg:grid-cols-[1.45fr_1fr] lg:items-start">
+				<section className="space-y-6 border-l-2 border-primary/30 pl-6 md:pl-8">
+					<div className="flex flex-wrap items-center gap-3">
+						<Badge variant="outline">MVP foundation</Badge>
+						<span className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
+							PRO / CONTRA · Asynchronous debate
+						</span>
+					</div>
+					<h1 className="max-w-2xl text-5xl leading-[0.95] font-semibold md:text-6xl">
 						{APP.name}
 					</h1>
-					<p className="max-w-xl text-lg text-muted-foreground">{APP.tagline}</p>
-					<p className="max-w-xl text-sm text-muted-foreground">
+					<p className="max-w-xl font-display text-xl text-foreground/80 italic">{APP.tagline}</p>
+					<p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
 						Structured PRO and CONTRA debates with automatic team assignment, async rounds and
 						spectator evaluation.
 					</p>
@@ -42,9 +65,15 @@ function HomePage() {
 							</Link>
 						</Button>
 					</div>
+
+					<div className="flex flex-wrap gap-x-6 gap-y-2 border-t pt-4 font-mono text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
+						<span>01 — Motion</span>
+						<span>02 — Team assignment</span>
+						<span>03 — Verdict</span>
+					</div>
 				</section>
 
-				<Card>
+				<Card className="border-t-2 border-t-primary/50">
 					<CardHeader>
 						<CardTitle>{HEALTH.title}</CardTitle>
 						<CardDescription>Web → oRPC → Hono → PostgreSQL</CardDescription>
@@ -64,24 +93,30 @@ function HomePage() {
 						{health.data ? (
 							<>
 								<div className="flex items-center justify-between">
-									<span className="text-muted-foreground">{HEALTH.api}</span>
+									<span className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+										{HEALTH.api}
+									</span>
 									<Badge variant={health.data.status === "ok" ? "secondary" : "destructive"}>
 										{health.data.status}
 									</Badge>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-muted-foreground">{HEALTH.database}</span>
+									<span className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+										{HEALTH.database}
+									</span>
 									<Badge variant={health.data.database === "up" ? "secondary" : "destructive"}>
 										{health.data.database}
 									</Badge>
 								</div>
 								<div className="flex items-center justify-between">
-									<span className="text-muted-foreground">Version</span>
-									<span>{health.data.version}</span>
+									<span className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+										Version
+									</span>
+									<span className="font-mono text-xs">{health.data.version}</span>
 								</div>
-								<div className="space-y-1 border-t border-border/60 pt-3 text-xs text-muted-foreground">
-									<p className="uppercase tracking-wide">{HEALTH.checkedAt}</p>
-									<p>{new Date(health.data.time).toLocaleString()}</p>
+								<div className="space-y-1 border-t pt-3 font-mono text-[10px] tracking-[0.12em] text-muted-foreground uppercase">
+									<p>{HEALTH.checkedAt}</p>
+									<p className="normal-case tracking-normal">{formatDateTime(health.data.time)}</p>
 								</div>
 							</>
 						) : null}
@@ -90,9 +125,12 @@ function HomePage() {
 			</div>
 
 			<section className="space-y-6">
-				<div className="flex flex-wrap items-end justify-between gap-3">
+				<div className="flex flex-wrap items-end justify-between gap-4 border-b pb-4">
 					<div className="space-y-1">
-						<h2 className="text-2xl font-semibold tracking-tight">{ROOM.exploreTitle}</h2>
+						<p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
+							Index / 01
+						</p>
+						<h2 className="text-3xl font-semibold tracking-tight">{ROOM.exploreTitle}</h2>
 						<p className="text-sm text-muted-foreground">{ROOM.exploreDescription}</p>
 					</div>
 					<Button variant="outline" size="sm" asChild>
@@ -100,7 +138,11 @@ function HomePage() {
 					</Button>
 				</div>
 
-				{rooms.isPending ? <p className="text-sm text-muted-foreground">Loading debates…</p> : null}
+				<div className="flex flex-wrap items-center gap-2">
+					<SearchField value={search} onChange={setSearch} suggestions={suggestions} />
+				</div>
+
+				{rooms.isPending ? <RoomGridSkeleton /> : null}
 
 				{rooms.isError ? (
 					<div className="space-y-3">
@@ -111,18 +153,32 @@ function HomePage() {
 					</div>
 				) : null}
 
-				{rooms.data && rooms.data.items.length === 0 ? (
+				{rooms.data && roomItems.length === 0 ? (
 					<p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-						{ROOM.emptyExplore}
+						{searchTerm ? ROOM.emptySearch : ROOM.emptyExplore}
 					</p>
 				) : null}
 
-				{rooms.data && rooms.data.items.length > 0 ? (
-					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-						{rooms.data.items.map((room) => (
-							<RoomCard key={room.id} room={room} />
-						))}
-					</div>
+				{roomItems.length > 0 ? (
+					<>
+						<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+							{roomItems.map((room) => (
+								<RoomCard key={room.id} room={room} />
+							))}
+						</div>
+
+						{rooms.hasNextPage ? (
+							<div className="flex justify-center">
+								<Button
+									variant="outline"
+									disabled={rooms.isFetchingNextPage}
+									onClick={() => void rooms.fetchNextPage()}
+								>
+									{rooms.isFetchingNextPage ? "Loading more…" : "Load more debates"}
+								</Button>
+							</div>
+						) : null}
+					</>
 				) : null}
 			</section>
 		</div>

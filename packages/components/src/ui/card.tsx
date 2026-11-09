@@ -9,7 +9,7 @@ const Card: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 		<div
 			data-slot="card"
 			className={cn(
-				"flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm",
+				"flex flex-col gap-5 rounded-md border bg-card py-6 text-card-foreground shadow-[0_1px_2px_rgba(35,32,26,0.05)]",
 				className,
 			)}
 			{...rest}
@@ -36,7 +36,11 @@ const CardTitle: FC<React.ComponentProps<"div">> = (props): ReactElement => {
 	const { className, ...rest } = props;
 
 	return (
-		<div data-slot="card-title" className={cn("leading-none font-semibold", className)} {...rest} />
+		<div
+			data-slot="card-title"
+			className={cn("font-display text-xl leading-tight font-semibold tracking-tight", className)}
+			{...rest}
+		/>
 	);
 };
 

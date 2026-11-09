@@ -51,10 +51,10 @@ test("redirects anonymous users to login and returns to the profile", async ({ p
 test("shows an error for invalid credentials", async ({ page }) => {
 	await page.goto("/login");
 	await page.getByLabel("Email").fill("missing@example.com");
-	await page.getByLabel("Password").fill("WrongPassword123!");
+	await page.getByLabel("Password", { exact: true }).fill("WrongPassword123!");
 	await page.getByRole("button", { name: "Sign in" }).click();
 
-	await expect(page.getByText(/invalid/i)).toBeVisible();
+	await expect(page.getByText(/incorrect/i)).toBeVisible();
 });
 
 test("changes the password and signs in with the new one", async ({ page }) => {

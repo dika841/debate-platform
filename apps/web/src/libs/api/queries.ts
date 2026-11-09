@@ -1,54 +1,97 @@
 import type { CreateRoomInput, ListRoomsInput, UpdateRoomInput } from "@app/api-contract";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	keepPreviousData,
+	useInfiniteQuery,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
+import { sessionRefresh } from "@/libs/auth/session.ts";
 import { orpc } from "@/libs/orpc/index.ts";
 
-export const useSession = () => useQuery(orpc.auth.getSession.queryOptions());
+type RefetchInterval =
+	| number
+	| false
+	| ((query: { readonly state: { readonly data?: unknown } }) => number | false | undefined);
+
+type LiveQueryOptions = {
+	/** Poll while the query is active. Pass `false` to disable polling. */
+	readonly refetchInterval?: RefetchInterval;
+	/** Set to `false` to skip the request entirely. */
+	readonly enabled?: boolean;
+};
+
+const polling = ({ refetchInterval }: LiveQueryOptions = {}) => ({
+	refetchInterval: refetchInterval ?? false,
+	refetchIntervalInBackground: false,
+});
 
 export const useHealth = () => useQuery(orpc.health.check.queryOptions());
 
 export const useProfile = () => useQuery(orpc.users.getProfile.queryOptions());
 
-export const useRooms = (input: ListRoomsInput = { scope: "public" }) =>
-	useQuery(orpc.rooms.list.queryOptions({ input }));
+type RoomsFeedInput = Omit<ListRoomsInput, "cursor">;
 
-export const useMyRooms = () => useRooms({ scope: "mine" });
+/**
+ * Cursor-paginated room list. Only the first page is loaded up front, so the
+ * landing and dashboard pages stay fast even when there are many debates.
+ */
+export const useInfiniteRooms = (input: RoomsFeedInput = { scope: "public" }) =>
+	useInfiniteQuery({
+		...orpc.rooms.list.infiniteOptions({
+			input: (cursor: string | undefined) => ({ ...input, cursor }),
+			initialPageParam: undefined,
+			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		}),
+		placeholderData: keepPreviousData,
+	});
 
-export const useJoinedRooms = () => useRooms({ scope: "joined" });
+export const useInfiniteMyRooms = (search?: string) =>
+	useInfiniteRooms({ scope: "mine", search: search?.trim() ? search.trim() : undefined });
 
-export const useMembers = (roomId: string) =>
+export const useInfiniteJoinedRooms = (search?: string) =>
+	useInfiniteRooms({ scope: "joined", search: search?.trim() ? search.trim() : undefined });
+
+export const useMembers = (roomId: string, options?: LiveQueryOptions) =>
 	useQuery({
 		...orpc.memberships.list.queryOptions({ input: { roomId } }),
-		enabled: roomId.length > 0,
+		enabled: roomId.length > 0 && (options?.enabled ?? true),
+		...polling(options),
 	});
 
-export const useRoom = (id: string) =>
+export const useRoom = (id: string, options?: LiveQueryOptions) =>
 	useQuery({
 		...orpc.rooms.get.queryOptions({ input: { id } }),
-		enabled: id.length > 0,
+		enabled: id.length > 0 && (options?.enabled ?? true),
+		...polling(options),
 	});
 
-export const useRounds = (roomId: string) =>
+export const useRounds = (roomId: string, options?: LiveQueryOptions) =>
 	useQuery({
 		...orpc.rounds.list.queryOptions({ input: { roomId } }),
-		enabled: roomId.length > 0,
+		enabled: roomId.length > 0 && (options?.enabled ?? true),
+		...polling(options),
 	});
 
-export const useSubmissions = (roundId: string) =>
+export const useSubmissions = (roundId: string, options?: LiveQueryOptions) =>
 	useQuery({
 		...orpc.submissions.list.queryOptions({ input: { roundId } }),
-		enabled: roundId.length > 0,
+		enabled: roundId.length > 0 && (options?.enabled ?? true),
+		...polling(options),
 	});
 
-export const useVoteSummary = (roundId: string) =>
+export const useVoteSummary = (roundId: string, options?: LiveQueryOptions) =>
 	useQuery({
 		...orpc.votes.summary.queryOptions({ input: { roundId } }),
-		enabled: roundId.length > 0,
+		enabled: roundId.length > 0 && (options?.enabled ?? true),
+		...polling(options),
 	});
 
-export const useRoomResults = (roomId: string) =>
+export const useRoomResults = (roomId: string, options?: LiveQueryOptions) =>
 	useQuery({
 		...orpc.results.getRoom.queryOptions({ input: { roomId } }),
-		enabled: roomId.length > 0,
+		enabled: roomId.length > 0 && (options?.enabled ?? true),
+		...polling(options),
 	});
 
 export const useReports = (status?: "PENDING" | "ACTIONED" | "DISMISSED", enabled = true) =>
@@ -57,6 +100,7 @@ export const useReports = (status?: "PENDING" | "ACTIONED" | "DISMISSED", enable
 			input: status ? { status } : {},
 		}),
 		enabled,
+		placeholderData: keepPreviousData,
 	});
 
 export const useAuditEvents = (enabled = true) =>
@@ -65,12 +109,22 @@ export const useAuditEvents = (enabled = true) =>
 		enabled,
 	});
 
-export const useNotifications = () => useQuery(orpc.notifications.list.queryOptions({ input: {} }));
+export const useInfiniteNotifications = () =>
+	useInfiniteQuery({
+		...orpc.notifications.list.infiniteOptions({
+			input: (cursor: string | undefined) => ({ cursor }),
+			initialPageParam: undefined,
+			getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		}),
+		placeholderData: keepPreviousData,
+	});
 
 export const useNotificationUnreadCount = (enabled = true) =>
 	useQuery({
 		...orpc.notifications.list.queryOptions({ input: { limit: 1 } }),
 		enabled,
+		refetchInterval: enabled ? 60_000 : false,
+		refetchIntervalInBackground: false,
 		select: (data) => data.unreadCount,
 	});
 
@@ -346,6 +400,7 @@ export const useInvalidateAccount = () => {
 			queryClient.invalidateQueries({ queryKey: orpc.auth.key() }),
 			queryClient.invalidateQueries({ queryKey: orpc.users.key() }),
 		]);
+		await sessionRefresh();
 	};
 };
 
@@ -359,6 +414,7 @@ export const useUpdateProfile = () => {
 				queryClient.invalidateQueries({ queryKey: orpc.users.key() }),
 				queryClient.invalidateQueries({ queryKey: orpc.auth.key() }),
 			]);
+			await sessionRefresh();
 		},
 	});
 };

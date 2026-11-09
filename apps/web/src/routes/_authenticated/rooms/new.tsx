@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useCreateRoom } from "@/libs/api/queries.ts";
-import { RoomForm } from "@/routes/_components/room-form.tsx";
+import { RoomForm } from "@/routes/_authenticated/rooms/_components/room-form.tsx";
 
 export const Route = createFileRoute("/_authenticated/rooms/new")({
 	component: NewRoomPage,

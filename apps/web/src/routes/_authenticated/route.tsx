@@ -1,20 +1,28 @@
 import { APP } from "@app/messages";
+import { ROLE_PERMISSIONS } from "@app/permissions";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { orpc } from "@/libs/orpc/index.ts";
+import { roleOf } from "@/libs/auth/role.ts";
+import { ServerUnreachableError } from "@/libs/auth/server-unreachable.ts";
+import { SESSION_REACH } from "@/libs/auth/session-reach.ts";
+import { sessionStore } from "@/libs/auth/session-store.ts";
 import { AppHeader } from "@/routes/_components/app-header.tsx";
 
 export const Route = createFileRoute("/_authenticated")({
-	beforeLoad: async ({ context, location }) => {
-		const session = await context.queryClient.ensureQueryData(orpc.auth.getSession.queryOptions());
+	beforeLoad: ({ location }) => {
+		const { reach, session } = sessionStore.state;
 
-		if (!session.session) {
+		if (reach === SESSION_REACH.UNREACHABLE) {
+			throw new ServerUnreachableError();
+		}
+
+		if (!session) {
 			throw redirect({
 				to: "/login",
 				search: { redirect: location.href },
 			});
 		}
 
-		return { session: session.session };
+		return { session, permissions: ROLE_PERMISSIONS[roleOf(session.user.role)] };
 	},
 	component: AuthenticatedLayout,
 });
@@ -28,7 +36,7 @@ function AuthenticatedLayout() {
 				<Outlet />
 			</main>
 
-			<footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
+			<footer className="border-t py-6 text-center font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
 				{APP.tagline}
 			</footer>
 		</div>

@@ -12,24 +12,30 @@ import {
 	useMembers,
 	usePublishRoom,
 	useRoom,
-	useSession,
 	useSetTeam,
 } from "@/libs/api/queries.ts";
+import { useSession } from "@/libs/auth/use-session.ts";
 import { RoomStatusBadge } from "@/routes/_components/room-status-badge.tsx";
-import { DebateRounds } from "@/routes/_components/debate-rounds.tsx";
-import { DebateResults } from "@/routes/_components/debate-results.tsx";
-import { ReportForm } from "@/routes/_components/report-form.tsx";
+import { DebateRounds } from "@/routes/_public/rooms/_components/debate-rounds.tsx";
+import { DebateResults } from "@/routes/_public/rooms/_components/debate-results.tsx";
+import { ReportForm } from "@/routes/_public/rooms/_components/report-form.tsx";
+import { RoomDetailSkeleton } from "@/routes/_components/room-detail-skeleton.tsx";
+import { formatDateTime } from "@/libs/format.ts";
 
 export const Route = createFileRoute("/_public/rooms/$roomId")({
 	component: RoomDetailPage,
 });
 
-const formatDate = (value: string): string => new Date(value).toLocaleString();
-
 function RoomDetailPage() {
 	const { roomId } = Route.useParams();
-	const room = useRoom(roomId);
-	const members = useMembers(roomId);
+	const room = useRoom(roomId, {
+		refetchInterval: (query) => {
+			const data = query.state.data as { status?: string } | undefined;
+			return data?.status === "IN_PROGRESS" ? 15_000 : false;
+		},
+	});
+	const live = room.data?.status === "IN_PROGRESS";
+	const members = useMembers(roomId, { refetchInterval: live ? 30_000 : false });
 	const session = useSession();
 	const publish = usePublishRoom();
 	const cancel = useCancelRoom();
@@ -40,7 +46,7 @@ function RoomDetailPage() {
 	const finalize = useFinalizeAssignments();
 
 	if (room.isPending) {
-		return <p className="text-sm text-muted-foreground">Loading debate…</p>;
+		return <RoomDetailSkeleton />;
 	}
 
 	if (room.isError || !room.data) {
@@ -62,8 +68,8 @@ function RoomDetailPage() {
 	}
 
 	const current = room.data;
-	const authenticated = Boolean(session.data?.session);
-	const sessionUserId = session.data?.session?.userId ?? null;
+	const authenticated = Boolean(session);
+	const sessionUserId = session?.userId ?? null;
 	const isHost = current.viewerRole === "HOST";
 	const isOpen = current.status === "PUBLISHED" || current.status === "IN_PROGRESS";
 	const assignmentOpen = current.status === "PUBLISHED" && current.assignmentFinalizedAt === null;
@@ -233,19 +239,19 @@ function RoomDetailPage() {
 							<CardTitle>{TEAM.title}</CardTitle>
 							<CardDescription>
 								{current.assignmentFinalizedAt
-									? `${TEAM.finalized} · ${formatDate(current.assignmentFinalizedAt)}`
+									? `${TEAM.finalized} · ${formatDateTime(current.assignmentFinalizedAt)}`
 									: TEAM.description}
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4 text-sm">
 							<div className="grid gap-3 sm:grid-cols-2">
-								<div className="rounded-md border border-border/70 p-3">
+								<div className="rounded-sm border border-border/70 border-l-2 border-l-primary/60 p-3">
 									<p className="text-muted-foreground">{TEAM.pro}</p>
 									<p className="text-lg font-semibold">
 										{MEMBERSHIP.capacity(current.teamCounts.pro, current.teamSize)}
 									</p>
 								</div>
-								<div className="rounded-md border border-border/70 p-3">
+								<div className="rounded-sm border border-border/70 border-l-2 border-l-chart-2/70 p-3">
 									<p className="text-muted-foreground">{TEAM.contra}</p>
 									<p className="text-lg font-semibold">
 										{MEMBERSHIP.capacity(current.teamCounts.contra, current.teamSize)}
@@ -402,15 +408,15 @@ function RoomDetailPage() {
 					<CardContent className="space-y-3 text-sm">
 						<div className="flex items-center justify-between gap-3">
 							<span className="text-muted-foreground">{ROOM.created}</span>
-							<span>{formatDate(current.createdAt)}</span>
+							<span>{formatDateTime(current.createdAt)}</span>
 						</div>
 						<div className="flex items-center justify-between gap-3">
 							<span className="text-muted-foreground">{ROOM.published}</span>
-							<span>{current.publishedAt ? formatDate(current.publishedAt) : "—"}</span>
+							<span>{current.publishedAt ? formatDateTime(current.publishedAt) : "—"}</span>
 						</div>
 						<div className="flex items-center justify-between gap-3">
 							<span className="text-muted-foreground">{ROOM.cancelled}</span>
-							<span>{current.cancelledAt ? formatDate(current.cancelledAt) : "—"}</span>
+							<span>{current.cancelledAt ? formatDateTime(current.cancelledAt) : "—"}</span>
 						</div>
 					</CardContent>
 				</Card>

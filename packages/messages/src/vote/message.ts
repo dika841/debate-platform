@@ -1,0 +1,16 @@
+export const VOTE = {
+	title: "Voting",
+	description: "Spectators decide which side won the round.",
+	votePro: "Vote PRO",
+	voteContra: "Vote CONTRA",
+	voting: "Casting vote…",
+	yourVote: "Your vote",
+	hidden: "Results are hidden until voting closes.",
+	opensAfterSubmissions: "Voting opens after submissions close.",
+	closed: "Voting closed",
+	total: (count: number) => `${count} ${count === 1 ? "vote" : "votes"}`,
+	win: (team: string) => `${team} wins the round`,
+	tie: "The round is tied",
+	noVotes: "No votes were cast.",
+	notEligible: "Only spectators and the host can vote.",
+} as const;

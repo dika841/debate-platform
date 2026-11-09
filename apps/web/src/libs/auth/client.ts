@@ -1,12 +1,20 @@
-import { createAuthClient } from "better-auth/react";
 import { twoFactorClient } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
 
-const apiOrigin = import.meta.env.VITE_API_URL?.replace(/\/$/, "") || undefined;
+const configuredOrigin = import.meta.env.VITE_API_URL?.replace(/\/$/, "") || undefined;
+const apiOrigin = import.meta.env.DEV
+	? window.location.origin
+	: (configuredOrigin ?? window.location.origin);
+
+export const AUTH_BASE_URL = `${apiOrigin}/api/auth`;
 
 export const authClient = createAuthClient({
-	baseURL: apiOrigin ?? window.location.origin,
+	baseURL: apiOrigin,
 	basePath: "/api/auth",
 	plugins: [twoFactorClient()],
+	fetchOptions: {
+		credentials: "include",
+	},
 });
 
 export const signIn = authClient.signIn;

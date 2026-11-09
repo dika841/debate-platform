@@ -2,10 +2,13 @@ import { Badge } from "@app/components/ui/badge";
 import { Button } from "@app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
 import { AUTH, MODERATION } from "@app/messages";
-import { hasPermission, PERMISSION, ROLE, type Role } from "@app/permissions";
+import { hasPermission, PERMISSION } from "@app/permissions";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useReports, useResolveReport, useSession } from "@/libs/api/queries.ts";
+import { useReports, useResolveReport } from "@/libs/api/queries.ts";
+import { roleOf } from "@/libs/auth/role.ts";
+import { useSession } from "@/libs/auth/use-session.ts";
+import { formatDateTime } from "@/libs/format.ts";
 
 export const Route = createFileRoute("/_authenticated/moderation")({
 	component: ModerationPage,
@@ -15,18 +18,13 @@ type ReportStatusFilter = "PENDING" | "ACTIONED" | "DISMISSED";
 
 const STATUS_FILTERS: ReportStatusFilter[] = ["PENDING", "ACTIONED", "DISMISSED"];
 
-const roleOf = (value: string | null | undefined): Role =>
-	value && (Object.values(ROLE) as readonly string[]).includes(value) ? (value as Role) : ROLE.USER;
-
-const formatDate = (value: string): string => new Date(value).toLocaleString();
-
 function ModerationPage() {
 	const session = useSession();
 	const [status, setStatus] = useState<ReportStatusFilter>("PENDING");
-	const role = roleOf(session.data?.session?.user.role);
+	const role = roleOf(session?.user.role);
 	const canReview = hasPermission(role, PERMISSION.MODERATION_REVIEW);
 	const canAct = hasPermission(role, PERMISSION.MODERATION_ACTION);
-	const twoFactorEnabled = session.data?.session?.user.twoFactorEnabled ?? false;
+	const twoFactorEnabled = session?.user.twoFactorEnabled ?? false;
 	const reports = useReports(status, canReview && twoFactorEnabled);
 	const resolve = useResolveReport();
 
@@ -132,9 +130,9 @@ function ModerationPage() {
 						<CardContent className="space-y-3 text-sm">
 							<p className="whitespace-pre-line">{report.details}</p>
 							<p className="text-xs text-muted-foreground">
-								{formatDate(report.createdAt)}
+								{formatDateTime(report.createdAt)}
 								{report.resolvedAt
-									? ` · ${MODERATION.resolved}: ${formatDate(report.resolvedAt)}`
+									? ` · ${MODERATION.resolved}: ${formatDateTime(report.resolvedAt)}`
 									: ""}
 							</p>
 							{report.resolutionNote ? (

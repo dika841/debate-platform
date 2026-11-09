@@ -6,7 +6,7 @@ import {
 	fixedClock,
 	ROOM_STATUS,
 } from "@app/shared";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type {
 	NewRoomRecord,
 	RoomListFilter,
@@ -108,6 +108,15 @@ const createRepository = (seed: readonly RoomWithHost[] = []): RoomRepository =>
 				}
 				if (filter.statuses && !filter.statuses.includes(item.room.status)) {
 					return false;
+				}
+				if (filter.search) {
+					const term = filter.search.toLowerCase();
+					const matches =
+						item.room.title.toLowerCase().includes(term) ||
+						item.room.motion.toLowerCase().includes(term);
+					if (!matches) {
+						return false;
+					}
 				}
 				return true;
 			});
@@ -258,5 +267,14 @@ describe("debate room use cases", () => {
 
 		expect(result.items.map((room) => room.id)).toEqual(["published"]);
 		expect(result.items[0]?.isHost).toBe(false);
+	});
+
+	it("passes the search term to the repository", async () => {
+		const repository = createRepository([roomWith("room-1", "host-1", ROOM_STATUS.PUBLISHED)]);
+		const listSpy = vi.spyOn(repository, "list");
+
+		await listRooms({ repository }, null, { scope: "public", search: "fossil" });
+
+		expect(listSpy).toHaveBeenCalledWith(expect.objectContaining({ search: "fossil" }));
 	});
 });

@@ -4,21 +4,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/
 import { NOTIFICATION } from "@app/messages";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+	useInfiniteNotifications,
 	useMarkAllNotificationsRead,
 	useMarkNotificationRead,
-	useNotifications,
 } from "@/libs/api/queries.ts";
+import { formatDateTime } from "@/libs/format.ts";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
 	component: NotificationsPage,
 });
 
-const formatDate = (value: string): string => new Date(value).toLocaleString();
-
 function NotificationsPage() {
-	const notifications = useNotifications();
+	const notifications = useInfiniteNotifications();
 	const markRead = useMarkNotificationRead();
 	const markAllRead = useMarkAllNotificationsRead();
+	const items = notifications.data?.pages.flatMap((page) => page.items) ?? [];
+	const unreadCount = notifications.data?.pages[0]?.unreadCount ?? 0;
 
 	return (
 		<div className="space-y-6">
@@ -27,7 +28,7 @@ function NotificationsPage() {
 					<h1 className="text-2xl font-semibold tracking-tight">{NOTIFICATION.title}</h1>
 					<p className="text-sm text-muted-foreground">{NOTIFICATION.description}</p>
 				</div>
-				{notifications.data && notifications.data.unreadCount > 0 ? (
+				{unreadCount > 0 ? (
 					<Button
 						variant="outline"
 						size="sm"
@@ -47,14 +48,14 @@ function NotificationsPage() {
 				<p className="text-sm text-destructive">{notifications.error.message}</p>
 			) : null}
 
-			{notifications.data && notifications.data.items.length === 0 ? (
+			{notifications.data && items.length === 0 ? (
 				<p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
 					{NOTIFICATION.empty}
 				</p>
 			) : null}
 
 			<div className="space-y-3">
-				{notifications.data?.items.map((notification) => {
+				{items.map((notification) => {
 					const unread = notification.readAt === null;
 
 					return (
@@ -70,7 +71,7 @@ function NotificationsPage() {
 								<CardDescription>{notification.body}</CardDescription>
 							</CardHeader>
 							<CardContent className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-								<span>{formatDate(notification.createdAt)}</span>
+								<span>{formatDateTime(notification.createdAt)}</span>
 								<div className="flex items-center gap-2">
 									{notification.roomId ? (
 										<Button size="sm" variant="ghost" asChild>
@@ -95,6 +96,18 @@ function NotificationsPage() {
 					);
 				})}
 			</div>
+
+			{notifications.hasNextPage ? (
+				<div className="flex justify-center">
+					<Button
+						variant="outline"
+						disabled={notifications.isFetchingNextPage}
+						onClick={() => void notifications.fetchNextPage()}
+					>
+						{notifications.isFetchingNextPage ? "Loading more…" : "Load more notifications"}
+					</Button>
+				</div>
+			) : null}
 		</div>
 	);
 }

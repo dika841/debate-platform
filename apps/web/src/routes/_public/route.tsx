@@ -15,7 +15,7 @@ function PublicLayout() {
 				<Outlet />
 			</main>
 
-			<footer className="border-t border-border/60 py-6 text-center text-xs text-muted-foreground">
+			<footer className="border-t py-6 text-center font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
 				{APP.tagline}
 			</footer>
 		</div>

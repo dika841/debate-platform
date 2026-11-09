@@ -63,6 +63,7 @@ export const roomIdInputSchema = z.object({
 export const listRoomsInputSchema = z.object({
 	scope: z.enum(["public", "mine", "joined"]).default("public"),
 	status: roomStatusSchema.optional(),
+	search: z.string().trim().min(1).max(ROOM_TITLE_MAX).optional(),
 	cursor: z.string().min(1).optional(),
 	limit: z.number().int().min(1).max(50).optional(),
 });

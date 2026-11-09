@@ -2,24 +2,22 @@ import { Badge } from "@app/components/ui/badge";
 import { Button } from "@app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/components/ui/card";
 import { AUDIT } from "@app/messages";
-import { hasPermission, PERMISSION, ROLE, type Role } from "@app/permissions";
+import { hasPermission, PERMISSION } from "@app/permissions";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAuditEvents, useSession } from "@/libs/api/queries.ts";
+import { useAuditEvents } from "@/libs/api/queries.ts";
+import { roleOf } from "@/libs/auth/role.ts";
+import { useSession } from "@/libs/auth/use-session.ts";
+import { formatDateTime } from "@/libs/format.ts";
 
 export const Route = createFileRoute("/_authenticated/audit")({
 	component: AuditPage,
 });
 
-const roleOf = (value: string | null | undefined): Role =>
-	value && (Object.values(ROLE) as readonly string[]).includes(value) ? (value as Role) : ROLE.USER;
-
-const formatDate = (value: string): string => new Date(value).toLocaleString();
-
 function AuditPage() {
 	const session = useSession();
-	const role = roleOf(session.data?.session?.user.role);
+	const role = roleOf(session?.user.role);
 	const canAct = hasPermission(role, PERMISSION.MODERATION_ACTION);
-	const twoFactorEnabled = session.data?.session?.user.twoFactorEnabled ?? false;
+	const twoFactorEnabled = session?.user.twoFactorEnabled ?? false;
 	const events = useAuditEvents(canAct && twoFactorEnabled);
 
 	if (!canAct || !twoFactorEnabled) {
@@ -70,7 +68,7 @@ function AuditPage() {
 								{event.actor
 									? `${event.actor.displayName}${event.actor.username ? ` (@${event.actor.username})` : ""}`
 									: "system"}{" "}
-								· {formatDate(event.createdAt)}
+								· {formatDateTime(event.createdAt)}
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-2 text-sm">

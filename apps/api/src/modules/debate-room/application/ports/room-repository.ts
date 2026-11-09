@@ -44,6 +44,7 @@ export type RoomListFilter = {
 	readonly memberId?: string;
 	readonly statuses?: readonly RoomStatus[];
 	readonly status?: RoomStatus;
+	readonly search?: string;
 	readonly cursor?: string | null;
 	readonly limit: number;
 };

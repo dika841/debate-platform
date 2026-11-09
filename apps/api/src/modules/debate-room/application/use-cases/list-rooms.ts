@@ -33,6 +33,7 @@ export const listRooms = async (
 		memberId: scope === "joined" ? (actorId ?? undefined) : undefined,
 		status: input.status,
 		statuses: scope === "public" && !input.status ? PUBLIC_ROOM_STATUSES : undefined,
+		search: input.search,
 		cursor: page.cursor,
 		limit: page.limit,
 	});

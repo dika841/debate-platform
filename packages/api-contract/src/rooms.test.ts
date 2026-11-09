@@ -62,6 +62,11 @@ describe("room contract", () => {
 		expect(parsed.scope).toBe("public");
 	});
 
+	it("trims a search term and rejects an empty one", () => {
+		expect(listRoomsInputSchema.parse({ search: "  climate  " }).search).toBe("climate");
+		expect(() => listRoomsInputSchema.parse({ search: "   " })).toThrow();
+	});
+
 	it("rejects unknown room statuses", () => {
 		expect(() => roomSchema.parse({ ...room, status: "ARCHIVED" })).toThrow();
 	});

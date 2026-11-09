@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@app/
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useRoom, useUpdateRoom } from "@/libs/api/queries.ts";
-import { RoomForm } from "@/routes/_components/room-form.tsx";
+import { RoomDetailSkeleton } from "@/routes/_components/room-detail-skeleton.tsx";
+import { RoomForm } from "@/routes/_authenticated/rooms/_components/room-form.tsx";
 
 export const Route = createFileRoute("/_authenticated/rooms/$roomId/edit")({
 	component: EditRoomPage,
@@ -18,7 +19,7 @@ function EditRoomPage() {
 	const [error, setError] = useState<string | null>(null);
 
 	if (room.isPending) {
-		return <p className="text-sm text-muted-foreground">Loading debate…</p>;
+		return <RoomDetailSkeleton />;
 	}
 
 	if (room.isError || !room.data) {

@@ -14,15 +14,15 @@ import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedModerationRouteImport } from './routes/_authenticated/moderation'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
-import { Route as PublicForgotPasswordRouteImport } from './routes/_public/forgot-password'
 import { Route as PublicHealthRouteImport } from './routes/_public/health'
-import { Route as PublicLoginRouteImport } from './routes/_public/login'
-import { Route as PublicRegisterRouteImport } from './routes/_public/register'
-import { Route as PublicResetPasswordRouteImport } from './routes/_public/reset-password'
+import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedRoomsIndexRouteImport } from './routes/_authenticated/rooms/index'
 import { Route as AuthenticatedRoomsNewRouteImport } from './routes/_authenticated/rooms/new'
+import { Route as PublicForgotPasswordIndexRouteImport } from './routes/_public/forgot-password/index'
+import { Route as PublicLoginIndexRouteImport } from './routes/_public/login/index'
+import { Route as PublicRegisterIndexRouteImport } from './routes/_public/register/index'
+import { Route as PublicResetPasswordIndexRouteImport } from './routes/_public/reset-password/index'
 import { Route as PublicRoomsRoomIdRouteImport } from './routes/_public/rooms/$roomId'
 import { Route as AuthenticatedRoomsRoomIdEditRouteImport } from './routes/_authenticated/rooms/$roomId/edit'
 
@@ -50,19 +50,9 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PublicRouteRoute,
-} as any)
-const PublicForgotPasswordRoute = PublicForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicHealthRoute = PublicHealthRouteImport.update({
@@ -70,21 +60,12 @@ const PublicHealthRoute = PublicHealthRouteImport.update({
   path: '/health',
   getParentRoute: () => PublicRouteRoute,
 } as any)
-const PublicLoginRoute = PublicLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => PublicRouteRoute,
-} as any)
-const PublicRegisterRoute = PublicRegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => PublicRouteRoute,
-} as any)
-const PublicResetPasswordRoute = PublicResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => PublicRouteRoute,
-} as any)
+const AuthenticatedProfileIndexRoute =
+  AuthenticatedProfileIndexRouteImport.update({
+    id: '/profile/',
+    path: '/profile/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRoomsIndexRoute = AuthenticatedRoomsIndexRouteImport.update({
   id: '/rooms/',
   path: '/rooms/',
@@ -95,6 +76,28 @@ const AuthenticatedRoomsNewRoute = AuthenticatedRoomsNewRouteImport.update({
   path: '/rooms/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const PublicForgotPasswordIndexRoute =
+  PublicForgotPasswordIndexRouteImport.update({
+    id: '/forgot-password/',
+    path: '/forgot-password/',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
+const PublicLoginIndexRoute = PublicLoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicRegisterIndexRoute = PublicRegisterIndexRouteImport.update({
+  id: '/register/',
+  path: '/register/',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicResetPasswordIndexRoute =
+  PublicResetPasswordIndexRouteImport.update({
+    id: '/reset-password/',
+    path: '/reset-password/',
+    getParentRoute: () => PublicRouteRoute,
+  } as any)
 const PublicRoomsRoomIdRoute = PublicRoomsRoomIdRouteImport.update({
   id: '/rooms/$roomId',
   path: '/rooms/$roomId',
@@ -112,15 +115,15 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuthenticatedAuditRoute
   '/moderation': typeof AuthenticatedModerationRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/profile': typeof AuthenticatedProfileRoute
-  '/forgot-password': typeof PublicForgotPasswordRoute
   '/health': typeof PublicHealthRoute
-  '/login': typeof PublicLoginRoute
-  '/register': typeof PublicRegisterRoute
-  '/reset-password': typeof PublicResetPasswordRoute
   '/rooms/new': typeof AuthenticatedRoomsNewRoute
   '/rooms/$roomId': typeof PublicRoomsRoomIdRoute
+  '/profile/': typeof AuthenticatedProfileIndexRoute
   '/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/forgot-password/': typeof PublicForgotPasswordIndexRoute
+  '/login/': typeof PublicLoginIndexRoute
+  '/register/': typeof PublicRegisterIndexRoute
+  '/reset-password/': typeof PublicResetPasswordIndexRoute
   '/rooms/$roomId/edit': typeof AuthenticatedRoomsRoomIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -128,15 +131,15 @@ export interface FileRoutesByTo {
   '/audit': typeof AuthenticatedAuditRoute
   '/moderation': typeof AuthenticatedModerationRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/profile': typeof AuthenticatedProfileRoute
-  '/forgot-password': typeof PublicForgotPasswordRoute
   '/health': typeof PublicHealthRoute
-  '/login': typeof PublicLoginRoute
-  '/register': typeof PublicRegisterRoute
-  '/reset-password': typeof PublicResetPasswordRoute
   '/rooms/new': typeof AuthenticatedRoomsNewRoute
   '/rooms/$roomId': typeof PublicRoomsRoomIdRoute
+  '/profile': typeof AuthenticatedProfileIndexRoute
   '/rooms': typeof AuthenticatedRoomsIndexRoute
+  '/forgot-password': typeof PublicForgotPasswordIndexRoute
+  '/login': typeof PublicLoginIndexRoute
+  '/register': typeof PublicRegisterIndexRoute
+  '/reset-password': typeof PublicResetPasswordIndexRoute
   '/rooms/$roomId/edit': typeof AuthenticatedRoomsRoomIdEditRoute
 }
 export interface FileRoutesById {
@@ -146,16 +149,16 @@ export interface FileRoutesById {
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/moderation': typeof AuthenticatedModerationRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
-  '/_authenticated/profile': typeof AuthenticatedProfileRoute
-  '/_public/forgot-password': typeof PublicForgotPasswordRoute
   '/_public/health': typeof PublicHealthRoute
-  '/_public/login': typeof PublicLoginRoute
-  '/_public/register': typeof PublicRegisterRoute
-  '/_public/reset-password': typeof PublicResetPasswordRoute
   '/_public/': typeof PublicIndexRoute
   '/_authenticated/rooms/new': typeof AuthenticatedRoomsNewRoute
   '/_public/rooms/$roomId': typeof PublicRoomsRoomIdRoute
+  '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/rooms/': typeof AuthenticatedRoomsIndexRoute
+  '/_public/forgot-password/': typeof PublicForgotPasswordIndexRoute
+  '/_public/login/': typeof PublicLoginIndexRoute
+  '/_public/register/': typeof PublicRegisterIndexRoute
+  '/_public/reset-password/': typeof PublicResetPasswordIndexRoute
   '/_authenticated/rooms/$roomId/edit': typeof AuthenticatedRoomsRoomIdEditRoute
 }
 export interface FileRouteTypes {
@@ -165,15 +168,15 @@ export interface FileRouteTypes {
     | '/audit'
     | '/moderation'
     | '/notifications'
-    | '/profile'
-    | '/forgot-password'
     | '/health'
-    | '/login'
-    | '/register'
-    | '/reset-password'
     | '/rooms/new'
     | '/rooms/$roomId'
+    | '/profile/'
     | '/rooms/'
+    | '/forgot-password/'
+    | '/login/'
+    | '/register/'
+    | '/reset-password/'
     | '/rooms/$roomId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -181,15 +184,15 @@ export interface FileRouteTypes {
     | '/audit'
     | '/moderation'
     | '/notifications'
-    | '/profile'
-    | '/forgot-password'
     | '/health'
+    | '/rooms/new'
+    | '/rooms/$roomId'
+    | '/profile'
+    | '/rooms'
+    | '/forgot-password'
     | '/login'
     | '/register'
     | '/reset-password'
-    | '/rooms/new'
-    | '/rooms/$roomId'
-    | '/rooms'
     | '/rooms/$roomId/edit'
   id:
     | '__root__'
@@ -198,16 +201,16 @@ export interface FileRouteTypes {
     | '/_authenticated/audit'
     | '/_authenticated/moderation'
     | '/_authenticated/notifications'
-    | '/_authenticated/profile'
-    | '/_public/forgot-password'
     | '/_public/health'
-    | '/_public/login'
-    | '/_public/register'
-    | '/_public/reset-password'
     | '/_public/'
     | '/_authenticated/rooms/new'
     | '/_public/rooms/$roomId'
+    | '/_authenticated/profile/'
     | '/_authenticated/rooms/'
+    | '/_public/forgot-password/'
+    | '/_public/login/'
+    | '/_public/register/'
+    | '/_public/reset-password/'
     | '/_authenticated/rooms/$roomId/edit'
   fileRoutesById: FileRoutesById
 }
@@ -253,25 +256,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/profile': {
-      id: '/_authenticated/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_public/': {
       id: '/_public/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/forgot-password': {
-      id: '/_public/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof PublicForgotPasswordRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/health': {
@@ -281,26 +270,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicHealthRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/_public/login': {
-      id: '/_public/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof PublicLoginRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/register': {
-      id: '/_public/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof PublicRegisterRouteImport
-      parentRoute: typeof PublicRouteRoute
-    }
-    '/_public/reset-password': {
-      id: '/_public/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof PublicResetPasswordRouteImport
-      parentRoute: typeof PublicRouteRoute
+    '/_authenticated/profile/': {
+      id: '/_authenticated/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/rooms/': {
       id: '/_authenticated/rooms/'
@@ -315,6 +290,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/rooms/new'
       preLoaderRoute: typeof AuthenticatedRoomsNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_public/forgot-password/': {
+      id: '/_public/forgot-password/'
+      path: '/forgot-password'
+      fullPath: '/forgot-password/'
+      preLoaderRoute: typeof PublicForgotPasswordIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/login/': {
+      id: '/_public/login/'
+      path: '/login'
+      fullPath: '/login/'
+      preLoaderRoute: typeof PublicLoginIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/register/': {
+      id: '/_public/register/'
+      path: '/register'
+      fullPath: '/register/'
+      preLoaderRoute: typeof PublicRegisterIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/reset-password/': {
+      id: '/_public/reset-password/'
+      path: '/reset-password'
+      fullPath: '/reset-password/'
+      preLoaderRoute: typeof PublicResetPasswordIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/rooms/$roomId': {
       id: '/_public/rooms/$roomId'
@@ -337,8 +340,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedModerationRoute: typeof AuthenticatedModerationRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRoomsNewRoute: typeof AuthenticatedRoomsNewRoute
+  AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedRoomsIndexRoute: typeof AuthenticatedRoomsIndexRoute
   AuthenticatedRoomsRoomIdEditRoute: typeof AuthenticatedRoomsRoomIdEditRoute
 }
@@ -347,8 +350,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedModerationRoute: AuthenticatedModerationRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
-  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRoomsNewRoute: AuthenticatedRoomsNewRoute,
+  AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedRoomsIndexRoute: AuthenticatedRoomsIndexRoute,
   AuthenticatedRoomsRoomIdEditRoute: AuthenticatedRoomsRoomIdEditRoute,
 }
@@ -357,23 +360,23 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface PublicRouteRouteChildren {
-  PublicForgotPasswordRoute: typeof PublicForgotPasswordRoute
   PublicHealthRoute: typeof PublicHealthRoute
-  PublicLoginRoute: typeof PublicLoginRoute
-  PublicRegisterRoute: typeof PublicRegisterRoute
-  PublicResetPasswordRoute: typeof PublicResetPasswordRoute
   PublicIndexRoute: typeof PublicIndexRoute
   PublicRoomsRoomIdRoute: typeof PublicRoomsRoomIdRoute
+  PublicForgotPasswordIndexRoute: typeof PublicForgotPasswordIndexRoute
+  PublicLoginIndexRoute: typeof PublicLoginIndexRoute
+  PublicRegisterIndexRoute: typeof PublicRegisterIndexRoute
+  PublicResetPasswordIndexRoute: typeof PublicResetPasswordIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
-  PublicForgotPasswordRoute: PublicForgotPasswordRoute,
   PublicHealthRoute: PublicHealthRoute,
-  PublicLoginRoute: PublicLoginRoute,
-  PublicRegisterRoute: PublicRegisterRoute,
-  PublicResetPasswordRoute: PublicResetPasswordRoute,
   PublicIndexRoute: PublicIndexRoute,
   PublicRoomsRoomIdRoute: PublicRoomsRoomIdRoute,
+  PublicForgotPasswordIndexRoute: PublicForgotPasswordIndexRoute,
+  PublicLoginIndexRoute: PublicLoginIndexRoute,
+  PublicRegisterIndexRoute: PublicRegisterIndexRoute,
+  PublicResetPasswordIndexRoute: PublicResetPasswordIndexRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(

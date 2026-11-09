@@ -1,7 +1,7 @@
 import type { Database } from "@app/database";
 import { debateRooms, roomMemberships, userProfiles, users } from "@app/database/schema";
 import type { RoomStatus } from "@app/shared";
-import { and, desc, eq, inArray, lt, or, type SQL } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, lt, or, type SQL } from "drizzle-orm";
 import { decodeCursor, encodeCursor } from "#/platform/persistence/cursor.ts";
 import type {
 	RoomListFilter,
@@ -32,6 +32,8 @@ type RoomRow = {
 	hostDisplayName: string | null;
 	hostUsername: string | null;
 };
+
+const escapeLike = (value: string): string => value.replace(/[\\%_]/g, "\\$&");
 
 const roomSelection = {
 	id: debateRooms.id,
@@ -137,6 +139,18 @@ export const createDrizzleRoomRepository = (db: Database): RoomRepository => {
 				conditions.push(eq(debateRooms.status, filter.status));
 			} else if (filter.statuses && filter.statuses.length > 0) {
 				conditions.push(inArray(debateRooms.status, [...filter.statuses]));
+			}
+
+			if (filter.search) {
+				const pattern = `%${escapeLike(filter.search)}%`;
+				const searchCondition = or(
+					ilike(debateRooms.title, pattern),
+					ilike(debateRooms.motion, pattern),
+				);
+
+				if (searchCondition) {
+					conditions.push(searchCondition);
+				}
 			}
 
 			const cursor = decodeCursor(filter.cursor);

@@ -1,22 +1,28 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { APP } from "@app/messages";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { match, P } from "ts-pattern";
+import { sessionRefresh } from "./libs/auth/session.ts";
+import { queryClient } from "./libs/tanstack-query/index.ts";
+import { NotFound } from "./routes/_components/not-found.tsx";
+import { RouteError } from "./routes/_components/route-error.tsx";
+import { RoutePending } from "./routes/_components/route-pending.tsx";
 import { routeTree } from "./routeTree.gen.ts";
 import "./styles.css";
-
-const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			staleTime: 30_000,
-			retry: 1,
-		},
-	},
-});
 
 const router = createRouter({
 	routeTree,
 	context: { queryClient },
+	defaultPreload: "intent",
+	defaultPreloadDelay: 50,
+	defaultPendingMs: 300,
+	defaultPendingMinMs: 300,
+	defaultPendingComponent: RoutePending,
+	defaultErrorComponent: RouteError,
+	defaultNotFoundComponent: NotFound,
+	scrollRestoration: true,
 });
 
 declare module "@tanstack/react-router" {
@@ -25,16 +31,24 @@ declare module "@tanstack/react-router" {
 	}
 }
 
-const rootElement = document.getElementById("root");
+const bootstrap = async (): Promise<void> => {
+	await sessionRefresh();
 
-if (!rootElement) {
-	throw new Error("Root element #root was not found");
-}
+	const rootElement = document.getElementById("root");
 
-createRoot(rootElement).render(
-	<StrictMode>
-		<QueryClientProvider client={queryClient}>
-			<RouterProvider router={router} />
-		</QueryClientProvider>
-	</StrictMode>,
-);
+	match(rootElement)
+		.with(P.nullish, () => {
+			throw new Error(APP.rootMissing);
+		})
+		.otherwise((root) => {
+			createRoot(root).render(
+				<StrictMode>
+					<QueryClientProvider client={queryClient}>
+						<RouterProvider router={router} />
+					</QueryClientProvider>
+				</StrictMode>,
+			);
+		});
+};
+
+void bootstrap();
